@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import DefaultLayout from "./layouts/DefaultLayout";
 import DashboardPage from "./pages/Dashboard";
+import Flows from "./pages/Flows";
 import FlowCreate from "./pages/FlowCreate";
 import FlowDetails from "./pages/FlowDetails";
 import Templates from "./pages/Templates";
@@ -37,6 +38,7 @@ const App = () => (
               </ProtectedRoute>
             }>
               <Route path="dashboard" element={<DashboardPage />} />
+              <Route path="flows" element={<Flows />} />
               <Route path="flows/create" element={<FlowCreate />} />
               <Route path="flows/:id" element={<FlowDetails />} />
               <Route path="templates" element={<Templates />} />

@@ -1,4 +1,3 @@
-
 import { NavLink } from "react-router-dom";
 import { 
   ChevronRight, 
@@ -33,7 +32,6 @@ const Sidebar = ({ onNavItemClick }: SidebarProps) => {
       icon: <Activity size={18} />,
       submenu: [
         { name: "Create Flow", path: "/flows/create" },
-        { name: "Active Flows", path: "/flows/active" },
       ] 
     },
     { 
