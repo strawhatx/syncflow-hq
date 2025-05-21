@@ -1,7 +1,6 @@
-
 import { useState } from "react";
 import { ChevronDown, Filter } from "lucide-react";
-import LogsTable from "../components/logs/LogsTable";
+import LogsTable from "../components/logging/LogsTable";
 
 // Mock data for logs
 const allLogs = [
