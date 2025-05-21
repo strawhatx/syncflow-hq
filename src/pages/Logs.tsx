@@ -104,17 +104,17 @@ const Logs = () => {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold mb-2">Sync Logs</h1>
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-xl md:text-2xl font-semibold mb-2">Sync Logs</h1>
         <p className="text-muted-foreground">Track and troubleshoot your sync operations</p>
       </div>
       
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex space-x-1">
+      <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-0">
+        <div className="flex flex-wrap gap-1">
           {tabs.map(tab => (
             <button
               key={tab.id}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              className={`px-3 py-1.5 md:px-4 md:py-2 text-sm font-medium rounded-md transition-colors ${
                 activeTab === tab.id
                   ? "bg-primary text-white"
                   : "bg-secondary text-muted-foreground hover:text-foreground"
@@ -127,14 +127,14 @@ const Logs = () => {
         </div>
         
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-1 px-3 py-1.5 text-sm rounded-md border border-border hover:bg-secondary/50 transition-colors">
+          <button className="flex items-center gap-1 px-2 py-1.5 md:px-3 text-sm rounded-md border border-border hover:bg-secondary/50 transition-colors">
             <Filter size={14} />
-            <span>Filter</span>
+            <span className="hidden sm:inline">Filter</span>
             <ChevronDown size={14} />
           </button>
           
-          <button className="flex items-center gap-1 px-3 py-1.5 text-sm rounded-md border border-border hover:bg-secondary/50 transition-colors">
-            <span>Last 7 days</span>
+          <button className="flex items-center gap-1 px-2 py-1.5 md:px-3 text-sm rounded-md border border-border hover:bg-secondary/50 transition-colors">
+            <span>Last 7d</span>
             <ChevronDown size={14} />
           </button>
           

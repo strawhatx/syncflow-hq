@@ -11,7 +11,11 @@ import {
   Clock 
 } from "lucide-react";
 
-const Sidebar = () => {
+interface SidebarProps {
+  onNavItemClick?: () => void;
+}
+
+const Sidebar = ({ onNavItemClick }: SidebarProps) => {
   const navItems = [
     { 
       name: "Dashboard", 
@@ -49,6 +53,12 @@ const Sidebar = () => {
     },
   ];
 
+  const handleClick = () => {
+    if (onNavItemClick) {
+      onNavItemClick();
+    }
+  };
+
   return (
     <div className="w-64 h-screen bg-white border-r border-border flex flex-col">
       <div className="p-4 border-b border-border">
@@ -66,6 +76,7 @@ const Sidebar = () => {
               className={({ isActive }) => 
                 `sidebar-item ${isActive ? "sidebar-item-active" : "sidebar-item-inactive"}`
               }
+              onClick={handleClick}
             >
               {item.icon}
               <span>{item.name}</span>
@@ -81,6 +92,7 @@ const Sidebar = () => {
                     className={({ isActive }) => 
                       `sidebar-item text-xs ${isActive ? "sidebar-item-active" : "sidebar-item-inactive"}`
                     }
+                    onClick={handleClick}
                   >
                     {subitem.name}
                   </NavLink>

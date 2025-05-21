@@ -1,5 +1,5 @@
 
-import { Activity, ArrowLeft, ArrowRight, ArrowUpDown, RefreshCw } from "lucide-react";
+import { Activity, ArrowRight, ArrowUpDown, RefreshCw } from "lucide-react";
 import StatCard from "../components/dashboard/StatCard";
 import SyncStatusCard from "../components/dashboard/SyncStatusCard";
 import SyncActivityLog from "../components/dashboard/SyncActivityLog";
@@ -106,12 +106,12 @@ const recentLogs = [
 const Dashboard = () => {
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold mb-2">Dashboard</h1>
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-xl md:text-2xl font-semibold mb-2">Dashboard</h1>
         <p className="text-muted-foreground">Monitor your data syncs and flows</p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
         {stats.map((stat, index) => (
           <StatCard 
             key={index}
@@ -124,16 +124,16 @@ const Dashboard = () => {
         ))}
       </div>
       
-      <div className="mb-8">
+      <div className="mb-6 md:mb-8">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">Active Sync Flows</h2>
+          <h2 className="text-lg md:text-xl font-semibold">Active Sync Flows</h2>
           <a href="/flows" className="text-primary text-sm hover:underline flex items-center gap-1">
             View all flows
             <ArrowRight size={16} />
           </a>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
           {syncFlows.map((flow, index) => (
             <SyncStatusCard 
               key={index}
