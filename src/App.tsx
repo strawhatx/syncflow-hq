@@ -5,13 +5,14 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import DefaultLayout from "./layouts/DefaultLayout";
-import Dashboard from "./pages/Dashboard";
+import DashboardPage from "./pages/Dashboard";
 import FlowCreate from "./pages/FlowCreate";
 import FlowDetails from "./pages/FlowDetails";
 import Templates from "./pages/Templates";
 import Integrations from "./pages/Integrations";
 import Logs from "./pages/Logs";
 import NotFound from "./pages/NotFound";
+import IndexPage from "./pages/Index";
 
 const queryClient = new QueryClient();
 
@@ -23,8 +24,8 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<DefaultLayout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route index element={<IndexPage />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/flows/create" element={<FlowCreate />} />
             <Route path="/flows/:id" element={<FlowDetails />} />
             <Route path="/templates" element={<Templates />} />
