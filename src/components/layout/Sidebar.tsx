@@ -8,14 +8,19 @@ import {
   Zap, 
   Box, 
   Database, 
-  Clock 
+  Clock,
+  LogOut,
+  User
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface SidebarProps {
   onNavItemClick?: () => void;
 }
 
 const Sidebar = ({ onNavItemClick }: SidebarProps) => {
+  const { signOut, user } = useAuth();
+  
   const navItems = [
     { 
       name: "Dashboard", 
@@ -45,6 +50,11 @@ const Sidebar = ({ onNavItemClick }: SidebarProps) => {
       name: "Logs", 
       path: "/logs", 
       icon: <Clock size={18} /> 
+    },
+    { 
+      name: "Profile", 
+      path: "/profile", 
+      icon: <User size={18} /> 
     },
     { 
       name: "Settings", 
@@ -103,14 +113,24 @@ const Sidebar = ({ onNavItemClick }: SidebarProps) => {
         ))}
       </nav>
       <div className="p-4 border-t border-border">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-            MS
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+              {user?.email?.charAt(0).toUpperCase() || "U"}
+            </div>
+            <div className="text-sm">
+              <div className="font-medium truncate max-w-[170px]">{user?.email || "User"}</div>
+              <div className="text-xs text-muted-foreground">Pro Plan</div>
+            </div>
           </div>
-          <div className="text-sm">
-            <div className="font-medium">Your Workspace</div>
-            <div className="text-xs text-muted-foreground">Pro Plan</div>
-          </div>
+          
+          <button 
+            onClick={signOut}
+            className="flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors w-full"
+          >
+            <LogOut size={16} />
+            <span>Sign Out</span>
+          </button>
         </div>
       </div>
     </div>
