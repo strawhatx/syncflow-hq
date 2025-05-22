@@ -1,4 +1,3 @@
-
 import { NavLink } from "react-router-dom";
 import {
   ChevronRight,
@@ -21,8 +20,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarTrigger,
-  useSidebar,
+  SidebarProvider,
 } from "@/components/ui/sidebar";
 import { Button } from "../ui/button";
 import { memo } from "react";
@@ -92,88 +90,70 @@ const NavItem = memo(({
 }: {
   item: NavItem;
   onNavItemClick?: () => void;
-}) => {
-  const { state } = useSidebar();
-  const collapsed = state === "collapsed";
-  
-  return (
-    <SidebarMenuItem key={item.name}>
-      <SidebarMenuButton asChild>
-        <NavLink
-          to={item.path}
-          end={!item.submenu}
-          onClick={onNavItemClick}
-          className={({ isActive }) => 
-            `flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted transition-colors 
-            ${isActive ? "bg-accent text-accent-foreground font-medium" : ""}`
-          }
-        >
-          {item.icon}
-          {!collapsed && <span>{item.name}</span>}
-          {!collapsed && item.submenu && <ChevronRight size={16} className="ml-auto" />}
-        </NavLink>
-      </SidebarMenuButton>
+}) => (
+  <SidebarMenuItem key={item.name}>
+    <SidebarMenuButton asChild>
+      <NavLink
+        to={item.path}
+        end={!item.submenu}
+        onClick={onNavItemClick}
+        className={({ isActive }) => isActive ? "flex items-center gap-3 px-8 py-2 rounded-md hover:bg-muted transition-colors data-[active=true]" : "flex items-center gap-3 px-8 py-2 rounded-md hover:bg-muted transition-colors"}
+      >
 
-      {!collapsed && item.submenu && (
-        <div className="pl-9 mt-1 space-y-1">
-          {item.submenu.map((subitem) => (
-            <NavLink
-              key={subitem.name}
-              to={subitem.path}
-              onClick={onNavItemClick}
-              className={({ isActive }) => 
-                `block text-sm py-1.5 px-3 rounded-md transition-colors
-                ${isActive ? "bg-accent text-accent-foreground font-medium" : "hover:bg-muted"}`
-              }
-            >
-              <SidebarMenuButton size="sm">
-                {subitem.name}
-              </SidebarMenuButton>
-            </NavLink>
-          ))}
-        </div>
-      )}
-    </SidebarMenuItem>
-  );
-});
+        {item.icon}
+        <span>{item.name}</span>
+        {item.submenu && <ChevronRight size={16} className="ml-auto" />}
+
+      </NavLink>
+    </SidebarMenuButton>
+
+
+    {item.submenu && (
+      <div className="pl-9 mt-1 space-y-1">
+        {item.submenu.map((subitem) => (
+          <NavLink
+            key={subitem.name}
+            to={subitem.path}
+            onClick={onNavItemClick}
+            className={({ isActive }) => isActive ? "data-[active=true]" : ""}
+          >
+            <SidebarMenuButton size="sm">
+              {subitem.name}
+            </SidebarMenuButton>
+          </NavLink>
+        ))}
+      </div>
+    )}
+  </SidebarMenuItem>
+));
 
 NavItem.displayName = 'NavItem';
 
 // Memoized user profile component
-const UserProfile = memo(({ user }: { user: { email?: string } }) => {
-  const { state } = useSidebar();
-  const collapsed = state === "collapsed";
-  
-  return (
-    <SidebarMenuItem className="list-none border-t px-4 py-3">
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-          {user?.email?.charAt(0).toUpperCase() || "U"}
-        </div>
-        {!collapsed && (
-          <div className="text-sm">
-            <div className="font-medium truncate max-w-[170px]">{user?.email || "User"}</div>
-            <div className="text-xs text-muted-foreground">Pro Plan</div>
-          </div>
-        )}
+const UserProfile = memo(({ user }: { user: { email?: string } }) => (
+  <SidebarMenuItem className="list-none border-t px-4 py-3">
+    <div className="flex items-center gap-3">
+      <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+        {user?.email?.charAt(0).toUpperCase() || "U"}
       </div>
-    </SidebarMenuItem>
-  );
-});
-
+      <div className="text-sm">
+        <div className="font-medium truncate max-w-[170px]">{user?.email || "User"}</div>
+        <div className="text-xs text-muted-foreground">Pro Plan</div>
+      </div>
+    </div>
+  </SidebarMenuItem>
+));
 UserProfile.displayName = 'UserProfile';
 
 const Sidebar = ({ onNavItemClick }: SidebarProps) => {
   const { signOut, user } = useAuth();
-  const { state } = useSidebar();
-  const collapsed = state === "collapsed";
 
   return (
-    <ShadcnSidebar collapsible="icon">
+    <ShadcnSidebar>
       <SidebarHeader className="border-b border-border">
         <div className="flex items-center gap-2 font-semibold text-xl p-4">
           <Zap size={24} className="text-primary" />
-          {!collapsed && <span>SyncStack</span>}
+          <span>SyncStack</span>
         </div>
       </SidebarHeader>
 
@@ -196,10 +176,10 @@ const Sidebar = ({ onNavItemClick }: SidebarProps) => {
           <Button
             onClick={signOut}
             variant="ghost"
-            className={`${collapsed ? "justify-center w-8 p-0" : "w-full justify-start"} text-red-600 hover:text-red-700 hover:bg-red-50`}
+            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
           >
-            <LogOut size={16} className={collapsed ? "" : "mr-2"} />
-            {!collapsed && "Sign Out"}
+            <LogOut size={16} className="mr-2" />
+            Sign Out
           </Button>
         </SidebarMenuItem>
       </SidebarFooter>

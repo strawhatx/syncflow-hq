@@ -17,39 +17,40 @@ import IndexPage from "./pages/Index";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import { AuthProvider } from "./contexts/AuthContext";
+import { SidebarLayout } from "./layouts/Index";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<IndexPage />} />
-          <Route path="/auth" element={<Auth />} />
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<IndexPage />} />
+            <Route path="/auth" element={<Auth />} />
 
-          <Route path="/" element={
-            <ProtectedRoute>
-              <DefaultLayout />
-            </ProtectedRoute>
-          }>
-            <Route path="dashboard" element={<DashboardPage />} />
-            <Route path="syncs" element={<Syncs />} />
-            <Route path="syncs/create" element={<SyncCreate />} />
-            <Route path="syncs/:id" element={<SyncDetails />} />
-            <Route path="templates" element={<Templates />} />
-            <Route path="integrations" element={<Integrations />} />
-            <Route path="logs" element={<Logs />} />
-            <Route path="profile" element={<Profile />} />
-            <Route path="settings" element={<Profile />} />
-          </Route>
+            <Route path="/" element={
+              <ProtectedRoute> <SidebarLayout />  </ProtectedRoute>
+            }>
+              <Route path="dashboard" element={<DashboardPage />} />
+              <Route path="syncs" element={<Syncs />} />
+              <Route path="syncs/create" element={<SyncCreate />} />
+              <Route path="syncs/:id" element={<SyncDetails />} />
+              <Route path="templates" element={<Templates />} />
+              <Route path="integrations" element={<Integrations />} />
+              <Route path="logs" element={<Logs />} />
+              <Route path="profile" element={<Profile />} />
+            </Route>
 
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
