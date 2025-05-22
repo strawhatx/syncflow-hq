@@ -1,7 +1,6 @@
-
 import { useState } from "react";
 import { Plus, Search } from "lucide-react";
-import IntegrationCard from "../components/integrations/IntegrationCard";
+import IntegrationCard, { Connection, ConnectionStatus } from "../components/integrations/IntegrationCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -15,8 +14,8 @@ const integrations = [
     icon: "https://cdn.shopify.com/s/files/1/0533/2089/files/shopify-logo-small.png",
     description: "Connect your Shopify store to sync products, orders, and customers",
     connections: [
-      { id: "conn1", name: "My Store", status: "active" },
-      { id: "conn2", name: "Test Store", status: "error" }
+      { id: "conn1", name: "My Store", status: "active" as ConnectionStatus },
+      { id: "conn2", name: "Test Store", status: "error" as ConnectionStatus }
     ],
     category: "commerce"
   },
@@ -26,7 +25,7 @@ const integrations = [
     icon: "https://seeklogo.com/images/A/airtable-logo-216B9AF035-seeklogo.com.png",
     description: "Use Airtable as a powerful database for your e-commerce data",
     connections: [
-      { id: "conn3", name: "Marketing Database", status: "active" }
+      { id: "conn3", name: "Marketing Database", status: "active" as ConnectionStatus }
     ],
     category: "database"
   },
