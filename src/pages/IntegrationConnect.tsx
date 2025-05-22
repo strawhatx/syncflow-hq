@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
@@ -9,29 +10,9 @@ import { toast } from "@/components/ui/use-toast";
 import { createConnection } from "@/services/integrationService";
 import { ConnectionStatus } from "@/components/integrations/IntegrationCard";
 import { useQueryClient } from "@tanstack/react-query";
-
-// Mock integration data
-const getIntegration = (id: string) => {
-  const integrations = [
-    {
-      id: "1",
-      name: "Shopify",
-      icon: "https://cdn.shopify.com/s/files/1/0533/2089/files/shopify-logo-small.png",
-      description: "Connect your Shopify store to sync products, orders, and customers",
-      authType: "oauth",
-    },
-    {
-      id: "2",
-      name: "Airtable",
-      icon: "https://seeklogo.com/images/A/airtable-logo-216B9AF035-seeklogo.com.png",
-      description: "Use Airtable as a powerful database for your e-commerce data",
-      authType: "api_key",
-    },
-    // ... other integrations
-  ];
-
-  return integrations.find(integration => integration.id === id);
-};
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from "lucide-react";
 
 const IntegrationConnect = () => {
   const { id } = useParams<{ id: string }>();
@@ -41,9 +22,39 @@ const IntegrationConnect = () => {
   const [apiKey, setApiKey] = useState("");
   const [isConnecting, setIsConnecting] = useState(false);
   
-  const integration = id ? getIntegration(id) : null;
+  // Fetch the integration from Supabase
+  const { data: integration, isLoading, error } = useQuery({
+    queryKey: ['integration', id],
+    queryFn: async () => {
+      if (!id) return null;
+      
+      const { data, error } = await supabase
+        .from('integrations')
+        .select('*')
+        .eq('id', id)
+        .single();
+      
+      if (error) throw error;
+      
+      return {
+        id: data.id,
+        name: data.name,
+        icon: data.icon,
+        description: data.description,
+        authType: data.auth_type
+      };
+    }
+  });
   
-  if (!integration) {
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+  
+  if (error || !integration) {
     return (
       <div className="py-8 text-center">
         <h2 className="text-2xl font-semibold mb-2">Integration not found</h2>
@@ -226,14 +237,28 @@ const IntegrationConnect = () => {
                   onClick={handleOAuthConnect}
                   disabled={isConnecting || !connectionName}
                 >
-                  Continue to {integration.name}
+                  {isConnecting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Connecting...
+                    </>
+                  ) : (
+                    `Continue to ${integration.name}`
+                  )}
                 </Button>
               ) : (
                 <Button
                   onClick={handleConnect}
                   disabled={isConnecting || !connectionName || (integration.authType === "api_key" && !apiKey)}
                 >
-                  {isConnecting ? "Connecting..." : "Connect"}
+                  {isConnecting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Connecting...
+                    </>
+                  ) : (
+                    "Connect"
+                  )}
                 </Button>
               )}
             </CardFooter>

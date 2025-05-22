@@ -19,91 +19,37 @@ export interface IntegrationWithConnections extends Integration {
 // Fetch all available integrations
 export const fetchIntegrations = async (): Promise<IntegrationWithConnections[]> => {
   try {
-    // Fetch the base integrations list from mock data
-    // In the future, this should be replaced with a database call
-    const integrations = [
-      {
-        id: "1",
-        name: "Shopify",
-        icon: "https://cdn.shopify.com/s/files/1/0533/2089/files/shopify-logo-small.png",
-        description: "Connect your Shopify store to sync products, orders, and customers",
-        authType: "oauth",
-        category: "commerce"
-      },
-      {
-        id: "2",
-        name: "Airtable",
-        icon: "https://seeklogo.com/images/A/airtable-logo-216B9AF035-seeklogo.com.png",
-        description: "Use Airtable as a powerful database for your e-commerce data",
-        authType: "api_key",
-        category: "database"
-      },
-      {
-        id: "3",
-        name: "Notion",
-        icon: "https://upload.wikimedia.org/wikipedia/commons/4/45/Notion_app_logo.png",
-        description: "Organize your e-commerce operations in Notion databases and pages",
-        authType: "oauth",
-        category: "productivity"
-      },
-      {
-        id: "4",
-        name: "Klaviyo",
-        icon: "https://cdn.worldvectorlogo.com/logos/klaviyo-1.svg",
-        description: "Sync customer data with Klaviyo for better email marketing",
-        authType: "api_key",
-        category: "marketing"
-      },
-      {
-        id: "5",
-        name: "BigCommerce",
-        icon: "https://cdn.worldvectorlogo.com/logos/bigcommerce-1.svg",
-        description: "Connect your BigCommerce store to sync products and orders",
-        authType: "oauth",
-        category: "commerce"
-      },
-      {
-        id: "6",
-        name: "WooCommerce",
-        icon: "https://cdn.worldvectorlogo.com/logos/woocommerce.svg",
-        description: "Sync your WooCommerce store data to other applications",
-        authType: "oauth",
-        category: "commerce"
-      },
-      {
-        id: "7",
-        name: "Google Sheets",
-        icon: "https://upload.wikimedia.org/wikipedia/commons/3/30/Google_Sheets_logo_%282014-2020%29.svg",
-        description: "Use Google Sheets to store and manage your e-commerce data",
-        authType: "oauth",
-        category: "database"
-      },
-      {
-        id: "8",
-        name: "Mailchimp",
-        icon: "https://cdn.worldvectorlogo.com/logos/mailchimp-freddie-icon.svg",
-        description: "Keep customer data in sync with your Mailchimp lists",
-        authType: "api_key",
-        category: "marketing"
-      },
-    ];
+    // First, fetch all integrations from the database
+    const { data: integrations, error: integrationsError } = await supabase
+      .from('integrations')
+      .select('*');
+
+    if (integrationsError) {
+      console.error("Error fetching integrations:", integrationsError);
+      throw integrationsError;
+    }
 
     // Get the user's connections from the database
-    const { data: connections, error } = await supabase
+    const { data: connections, error: connectionsError } = await supabase
       .from('integration_connections')
       .select('*');
 
-    if (error) {
-      console.error("Error fetching connections:", error);
-      throw error;
+    if (connectionsError) {
+      console.error("Error fetching connections:", connectionsError);
+      throw connectionsError;
     }
 
-    // Map connections to their respective integrations
+    // Map database integrations to our frontend model
     const integrationsWithConnections = integrations.map(integration => {
       const integrationConnections = connections?.filter(conn => conn.integration_id === integration.id) || [];
       
       return {
-        ...integration,
+        id: integration.id,
+        name: integration.name,
+        icon: integration.icon,
+        description: integration.description,
+        authType: integration.auth_type,
+        category: integration.category,
         connections: integrationConnections.map(conn => ({
           id: conn.id,
           name: conn.connection_name,
@@ -165,7 +111,10 @@ export const updateConnectionStatus = async (connectionId: string, status: Conne
   try {
     const { data, error } = await supabase
       .from('integration_connections')
-      .update({ connection_status: status, updated_at: new Date() })
+      .update({ 
+        connection_status: status, 
+        updated_at: new Date().toISOString() // Fix: Convert Date to string
+      })
       .eq('id', connectionId)
       .select();
 

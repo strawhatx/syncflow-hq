@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Plus, Search, Loader2 } from "lucide-react";
 import IntegrationCard, { Connection, ConnectionStatus } from "../components/integrations/IntegrationCard";
 import { Input } from "@/components/ui/input";
