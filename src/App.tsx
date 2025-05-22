@@ -10,6 +10,8 @@ import SyncCreate from "./pages/SyncCreate";
 import SyncDetails from "./pages/SyncDetails";
 import Templates from "./pages/Templates";
 import Integrations from "./pages/Integrations";
+import IntegrationConnect from "./pages/IntegrationConnect";
+import IntegrationDetail from "./pages/IntegrationDetail";
 import Logs from "./pages/Logs";
 import NotFound from "./pages/NotFound";
 import IndexPage from "./pages/Index";
@@ -42,6 +44,8 @@ const App = () => (
               <Route path="syncs/:id" element={<SyncDetails />} />
               <Route path="templates" element={<Templates />} />
               <Route path="integrations" element={<Integrations />} />
+              <Route path="integrations/:id/connect" element={<IntegrationConnect />} />
+              <Route path="integrations/:integrationId/connections/:connectionId" element={<IntegrationDetail />} />
               <Route path="logs" element={<Logs />} />
               <Route path="profile" element={<Profile />} />
             </Route>
