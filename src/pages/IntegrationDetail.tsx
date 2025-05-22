@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, CheckCircle2, Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { useQueryClient } from "@tanstack/react-query";
+import { updateConnectionStatus, deleteConnection } from "@/services/integrationService";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,6 +22,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { ConnectionStatus } from "@/components/integrations/IntegrationCard";
 
 // Mock data
 const getConnectionDetails = (integrationId: string, connectionId: string) => {

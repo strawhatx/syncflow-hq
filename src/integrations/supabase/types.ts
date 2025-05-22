@@ -9,6 +9,42 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      integration_connections: {
+        Row: {
+          api_key: string | null
+          auth_data: Json | null
+          connection_name: string
+          connection_status: string
+          created_at: string
+          id: string
+          integration_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          api_key?: string | null
+          auth_data?: Json | null
+          connection_name: string
+          connection_status: string
+          created_at?: string
+          id?: string
+          integration_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          api_key?: string | null
+          auth_data?: Json | null
+          connection_name?: string
+          connection_status?: string
+          created_at?: string
+          id?: string
+          integration_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

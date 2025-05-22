@@ -6,6 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
+import { createConnection } from "@/services/integrationService";
+import { ConnectionStatus } from "@/components/integrations/IntegrationCard";
+import { useQueryClient } from "@tanstack/react-query";
 
 // Mock integration data
 const getIntegration = (id: string) => {
@@ -33,6 +36,7 @@ const getIntegration = (id: string) => {
 const IntegrationConnect = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [connectionName, setConnectionName] = useState("");
   const [apiKey, setApiKey] = useState("");
   const [isConnecting, setIsConnecting] = useState(false);
@@ -73,8 +77,17 @@ const IntegrationConnect = () => {
     setIsConnecting(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Save connection to database
+      await createConnection(
+        integration.id, 
+        connectionName, 
+        "active" as ConnectionStatus,
+        null, // auth data for OAuth
+        integration.authType === "api_key" ? apiKey : null
+      );
+      
+      // Invalidate integrations query to refresh the data
+      queryClient.invalidateQueries({ queryKey: ['integrations'] });
       
       toast({
         title: "Connection successful",
@@ -83,6 +96,7 @@ const IntegrationConnect = () => {
       
       navigate("/integrations");
     } catch (error) {
+      console.error("Connection error:", error);
       toast({
         title: "Connection failed",
         description: "Unable to connect. Please try again later.",
@@ -104,7 +118,40 @@ const IntegrationConnect = () => {
     }
 
     // In a real app, this would redirect to the OAuth provider
-    window.open(`https://auth.example.com/oauth/${integration.id}?connection_name=${connectionName}`, "_blank");
+    // For now, we'll simulate the OAuth flow
+    setIsConnecting(true);
+    
+    setTimeout(async () => {
+      try {
+        // Save connection to database after OAuth flow completes
+        await createConnection(
+          integration.id, 
+          connectionName, 
+          "active" as ConnectionStatus,
+          { oauth_token: "mock_token" }, // Mock OAuth data
+          null
+        );
+        
+        // Invalidate integrations query to refresh the data
+        queryClient.invalidateQueries({ queryKey: ['integrations'] });
+        
+        toast({
+          title: "OAuth connection successful",
+          description: `${integration.name} connection "${connectionName}" has been added`,
+        });
+        
+        navigate("/integrations");
+      } catch (error) {
+        console.error("OAuth connection error:", error);
+        toast({
+          title: "Connection failed",
+          description: "Unable to complete OAuth connection. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsConnecting(false);
+      }
+    }, 1500);
   };
 
   return (
