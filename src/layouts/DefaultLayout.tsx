@@ -18,7 +18,7 @@ const DefaultLayout = () => {
         <>
           <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
             <SheetContent side="left" className="p-0 w-64">
-              <Sidebar onNavItemClick={() => setSidebarOpen(false)} />
+              <Sidebar />
             </SheetContent>
           </Sheet>
           <div className="flex-1 flex flex-col">

@@ -9,9 +9,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown, Plus } from "lucide-react";
 
-type ConnectionStatus = "active" | "error" | "syncing" | "paused";
+export type ConnectionStatus = "active" | "error" | "syncing" | "paused";
 
-interface Connection {
+export interface Connection {
   id: string;
   name: string;
   status: ConnectionStatus;
