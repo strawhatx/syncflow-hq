@@ -6,9 +6,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import DefaultLayout from "./layouts/DefaultLayout";
 import DashboardPage from "./pages/Dashboard";
-import Flows from "./pages/Flows";
-import FlowCreate from "./pages/FlowCreate";
-import FlowDetails from "./pages/FlowDetails";
+import Syncs from "./pages/Syncs";
+import SyncCreate from "./pages/SyncCreate";
+import SyncDetails from "./pages/SyncDetails";
 import Templates from "./pages/Templates";
 import Integrations from "./pages/Integrations";
 import Logs from "./pages/Logs";
@@ -18,6 +18,7 @@ import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { AuthProvider } from "./contexts/AuthContext";
+import { SidebarLayout } from "./layouts/Index";
 
 const queryClient = new QueryClient();
 
@@ -31,22 +32,20 @@ const App = () => (
           <Routes>
             <Route path="/" element={<IndexPage />} />
             <Route path="/auth" element={<Auth />} />
-            
+
             <Route path="/" element={
-              <ProtectedRoute>
-                <DefaultLayout />
-              </ProtectedRoute>
+              <ProtectedRoute> <SidebarLayout />  </ProtectedRoute>
             }>
               <Route path="dashboard" element={<DashboardPage />} />
-              <Route path="flows" element={<Flows />} />
-              <Route path="flows/create" element={<FlowCreate />} />
-              <Route path="flows/:id" element={<FlowDetails />} />
+              <Route path="syncs" element={<Syncs />} />
+              <Route path="syncs/create" element={<SyncCreate />} />
+              <Route path="syncs/:id" element={<SyncDetails />} />
               <Route path="templates" element={<Templates />} />
               <Route path="integrations" element={<Integrations />} />
               <Route path="logs" element={<Logs />} />
               <Route path="profile" element={<Profile />} />
             </Route>
-            
+
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

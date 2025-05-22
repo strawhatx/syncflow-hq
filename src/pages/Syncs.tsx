@@ -4,8 +4,8 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SyncStatusCard from "@/features/dashboard/components/SyncStatusCard";
 
-// Mock data for flows
-const syncFlows = [
+// Mock data for syncs
+const syncSyncs = [
   {
     title: "Products Sync",
     status: "active" as const,
@@ -13,7 +13,7 @@ const syncFlows = [
     source: { name: "Shopify", icon: "https://cdn.shopify.com/s/files/1/0533/2089/files/shopify-logo-small.png" },
     destination: { name: "Airtable", icon: "https://seeklogo.com/images/A/airtable-logo-216B9AF035-seeklogo.com.png" },
     entityCount: 852,
-    flowId: "1"
+    syncId: "1"
   },
   {
     title: "Orders to Notion",
@@ -22,7 +22,7 @@ const syncFlows = [
     source: { name: "Shopify", icon: "https://cdn.shopify.com/s/files/1/0533/2089/files/shopify-logo-small.png" },
     destination: { name: "Notion", icon: "https://upload.wikimedia.org/wikipedia/commons/4/45/Notion_app_logo.png" },
     entityCount: 1243,
-    flowId: "2"
+    syncId: "2"
   },
   {
     title: "Customer Data",
@@ -31,7 +31,7 @@ const syncFlows = [
     source: { name: "Shopify", icon: "https://cdn.shopify.com/s/files/1/0533/2089/files/shopify-logo-small.png" },
     destination: { name: "Klaviyo", icon: "https://cdn.worldvectorlogo.com/logos/klaviyo-1.svg" },
     entityCount: 3287,
-    flowId: "3"
+    syncId: "3"
   },
   {
     title: "Inventory Update",
@@ -40,20 +40,20 @@ const syncFlows = [
     source: { name: "Airtable", icon: "https://seeklogo.com/images/A/airtable-logo-216B9AF035-seeklogo.com.png" },
     destination: { name: "Shopify", icon: "https://cdn.shopify.com/s/files/1/0533/2089/files/shopify-logo-small.png" },
     entityCount: 547,
-    flowId: "4"
+    syncId: "4"
   },
 ];
 
-const Flows = () => {
+const Syncs = () => {
   return (
     <div>
       <div className="mb-6 md:mb-8">
         <div className="flex justify-between items-center mb-2">
-          <h1 className="text-xl md:text-2xl font-semibold">Sync Flows</h1>
-          <Link to="/flows/create">
+          <h1 className="text-xl md:text-2xl font-semibold">Sync Syncs</h1>
+          <Link to="/syncs/create">
             <Button>
               <Plus size={16} className="mr-2" />
-              Create Flow
+              Create Sync
             </Button>
           </Link>
         </div>
@@ -61,16 +61,16 @@ const Flows = () => {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {syncFlows.map((flow, index) => (
+        {syncSyncs.map((sync, index) => (
           <SyncStatusCard 
             key={index}
-            title={flow.title}
-            status={flow.status}
-            lastSync={flow.lastSync}
-            source={flow.source}
-            destination={flow.destination}
-            entityCount={flow.entityCount}
-            flowId={flow.flowId}
+            title={sync.title}
+            status={sync.status}
+            lastSync={sync.lastSync}
+            source={sync.source}
+            destination={sync.destination}
+            entityCount={sync.entityCount}
+            syncId={sync.syncId}
           />
         ))}
       </div>
@@ -78,4 +78,4 @@ const Flows = () => {
   );
 };
 
-export default Flows;
+export default Syncs;

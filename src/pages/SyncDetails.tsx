@@ -2,8 +2,8 @@
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, RefreshCw, Pause, Play, Trash2, Settings, Clock, AlertTriangle, Check } from "lucide-react";
 
-// Mock data for the flow details
-const flowData = {
+// Mock data for the sync details
+const syncData = {
   id: "1",
   name: "Products Sync",
   description: "Syncs products from Shopify to Airtable",
@@ -58,7 +58,7 @@ const flowData = {
   ]
 };
 
-const FlowDetails = () => {
+const SyncDetails = () => {
   const { id } = useParams<{ id: string }>();
   
   const getStatusBadge = (status: string) => {
@@ -93,9 +93,9 @@ const FlowDetails = () => {
         <div className="breadcrumb">
           <Link to="/dashboard" className="hover:text-foreground">Dashboard</Link>
           <span className="breadcrumb-separator">/</span>
-          <Link to="/flows" className="hover:text-foreground">Flows</Link>
+          <Link to="/syncs" className="hover:text-foreground">Syncs</Link>
           <span className="breadcrumb-separator">/</span>
-          <span className="text-foreground">{flowData.name}</span>
+          <span className="text-foreground">{syncData.name}</span>
         </div>
       </div>
       
@@ -104,19 +104,19 @@ const FlowDetails = () => {
           <div className="bg-white rounded-xl border border-border p-6 mb-6">
             <div className="flex justify-between items-center mb-6">
               <div>
-                <h1 className="text-2xl font-semibold">{flowData.name}</h1>
-                <p className="text-muted-foreground">{flowData.description}</p>
+                <h1 className="text-2xl font-semibold">{syncData.name}</h1>
+                <p className="text-muted-foreground">{syncData.description}</p>
               </div>
-              {getStatusBadge(flowData.status)}
+              {getStatusBadge(syncData.status)}
             </div>
             
             <div className="flex items-center mb-6">
               <div className="flex-shrink-0 h-12 w-12 rounded bg-gray-100 flex items-center justify-center">
-                <img src={flowData.source.icon} alt={flowData.source.name} className="h-8 w-8" />
+                <img src={syncData.source.icon} alt={syncData.source.name} className="h-8 w-8" />
               </div>
               
               <div className="mx-4 text-muted-foreground">
-                {flowData.direction === "one-way" ? (
+                {syncData.direction === "one-way" ? (
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
@@ -128,22 +128,22 @@ const FlowDetails = () => {
               </div>
               
               <div className="flex-shrink-0 h-12 w-12 rounded bg-gray-100 flex items-center justify-center">
-                <img src={flowData.destination.icon} alt={flowData.destination.name} className="h-8 w-8" />
+                <img src={syncData.destination.icon} alt={syncData.destination.name} className="h-8 w-8" />
               </div>
               
               <div className="ml-4">
                 <p className="text-sm text-muted-foreground">
-                  {flowData.direction === "one-way" 
-                    ? `One-way: ${flowData.source.name} → ${flowData.destination.name}`
-                    : `Two-way: ${flowData.source.name} ↔ ${flowData.destination.name}`
+                  {syncData.direction === "one-way" 
+                    ? `One-way: ${syncData.source.name} → ${syncData.destination.name}`
+                    : `Two-way: ${syncData.source.name} ↔ ${syncData.destination.name}`
                   }
                 </p>
                 <p className="text-sm">
-                  <span className="text-muted-foreground">Entity:</span> {flowData.entityType}
+                  <span className="text-muted-foreground">Entity:</span> {syncData.entityType}
                   <span className="mx-2">•</span>
-                  <span className="text-muted-foreground">Count:</span> {flowData.entityCount}
+                  <span className="text-muted-foreground">Count:</span> {syncData.entityCount}
                   <span className="mx-2">•</span>
-                  <span className="text-muted-foreground">Last synced:</span> {flowData.lastSynced}
+                  <span className="text-muted-foreground">Last synced:</span> {syncData.lastSynced}
                 </p>
               </div>
             </div>
@@ -180,15 +180,15 @@ const FlowDetails = () => {
               <table className="min-w-full divide-y divide-border">
                 <thead className="bg-secondary/50">
                   <tr>
-                    <th scope="col" className="table-header">{flowData.source.name} Field</th>
-                    <th scope="col" className="table-header">{flowData.source.name} Type</th>
+                    <th scope="col" className="table-header">{syncData.source.name} Field</th>
+                    <th scope="col" className="table-header">{syncData.source.name} Type</th>
                     <th scope="col" className="table-header"></th>
-                    <th scope="col" className="table-header">{flowData.destination.name} Field</th>
-                    <th scope="col" className="table-header">{flowData.destination.name} Type</th>
+                    <th scope="col" className="table-header">{syncData.destination.name} Field</th>
+                    <th scope="col" className="table-header">{syncData.destination.name} Type</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border bg-background">
-                  {flowData.fieldMappings.map((mapping, index) => (
+                  {syncData.fieldMappings.map((mapping, index) => (
                     <tr key={index} className="hover:bg-secondary/30 transition-colors">
                       <td className="table-cell font-medium">{mapping.sourceField}</td>
                       <td className="table-cell text-muted-foreground">{mapping.sourceType}</td>
@@ -210,7 +210,7 @@ const FlowDetails = () => {
             </div>
             
             <div className="divide-y divide-border">
-              {flowData.recentSyncs.map((sync) => (
+              {syncData.recentSyncs.map((sync) => (
                 <div key={sync.id} className="px-6 py-3 hover:bg-secondary/30 transition-colors">
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center">
@@ -247,11 +247,11 @@ const FlowDetails = () => {
           <div className="bg-white rounded-xl border border-border overflow-hidden">
             <div className="px-6 py-4 border-b border-border flex justify-between items-center">
               <h3 className="font-medium">Conflicts</h3>
-              <span className="badge badge-error">{flowData.conflicts.length}</span>
+              <span className="badge badge-error">{syncData.conflicts.length}</span>
             </div>
             
             <div className="divide-y divide-border">
-              {flowData.conflicts.map((conflict) => (
+              {syncData.conflicts.map((conflict) => (
                 <div key={conflict.id} className="px-6 py-3 hover:bg-secondary/30 transition-colors">
                   <div className="flex justify-between mb-1">
                     <span className="text-sm font-medium">{conflict.entityName}</span>
@@ -295,4 +295,4 @@ const FlowDetails = () => {
   );
 };
 
-export default FlowDetails;
+export default SyncDetails;

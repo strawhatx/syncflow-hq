@@ -7,7 +7,7 @@ const allLogs = [
   {
     id: "1",
     timestamp: "2 min ago",
-    flow: "Products Sync",
+    sync: "Products Sync",
     action: "Entity Updated",
     status: "success" as const,
     message: "Updated product 'Blue T-Shirt'",
@@ -15,7 +15,7 @@ const allLogs = [
   {
     id: "2",
     timestamp: "15 min ago",
-    flow: "Orders to Notion",
+    sync: "Orders to Notion",
     action: "Entity Created",
     status: "success" as const,
     message: "Created order #1234",
@@ -23,7 +23,7 @@ const allLogs = [
   {
     id: "3",
     timestamp: "1 hr ago",
-    flow: "Customer Data",
+    sync: "Customer Data",
     action: "Sync Failed",
     status: "error" as const,
     message: "API connection error - authentication failed",
@@ -31,7 +31,7 @@ const allLogs = [
   {
     id: "4",
     timestamp: "3 hrs ago",
-    flow: "Inventory Update",
+    sync: "Inventory Update",
     action: "Entity Skipped",
     status: "warning" as const,
     message: "Skipped product 'Red Hoodie' - validation failed",
@@ -39,7 +39,7 @@ const allLogs = [
   {
     id: "5",
     timestamp: "5 hrs ago",
-    flow: "Products Sync",
+    sync: "Products Sync",
     action: "Entity Updated",
     status: "success" as const,
     message: "Updated product 'Black Jeans'",
@@ -47,7 +47,7 @@ const allLogs = [
   {
     id: "6",
     timestamp: "6 hrs ago",
-    flow: "Orders to Notion",
+    sync: "Orders to Notion",
     action: "Sync Completed",
     status: "success" as const,
     message: "Sync completed successfully - 42 entities processed",
@@ -55,7 +55,7 @@ const allLogs = [
   {
     id: "7",
     timestamp: "1 day ago",
-    flow: "Customer Data",
+    sync: "Customer Data",
     action: "Sync Started",
     status: "pending" as const,
     message: "Starting scheduled sync",
@@ -63,7 +63,7 @@ const allLogs = [
   {
     id: "8",
     timestamp: "1 day ago",
-    flow: "Customer Data",
+    sync: "Customer Data",
     action: "Rate Limited",
     status: "warning" as const,
     message: "API rate limit reached - pausing sync",
@@ -71,7 +71,7 @@ const allLogs = [
   {
     id: "9",
     timestamp: "2 days ago",
-    flow: "Products Sync",
+    sync: "Products Sync",
     action: "Conflict Detected",
     status: "warning" as const,
     message: "Conflict detected for product 'Green Sweater'",
@@ -79,7 +79,7 @@ const allLogs = [
   {
     id: "10",
     timestamp: "2 days ago",
-    flow: "Orders to Notion",
+    sync: "Orders to Notion",
     action: "Sync Completed",
     status: "success" as const,
     message: "Sync completed successfully - 37 entities processed",

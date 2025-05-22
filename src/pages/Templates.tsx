@@ -123,7 +123,7 @@ const Templates = () => {
     <div>
       <div className="mb-8">
         <h1 className="text-2xl font-semibold mb-2">Templates</h1>
-        <p className="text-muted-foreground">Pre-built flows to connect your e-commerce tools</p>
+        <p className="text-muted-foreground">Pre-built syncs to connect your e-commerce tools</p>
       </div>
       
       <div className="flex flex-col md:flex-row gap-6 mb-8">

@@ -5,7 +5,7 @@ interface LogItem {
   id: string;
   timestamp: string;
   action: string;
-  flow: string;
+  sync: string;
   status: "success" | "error" | "warning";
   message: string;
 }
@@ -29,7 +29,7 @@ const SyncActivityLog = ({ logs }: SyncActivityLogProps) => {
   };
 
   return (
-    <div className="bg-white rounded-xl border border-border overflow-hidden">
+    <div className="bg-white rounded-xl border border-border oversync-hidden">
       <div className="px-6 py-4 border-b border-border">
         <h3 className="font-medium">Recent Sync Activity</h3>
       </div>
@@ -47,7 +47,7 @@ const SyncActivityLog = ({ logs }: SyncActivityLogProps) => {
                   <span className="text-xs text-muted-foreground">{log.timestamp}</span>
                 </div>
                 <p className="text-sm text-muted-foreground">{log.message}</p>
-                <div className="text-xs text-muted-foreground mt-1">Flow: {log.flow}</div>
+                <div className="text-xs text-muted-foreground mt-1">Sync: {log.sync}</div>
               </div>
               <ChevronRight size={16} className="text-muted-foreground ml-2" />
             </div>

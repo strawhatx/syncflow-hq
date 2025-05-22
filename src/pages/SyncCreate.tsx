@@ -1,8 +1,8 @@
 
 import { useState } from "react";
 import { ArrowLeft } from "lucide-react";
-import StepperHeader from "../components/flows/StepperHeader";
-import FieldMapperItem from "../components/flows/FieldMapperItem";
+import StepperHeader from "../components/syncs/StepperHeader";
+import FieldMapperItem from "../components/syncs/FieldMapperItem";
 
 const steps = [
   { id: 0, title: "Source", description: "Select a data source" },
@@ -59,16 +59,35 @@ const integrations = [
     icon: "https://cdn.worldvectorlogo.com/logos/klaviyo-1.svg",
     description: "Customer data platform"
   },
+  { 
+    name: "Google Sheets", 
+    icon: "https://cdn.worldvectorlogo.com/logos/klaviyo-1.svg",
+    description: "Customer data spreadsheets"
+  },
+  { 
+    name: "Microsoft Excel", 
+    icon: "https://cdn.worldvectorlogo.com/logos/klaviyo-1.svg",
+    description: "Customer data spreadsheets"
+  },
+
 ];
 
 const entityTypes = [
-  { id: "products", name: "Products", description: "Your store's products, variants, and inventory" },
-  { id: "orders", name: "Orders", description: "Customer orders and line items" },
-  { id: "customers", name: "Customers", description: "Customer information and attributes" },
-  { id: "collections", name: "Collections", description: "Product collections and categories" },
+  { id: 'products', name: 'Products', description: 'Your stores products, variants, and inventory' },
+  { id: 'collections', name: 'Collections', description: 'Product collections and categories' },
+  { id: 'orders', name: 'Orders', description: 'Customer orders' },
+  { id: 'order-lineitems', name: 'Order Lineitems', description: 'Customer order line items' },
+  { id: 'customers', name: 'Customers', description: 'Customer information' },
+  { id: 'discounts', name: 'Discounts', description: 'Product discounts/coupons' },
+  { id: 'suppliers', name: 'Suppliers', description: 'Supplier information' },
+  { id: 'fulfillment', name: 'Fulfillment', description: 'Order fulfillment details' },
+  { id: 'Abandoned Carts', name: 'Abandoned', description: 'Abandon cart information' },
+  { id: 'payments', name: 'Payments', description: 'Payment processing details' },
+  { id: 'custom', name: 'Custom', description: 'Custom entity type' }
+
 ];
 
-const FlowCreate = () => {
+const SyncCreate = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedSource, setSelectedSource] = useState<string | null>(null);
   const [selectedDestination, setSelectedDestination] = useState<string | null>(null);
@@ -220,7 +239,7 @@ const FlowCreate = () => {
                 </div>
                 <h4 className="font-medium text-center mb-2">One-way Sync</h4>
                 <p className="text-sm text-muted-foreground text-center">
-                  Data flows from source to destination only
+                  Data syncs from source to destination only
                 </p>
               </div>
               
@@ -241,7 +260,7 @@ const FlowCreate = () => {
                 </div>
                 <h4 className="font-medium text-center mb-2">Two-way Sync</h4>
                 <p className="text-sm text-muted-foreground text-center">
-                  Data flows in both directions with conflict resolution
+                  Data syncs in both directions with conflict resolution
                 </p>
               </div>
             </div>
@@ -303,13 +322,13 @@ const FlowCreate = () => {
         
         <button 
           className="px-4 py-2 rounded-md bg-primary text-white hover:bg-primary/90 transition-colors"
-          onClick={currentStep === steps.length - 1 ? () => alert("Flow created!") : handleNext}
+          onClick={currentStep === steps.length - 1 ? () => alert("Sync created!") : handleNext}
         >
-          {currentStep === steps.length - 1 ? "Create Flow" : "Continue"}
+          {currentStep === steps.length - 1 ? "Create Sync" : "Continue"}
         </button>
       </div>
     </div>
   );
 };
 
-export default FlowCreate;
+export default SyncCreate;

@@ -14,7 +14,7 @@ interface SyncStatusCardProps {
     icon: string;
   };
   entityCount: number;
-  flowId: string;
+  syncId: string;
 }
 
 const SyncStatusCard = ({
@@ -24,7 +24,7 @@ const SyncStatusCard = ({
   source,
   destination,
   entityCount,
-  flowId
+  syncId
 }: SyncStatusCardProps) => {
   const getStatusStyles = () => {
     switch (status) {
@@ -96,7 +96,7 @@ const SyncStatusCard = ({
       </div>
       
       <div className="mt-4 pt-4 border-t border-border">
-        <a href={`/flows/${flowId}`} className="text-primary text-sm hover:underline">View details</a>
+        <a href={`/syncs/${syncId}`} className="text-primary text-sm hover:underline">View details</a>
       </div>
     </div>
   );

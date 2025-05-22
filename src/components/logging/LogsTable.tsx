@@ -6,7 +6,7 @@ type LogStatus = "success" | "warning" | "error" | "pending";
 interface Log {
   id: string;
   timestamp: string;
-  flow: string;
+  sync: string;
   action: string;
   status: LogStatus;
   message: string;
@@ -38,7 +38,7 @@ const LogsTable: React.FC<LogsTableProps> = ({ logs }) => {
         <TableHeader>
           <TableRow>
             <TableHead>Time</TableHead>
-            <TableHead>Flow</TableHead>
+            <TableHead>Sync</TableHead>
             <TableHead>Action</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Message</TableHead>
@@ -51,7 +51,7 @@ const LogsTable: React.FC<LogsTableProps> = ({ logs }) => {
                 <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
                   {log.timestamp}
                 </TableCell>
-                <TableCell className="font-medium">{log.flow}</TableCell>
+                <TableCell className="font-medium">{log.sync}</TableCell>
                 <TableCell>{log.action}</TableCell>
                 <TableCell>
                   <span

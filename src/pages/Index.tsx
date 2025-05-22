@@ -13,7 +13,7 @@ const IndexPage = () => {
           Welcome to SyncStack
         </h1>
         <p className="text-xl md:text-2xl text-muted-foreground mb-8">
-          Connect and automate your data flows
+          Connect and automate your data syncs
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           {user ? (
