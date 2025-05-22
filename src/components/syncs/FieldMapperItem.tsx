@@ -1,4 +1,7 @@
 
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ArrowRight } from "lucide-react";
+
 interface FieldMapperItemProps {
   sourceField: {
     name: string;
@@ -9,20 +12,24 @@ interface FieldMapperItemProps {
     type: string;
   };
   mapped: boolean;
+  onSelect?: (value: string) => void;
 }
 
-const FieldMapperItem = ({ sourceField, destinationField, mapped }: FieldMapperItemProps) => {
+const FieldMapperItem = ({ 
+  sourceField, 
+  destinationField, 
+  mapped,
+  onSelect
+}: FieldMapperItemProps) => {
   return (
-    <div className={`flex items-center p-3 rounded-lg ${mapped ? "bg-accent/70" : "bg-white border border-dashed border-border"}`}>
+    <div className={`flex items-center p-3 rounded-lg ${mapped ? "bg-accent/70" : "bg-card border border-dashed border-border"}`}>
       <div className="flex-1">
         <div className="text-sm font-medium">{sourceField.name}</div>
         <div className="text-xs text-muted-foreground">{sourceField.type}</div>
       </div>
       
       <div className="mx-4 text-muted-foreground">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
+        <ArrowRight size={20} />
       </div>
       
       <div className="flex-1">
@@ -32,11 +39,18 @@ const FieldMapperItem = ({ sourceField, destinationField, mapped }: FieldMapperI
             <div className="text-xs text-muted-foreground">{destinationField.type}</div>
           </>
         ) : (
-          <select className="w-full text-sm border border-input rounded-md px-3 py-1.5 bg-background">
-            <option value="">Select field...</option>
-            <option value={destinationField.name}>{destinationField.name}</option>
-            <option value="custom">Custom value</option>
-          </select>
+          <Select onValueChange={onSelect}>
+            <SelectTrigger className="w-full text-sm">
+              <SelectValue placeholder="Select field..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Available Fields</SelectLabel>
+                <SelectItem value={destinationField.name}>{destinationField.name}</SelectItem>
+                <SelectItem value="custom">Custom value</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
         )}
       </div>
     </div>

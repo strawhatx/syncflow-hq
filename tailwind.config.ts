@@ -53,6 +53,14 @@ export default {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))'
         },
+        sidebar: {
+          DEFAULT: 'hsl(var(--background))',
+          foreground: 'hsl(var(--foreground))',
+          border: 'hsl(var(--border))',
+          accent: 'hsl(var(--accent))',
+          'accent-foreground': 'hsl(var(--accent-foreground))',
+          ring: 'hsl(var(--ring))'
+        }
       },
       borderRadius: {
         lg: 'var(--radius)',
@@ -66,6 +74,14 @@ export default {
         },
         'accordion-up': {
           from: { height: 'var(--radix-accordion-content-height)' },
+          to: { height: '0' }
+        },
+        'collapse-down': {
+          from: { height: '0' },
+          to: { height: 'var(--radix-collapsible-content-height)' }
+        },
+        'collapse-up': {
+          from: { height: 'var(--radix-collapsible-content-height)' },
           to: { height: '0' }
         },
         'fade-in': {
@@ -92,6 +108,8 @@ export default {
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'collapse-down': 'collapse-down var(--animation-duration) ease-out',
+        'collapse-up': 'collapse-up var(--animation-duration) ease-out',
         'fade-in': 'fade-in 0.3s ease-out',
         'fade-out': 'fade-out 0.3s ease-out',
         'slide-in': 'slide-in 0.3s ease-out',
