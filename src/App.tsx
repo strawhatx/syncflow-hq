@@ -13,11 +13,12 @@ import Integrations from "./pages/Integrations";
 import Logs from "./pages/Logs";
 import NotFound from "./pages/NotFound";
 import IndexPage from "./pages/Index";
-import Auth from "./pages/Auth";
+import AuthPage from "./pages/Auth";
 import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { AuthProvider } from "./contexts/AuthContext";
 import { SidebarLayout } from "./layouts/Index";
+
 
 const queryClient = new QueryClient();
 
@@ -30,7 +31,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<IndexPage />} />
-            <Route path="/auth" element={<Auth />} />
+            <Route path="/auth" element={<AuthPage />} />
 
             <Route path="/" element={
               <ProtectedRoute> <SidebarLayout />  </ProtectedRoute>
