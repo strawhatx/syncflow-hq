@@ -1,5 +1,3 @@
-
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,8 +8,8 @@ import Syncs from "./pages/Syncs";
 import SyncCreate from "./pages/SyncCreate";
 import SyncDetails from "./pages/SyncDetails";
 import Templates from "./pages/Templates";
-import Integrations from "./pages/Integrations";
-import IntegrationConnect from "./pages/IntegrationConnect";
+import IntegrationsPage from "./pages/Integrations";
+import IntegrationConnectPage from "./pages/IntegrationConnect";
 import IntegrationDetail from "./pages/IntegrationDetail";
 import OAuthCallback from "./pages/OAuthCallback";
 import Logs from "./pages/Logs";
@@ -46,8 +44,8 @@ const App = () => (
               <Route path="syncs/create" element={<SyncCreate />} />
               <Route path="syncs/:id" element={<SyncDetails />} />
               <Route path="templates" element={<Templates />} />
-              <Route path="integrations" element={<Integrations />} />
-              <Route path="integrations/:id/connect" element={<IntegrationConnect />} />
+              <Route path="integrations" element={<IntegrationsPage />} />
+              <Route path="integrations/:id/connect" element={<IntegrationConnectPage />} />
               <Route path="integrations/:integrationId/connections/:connectionId" element={<IntegrationDetail />} />
               <Route path="logs" element={<Logs />} />
               <Route path="profile" element={<Profile />} />

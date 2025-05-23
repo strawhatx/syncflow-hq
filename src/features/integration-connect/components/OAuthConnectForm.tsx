@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -6,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
-import { generateOAuthUrl } from "@/services/integrationService";
+import { initiateOAuth } from "@/services/oauthService";
 import { Integration } from "@/services/integrationService";
 
 interface OAuthConnectFormProps {
@@ -26,7 +25,7 @@ const OAuthConnectForm = ({
 }: OAuthConnectFormProps) => {
   const [shopDomain, setShopDomain] = useState("");
 
-  const handleOAuthConnect = () => {
+  const handleOAuthConnect = async () => {
     if (!connectionName) {
       toast({
         title: "Error",
@@ -49,35 +48,26 @@ const OAuthConnectForm = ({
     try {
       setIsConnecting(true);
       
-      // Encode connection name in the state parameter to retrieve it in the callback
-      const stateParam = btoa(JSON.stringify({
-        connectionName,
-        shopName: shopDomain
-      }));
+      // Prepare OAuth parameters
+      const params: Record<string, string> = {};
+      if (integration.name.toLowerCase() === "shopify") {
+        params.shop = shopDomain;
+      }
       
-      // In a real implementation, these would be environment variables
-      // For demo purposes, we're using placeholders
-      const clientId = "your-client-id"; // Would be retrieved from environment variables
-      const redirectUri = window.location.origin + window.location.pathname;
-      
-      // Generate OAuth URL
-      const oauthUrl = generateOAuthUrl(
+      // Initiate OAuth flow
+      const oauthUrl = initiateOAuth(
         integration.name.toLowerCase(),
-        integration.name.toLowerCase() === "shopify" ? shopDomain : null,
-        {
-          clientId,
-          redirectUri,
-          state: stateParam
-        }
+        params,
+        connectionName
       );
       
       // Redirect to OAuth provider
       window.location.href = oauthUrl;
     } catch (error) {
-      console.error("Error generating OAuth URL:", error);
+      console.error("Error initiating OAuth flow:", error);
       toast({
         title: "Error",
-        description: "Failed to start OAuth process. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to start OAuth process. Please try again.",
         variant: "destructive",
       });
       setIsConnecting(false);

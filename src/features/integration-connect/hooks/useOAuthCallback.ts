@@ -1,9 +1,8 @@
-
 import { useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { handleOAuthCallback } from "@/services/integrationService";
+import { processOAuthCallback } from "@/services/oauthService";
 import { Integration } from "@/services/integrationService";
 
 export function useOAuthCallback(
@@ -26,19 +25,14 @@ export function useOAuthCallback(
         try {
           setIsConnecting(true);
           
-          // Parse state which contains the connection name
-          const stateData = JSON.parse(atob(state));
-          
-          await handleOAuthCallback(
-            integration.name.toLowerCase(),
-            code,
-            stateData.shopName,
-            null,
-            stateData.connectionName
-          );
+          // Process the OAuth callback
+          await processOAuthCallback(code, state);
           
           // Invalidate integrations query to refresh the data
           queryClient.invalidateQueries({ queryKey: ['integrations'] });
+          
+          // Get connection name from state
+          const stateData = JSON.parse(atob(state));
           
           toast({
             title: "Connection successful",
@@ -50,7 +44,7 @@ export function useOAuthCallback(
           console.error("Error in OAuth callback:", err);
           toast({
             title: "Connection failed",
-            description: "Unable to complete OAuth connection. Please try again.",
+            description: err instanceof Error ? err.message : "Unable to complete OAuth connection. Please try again.",
             variant: "destructive",
           });
         } finally {

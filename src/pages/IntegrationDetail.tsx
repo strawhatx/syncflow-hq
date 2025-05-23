@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { useQueryClient } from "@tanstack/react-query";
-import { updateConnectionStatus, deleteConnection } from "@/services/integrationService";
+import { updateConnectionStatus, deleteConnection } from "@/features/integrations/services/integrationService";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,7 +22,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { ConnectionStatus } from "@/components/integrations/IntegrationCard";
+import { ConnectionStatus } from "@/features/integrations/components/IntegrationCard";
 
 // Mock data
 const getConnectionDetails = (integrationId: string, connectionId: string) => {
