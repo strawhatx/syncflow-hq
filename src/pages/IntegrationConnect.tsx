@@ -1,50 +1,98 @@
 
-import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
-import { createConnection } from "@/services/integrationService";
+import { 
+  createConnection, 
+  fetchIntegrationById, 
+  generateOAuthUrl, 
+  handleOAuthCallback 
+} from "@/services/integrationService";
 import { ConnectionStatus } from "@/components/integrations/IntegrationCard";
 import { useQueryClient } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 
 const IntegrationConnect = () => {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  
   const [connectionName, setConnectionName] = useState("");
   const [apiKey, setApiKey] = useState("");
+  const [shopDomain, setShopDomain] = useState("");
   const [isConnecting, setIsConnecting] = useState(false);
   
+  // Check if we're handling an OAuth callback
+  const code = searchParams.get('code');
+  const state = searchParams.get('state');
+  const error = searchParams.get('error');
+  
   // Fetch the integration from Supabase
-  const { data: integration, isLoading, error } = useQuery({
+  const { data: integration, isLoading, error: fetchError } = useQuery({
     queryKey: ['integration', id],
     queryFn: async () => {
       if (!id) return null;
-      
-      const { data, error } = await supabase
-        .from('integrations')
-        .select('*')
-        .eq('id', id)
-        .single();
-      
-      if (error) throw error;
-      
-      return {
-        id: data.id,
-        name: data.name,
-        icon: data.icon,
-        description: data.description,
-        authType: data.auth_type
-      };
+      return await fetchIntegrationById(id);
     }
   });
+  
+  // Handle OAuth callback
+  useEffect(() => {
+    if (code && state && integration) {
+      const handleCallback = async () => {
+        try {
+          setIsConnecting(true);
+          
+          // Parse state which contains the connection name
+          const stateData = JSON.parse(atob(state));
+          
+          await handleOAuthCallback(
+            integration.name.toLowerCase(),
+            code,
+            stateData.shopName,
+            null,
+            stateData.connectionName
+          );
+          
+          // Invalidate integrations query to refresh the data
+          queryClient.invalidateQueries({ queryKey: ['integrations'] });
+          
+          toast({
+            title: "Connection successful",
+            description: `${integration.name} connection "${stateData.connectionName}" has been added`,
+          });
+          
+          navigate("/integrations");
+        } catch (err) {
+          console.error("Error in OAuth callback:", err);
+          toast({
+            title: "Connection failed",
+            description: "Unable to complete OAuth connection. Please try again.",
+            variant: "destructive",
+          });
+        } finally {
+          setIsConnecting(false);
+        }
+      };
+      
+      handleCallback();
+    }
+    
+    if (error) {
+      toast({
+        title: "Authorization failed",
+        description: `Error: ${error}`,
+        variant: "destructive",
+      });
+    }
+  }, [code, state, error, integration, queryClient, navigate]);
   
   if (isLoading) {
     return (
@@ -54,7 +102,7 @@ const IntegrationConnect = () => {
     );
   }
   
-  if (error || !integration) {
+  if (fetchError || !integration) {
     return (
       <div className="py-8 text-center">
         <h2 className="text-2xl font-semibold mb-2">Integration not found</h2>
@@ -128,41 +176,52 @@ const IntegrationConnect = () => {
       return;
     }
 
-    // In a real app, this would redirect to the OAuth provider
-    // For now, we'll simulate the OAuth flow
-    setIsConnecting(true);
-    
-    setTimeout(async () => {
-      try {
-        // Save connection to database after OAuth flow completes
-        await createConnection(
-          integration.id, 
-          connectionName, 
-          "active" as ConnectionStatus,
-          { oauth_token: "mock_token" }, // Mock OAuth data
-          null
-        );
-        
-        // Invalidate integrations query to refresh the data
-        queryClient.invalidateQueries({ queryKey: ['integrations'] });
-        
-        toast({
-          title: "OAuth connection successful",
-          description: `${integration.name} connection "${connectionName}" has been added`,
-        });
-        
-        navigate("/integrations");
-      } catch (error) {
-        console.error("OAuth connection error:", error);
-        toast({
-          title: "Connection failed",
-          description: "Unable to complete OAuth connection. Please try again.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsConnecting(false);
-      }
-    }, 1500);
+    // For Shopify, make sure we have a shop domain
+    if (integration.name.toLowerCase() === "shopify" && !shopDomain) {
+      toast({
+        title: "Error",
+        description: "Please provide your Shopify store URL",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setIsConnecting(true);
+      
+      // Encode connection name in the state parameter to retrieve it in the callback
+      const stateParam = btoa(JSON.stringify({
+        connectionName,
+        shopName: shopDomain
+      }));
+      
+      // In a real implementation, these would be environment variables
+      // For demo purposes, we're using placeholders
+      const clientId = "your-client-id"; // Would be retrieved from environment variables
+      const redirectUri = window.location.origin + window.location.pathname;
+      
+      // Generate OAuth URL
+      const oauthUrl = generateOAuthUrl(
+        integration.name.toLowerCase(),
+        integration.name.toLowerCase() === "shopify" ? shopDomain : null,
+        {
+          clientId,
+          redirectUri,
+          state: stateParam
+        }
+      );
+      
+      // Redirect to OAuth provider
+      window.location.href = oauthUrl;
+    } catch (error) {
+      console.error("Error generating OAuth URL:", error);
+      toast({
+        title: "Error",
+        description: "Failed to start OAuth process. Please try again.",
+        variant: "destructive",
+      });
+      setIsConnecting(false);
+    }
   };
 
   return (
@@ -230,12 +289,27 @@ const IntegrationConnect = () => {
                   </p>
                 </div>
               )}
+
+              {integration.authType === "oauth" && integration.name.toLowerCase() === "shopify" && (
+                <div className="space-y-2">
+                  <Label htmlFor="shop-domain">Shopify Store URL</Label>
+                  <Input
+                    id="shop-domain"
+                    placeholder="your-store.myshopify.com"
+                    value={shopDomain}
+                    onChange={(e) => setShopDomain(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Enter your Shopify store URL (e.g., your-store.myshopify.com)
+                  </p>
+                </div>
+              )}
             </CardContent>
             <CardFooter className="flex justify-end">
               {integration.authType === "oauth" ? (
                 <Button
                   onClick={handleOAuthConnect}
-                  disabled={isConnecting || !connectionName}
+                  disabled={isConnecting || !connectionName || (integration.name.toLowerCase() === "shopify" && !shopDomain)}
                 >
                   {isConnecting ? (
                     <>
@@ -272,19 +346,40 @@ const IntegrationConnect = () => {
               <CardDescription>Tips for setting up your connection</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 text-sm">
-              <div>
-                <h3 className="font-medium mb-1">Where to find your credentials</h3>
-                <p className="text-muted-foreground">
-                  Log in to your {integration.name} account and navigate to the API settings page. 
-                  You can generate a new API key there.
-                </p>
-              </div>
-              <div>
-                <h3 className="font-medium mb-1">Permissions needed</h3>
-                <p className="text-muted-foreground">
-                  Make sure your API key has permissions for reading and writing to the resources you want to sync.
-                </p>
-              </div>
+              {integration.authType === "oauth" ? (
+                <>
+                  <div>
+                    <h3 className="font-medium mb-1">OAuth Setup</h3>
+                    <p className="text-muted-foreground">
+                      You'll be redirected to {integration.name} to authorize access. 
+                      You'll need to login and approve the permissions.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="font-medium mb-1">Required Permissions</h3>
+                    <p className="text-muted-foreground">
+                      We'll request permissions to access your {integration.name.toLowerCase() === "shopify" ? "products and orders" : "data"} 
+                      to enable synchronization with other services.
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <h3 className="font-medium mb-1">Where to find your credentials</h3>
+                    <p className="text-muted-foreground">
+                      Log in to your {integration.name} account and navigate to the API settings page. 
+                      You can generate a new API key there.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="font-medium mb-1">Permissions needed</h3>
+                    <p className="text-muted-foreground">
+                      Make sure your API key has permissions for reading and writing to the resources you want to sync.
+                    </p>
+                  </div>
+                </>
+              )}
               <div>
                 <h3 className="font-medium mb-1">Need help?</h3>
                 <p className="text-muted-foreground">

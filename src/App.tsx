@@ -1,4 +1,5 @@
 
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,6 +13,7 @@ import Templates from "./pages/Templates";
 import Integrations from "./pages/Integrations";
 import IntegrationConnect from "./pages/IntegrationConnect";
 import IntegrationDetail from "./pages/IntegrationDetail";
+import OAuthCallback from "./pages/OAuthCallback";
 import Logs from "./pages/Logs";
 import NotFound from "./pages/NotFound";
 import IndexPage from "./pages/Index";
@@ -34,6 +36,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<IndexPage />} />
             <Route path="/auth" element={<AuthPage />} />
+            <Route path="/api/oauth-callback" element={<OAuthCallback />} />
 
             <Route path="/" element={
               <ProtectedRoute> <SidebarLayout />  </ProtectedRoute>
@@ -59,3 +62,4 @@ const App = () => (
 );
 
 export default App;
+
