@@ -18,7 +18,6 @@ INSERT INTO public.integrations (name, description, icon, auth_type, category) V
 ('Airtable', 'Use Airtable as a powerful database for your e-commerce data', 'https://seeklogo.com/images/A/airtable-logo-216B9AF035-seeklogo.com.png', 'api_key', 'database'),
 ('Notion', 'Organize your e-commerce operations in Notion databases and pages', 'https://upload.wikimedia.org/wikipedia/commons/4/45/Notion_app_logo.png', 'oauth', 'productivity'),
 ('Klaviyo', 'Sync customer data with Klaviyo for better email marketing', 'https://cdn.worldvectorlogo.com/logos/klaviyo-1.svg', 'api_key', 'marketing'),
-('BigCommerce', 'Connect your BigCommerce store to sync products and orders', 'https://cdn.worldvectorlogo.com/logos/bigcommerce-1.svg', 'oauth', 'commerce'),
 ('WooCommerce', 'Sync your WooCommerce store data to other applications', 'https://cdn.worldvectorlogo.com/logos/woocommerce.svg', 'oauth', 'commerce'),
 ('Google Sheets', 'Use Google Sheets to store and manage your e-commerce data', 'https://upload.wikimedia.org/wikipedia/commons/3/30/Google_Sheets_logo_%282014-2020%29.svg', 'oauth', 'database'),
 ('Mailchimp', 'Keep customer data in sync with your Mailchimp lists', 'https://cdn.worldvectorlogo.com/logos/mailchimp-freddie-icon.svg', 'api_key', 'marketing');

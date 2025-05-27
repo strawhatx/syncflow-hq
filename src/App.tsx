@@ -34,7 +34,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<IndexPage />} />
             <Route path="/auth" element={<AuthPage />} />
-            <Route path="/api/oauth-callback" element={<OAuthCallback />} />
+            <Route path="/:provider/callback" element={<OAuthCallback />} />
 
             <Route path="/" element={
               <ProtectedRoute> <SidebarLayout />  </ProtectedRoute>

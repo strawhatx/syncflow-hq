@@ -35,14 +35,26 @@ const OAuthConnectForm = ({
       return;
     }
 
-    // For Shopify, make sure we have a shop domain
-    if (integration.name.toLowerCase() === "shopify" && !shopDomain) {
-      toast({
-        title: "Error",
-        description: "Please provide your Shopify store URL",
-        variant: "destructive",
-      });
-      return;
+    // For Shopify, validate the shop domain
+    if (integration.name.toLowerCase() === "shopify") {
+      if (!shopDomain) {
+        toast({
+          title: "Error",
+          description: "Please provide your Shopify store URL",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Validate myshopify.com domain
+      if (!shopDomain.endsWith('.myshopify.com')) {
+        toast({
+          title: "Invalid Store URL",
+          description: "Please enter your myshopify.com domain (e.g., your-store.myshopify.com). You can find this in your Shopify admin under Settings > Domains.",
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     try {
@@ -116,7 +128,7 @@ const OAuthConnectForm = ({
               onChange={(e) => setShopDomain(e.target.value)}
             />
             <p className="text-xs text-muted-foreground">
-              Enter your Shopify store URL (e.g., your-store.myshopify.com)
+              Enter your myshopify.com domain (e.g., your-store.myshopify.com). You can find this in your Shopify admin under Settings {'>'} Domains.
             </p>
           </div>
         )}

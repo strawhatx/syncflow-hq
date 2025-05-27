@@ -1,157 +1,114 @@
+// Setup type definitions for built-in Supabase Runtime APIs
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "npm:@supabase/supabase-js@2";
+import { createHmac } from "https://deno.land/std@0.168.0/crypto/mod.ts";
 
-// Follow this setup guide to integrate the Deno language server with your editor:
-// https://deno.land/manual/getting_started/setup_your_environment
-// This enables autocomplete, go to definition, etc.
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+};
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+console.info('server started');
 
-// This would use the supabase-js client to update the database with OAuth tokens
-// In a real application, we'd exchange the authorization code for access tokens here
-// and store them securely in the database
-
-serve(async (req) => {
+Deno.serve(async (req)=>{
+  
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', {
+      headers: corsHeaders
+    });
+  }
   try {
-    // Initialize Supabase client
-    const supabaseClient = createClient(
-      // Supabase API URL - env var exported by default when deployed
-      Deno.env.get('SUPABASE_URL') ?? '',
-      // Supabase API ANON KEY - env var exported by default when deployed
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
-        },
+    // Get the request body
+    const { code, state, connectionName, provider, ...params } = await req.json();
+    if (!provider) {
+      throw new Error('Provider not specified');
+    }
+    // Create Supabase client
+    const supabaseClient = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
+    // Get the provider configuration
+    const { data: integration, error: integrationError } = await supabaseClient.from('integrations').select('*').eq('name', provider).single();
+    if (integrationError || !integration) {
+      throw new Error('Integration not found');
+    }
+    // Handle provider-specific validation
+    if (provider === 'shopify') {
+      const { hmac, shop } = params;
+      if (!hmac || !shop) {
+        throw new Error('Missing required Shopify parameters');
       }
-    )
-    
-    // Get request parameters
-    const url = new URL(req.url)
-    const code = url.searchParams.get('code')
-    const state = url.searchParams.get('state')
-    const error = url.searchParams.get('error')
-    
-    if (error) {
-      return new Response(
-        JSON.stringify({ error: error }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      )
+      // Validate HMAC
+      const sortedParams = Object.entries({
+        ...params,
+        code,
+        shop
+      }).filter(([key])=>key !== 'hmac').sort(([a], [b])=>a.localeCompare(b)).map(([key, value])=>`${key}=${value}`).join('&');
+      const calculatedHmac = createHmac('sha256', integration.client_secret).update(sortedParams).digest('hex');
+      if (calculatedHmac !== hmac) {
+        throw new Error('Invalid HMAC signature');
+      }
     }
-    
-    if (!code || !state) {
-      return new Response(
-        JSON.stringify({ error: 'Missing code or state parameter' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      )
+    // Get the user from the state
+    const stateData = JSON.parse(atob(state));
+    const { user_id } = stateData;
+    // Exchange the code for tokens
+    let tokenUrl = integration.token_url;
+    if (provider === 'shopify') {
+      tokenUrl = `https://${params.shop}/admin/oauth/access_token`;
     }
-    
-    // In a real implementation, you would:
-    // 1. Decode the state parameter to get stored information
-    let stateData
-    try {
-      stateData = JSON.parse(atob(state))
-    } catch (err) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid state parameter' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      )
-    }
-    
-    // 2. Exchange the authorization code for an access token
-    // This would be specific to each OAuth provider
-    // Example for a generic OAuth 2.0 flow:
-    /*
-    const tokenResponse = await fetch('https://provider.com/oauth/token', {
+    const tokenResponse = await fetch(tokenUrl, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Type': 'application/json'
       },
-      body: new URLSearchParams({
-        grant_type: 'authorization_code',
-        code: code,
+      body: JSON.stringify({
+        client_id: integration.client_id,
+        client_secret: integration.client_secret,
+        code,
         redirect_uri: stateData.redirectUri,
-        client_id: 'CLIENT_ID', // Would come from environment variables
-        client_secret: 'CLIENT_SECRET', // Would come from environment variables
-      }),
-    })
-    
-    const tokenData = await tokenResponse.json()
-    */
-    
-    // For this example, we'll use mock data
-    const tokenData = {
-      access_token: "mock_access_token_" + Date.now(),
-      refresh_token: "mock_refresh_token_" + Date.now(),
-      expires_in: 7200
+        grant_type: 'authorization_code'
+      })
+    });
+    if (!tokenResponse.ok) {
+      throw new Error('Failed to exchange token');
     }
-    
-    // 3. Store the tokens in the database
-    // Get integration ID
-    const { data: integrationData, error: integrationError } = await supabaseClient
-      .from('integrations')
-      .select('id')
-      .eq('name', stateData.provider)
-      .single()
-      
-    if (integrationError) {
-      return new Response(
-        JSON.stringify({ error: 'Integration not found' }),
-        { status: 404, headers: { 'Content-Type': 'application/json' } }
-      )
-    }
-    
-    // Get user ID from the session
-    const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession()
-    
-    if (sessionError || !session) {
-      return new Response(
-        JSON.stringify({ error: 'User not authenticated' }),
-        { status: 401, headers: { 'Content-Type': 'application/json' } }
-      )
-    }
-    
-    // Store connection
-    const { data, error: connectionError } = await supabaseClient
-      .from('integration_connections')
-      .insert([
-        {
-          integration_id: integrationData.id,
-          connection_name: stateData.connectionName,
-          connection_status: 'active',
-          auth_data: {
-            access_token: tokenData.access_token,
-            refresh_token: tokenData.refresh_token,
-            expires_at: new Date(Date.now() + (tokenData.expires_in * 1000)).toISOString(),
-            provider: stateData.provider,
-            shop: stateData.shopName
-          },
-          user_id: session.user.id
+    const tokenData = await tokenResponse.json();
+    // Create the connection
+    const { data, error } = await supabaseClient.from('integration_connections').insert([
+      {
+        integration_id: integration.id,
+        connection_name: connectionName,
+        connection_status: 'active',
+        user_id,
+        auth_data: {
+          access_token: tokenData.access_token,
+          refresh_token: tokenData.refresh_token,
+          expires_at: tokenData.expires_in ? Date.now() + tokenData.expires_in * 1000 : null,
+          provider,
+          ...params,
+          timestamp: new Date().toISOString()
         }
-      ])
-      .select()
-      
-    if (connectionError) {
-      return new Response(
-        JSON.stringify({ error: 'Failed to create connection' }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } }
-      )
+      }
+    ]).select();
+    if (error) {
+      throw error;
     }
-    
-    // Redirect back to the application with success message
-    const redirectUrl = new URL('/integrations', url.origin)
-    redirectUrl.searchParams.set('success', 'true')
-    redirectUrl.searchParams.set('connection_id', data[0].id)
-    
-    return new Response(null, {
-      status: 302,
+    return new Response(JSON.stringify(data[0]), {
       headers: {
-        Location: redirectUrl.toString(),
+        'Content-Type': 'application/json',
+        'Connection': 'keep-alive',
+        ...corsHeaders
+      }
+    });
+  } catch (error) {
+    return new Response(JSON.stringify({
+      error: error.message
+    }), {
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json'
       },
-    })
-  } catch (err) {
-    return new Response(
-      JSON.stringify({ error: err.message }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    )
+      status: 400
+    });
   }
-})
+});

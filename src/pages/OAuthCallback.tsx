@@ -1,6 +1,5 @@
-
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { processOAuthCallback } from "@/services/oauthService";
@@ -8,6 +7,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 const OAuthCallback = () => {
   const [searchParams] = useSearchParams();
+  const { provider } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isProcessing, setIsProcessing] = useState(true);
@@ -32,16 +32,20 @@ const OAuthCallback = () => {
         if (!code || !state) {
           throw new Error("Missing required parameters");
         }
+
+        if (!provider) {
+          throw new Error("Provider not specified in callback URL");
+        }
         
         // Process the callback
-        await processOAuthCallback(code, state);
+        await processOAuthCallback(code, state, provider, searchParams);
         
         // Invalidate queries to refresh data
         queryClient.invalidateQueries({ queryKey: ["integrations"] });
         
         toast({
           title: "Connection successful",
-          description: "Your account has been connected successfully.",
+          description: `Your ${provider} account has been connected successfully.`,
         });
         
         // Redirect to integrations page
@@ -60,7 +64,7 @@ const OAuthCallback = () => {
     };
     
     processCallback();
-  }, [searchParams, navigate, queryClient]);
+  }, [searchParams, navigate, queryClient, provider]);
   
   return (
     <div className="flex flex-col items-center justify-center h-screen">

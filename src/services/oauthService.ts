@@ -3,13 +3,16 @@ import { supabase } from "@/integrations/supabase/client";
 // OAuth configuration for different providers
 interface OAuthProviderConfig {
   clientId: string;
-  clientSecret: string;
   authUrl: string;
   tokenUrl: string;
   scopes: string[];
   requiredParameters?: string[];
   category: string;
   description: string;
+  processCallback: {
+    type: 'backend';
+    validateParams?: (params: URLSearchParams) => Promise<boolean>;
+  };
 }
 
 // API Key configuration for providers that use API keys
@@ -37,7 +40,6 @@ const providers: Record<string, ProviderConfig> = {
     type: "oauth",
     config: {
       clientId: import.meta.env.VITE_SHOPIFY_CLIENT_ID || "",
-      clientSecret: import.meta.env.VITE_SHOPIFY_CLIENT_SECRET || "",
       authUrl: "https://{shop}.myshopify.com/admin/oauth/authorize",
       tokenUrl: "https://{shop}.myshopify.com/admin/oauth/access_token",
       scopes: [
@@ -52,31 +54,36 @@ const providers: Record<string, ProviderConfig> = {
       ],
       requiredParameters: ["shop"],
       category: "commerce",
-      description: "Connect your Shopify store to sync products, orders, and customers"
-    }
-  },
-  airtable: {
-    type: "oauth",
-    config: {
-      clientId: import.meta.env.VITE_AIRTABLE_CLIENT_ID || "",
-      clientSecret: import.meta.env.VITE_AIRTABLE_CLIENT_SECRET || "",
-      authUrl: "https://airtable.com/oauth2/v1/authorize",
-      tokenUrl: "https://airtable.com/oauth2/v1/token",
-      scopes: [
-        "data.records:read",
-        "data.records:write",
-        "schema.bases:read",
-        "schema.bases:write"
-      ],
-      category: "database",
-      description: "Connect your Airtable bases to sync data across your organization"
+      description: "Connect your Shopify store to sync products, orders, and customers",
+      processCallback: {
+        type: 'backend',
+        validateParams: async (params: URLSearchParams) => {
+          const hmac = params.get('hmac');
+          if (!hmac) return false;
+
+          // Remove hmac from params and sort remaining params
+          const sortedParams = Array.from(params.entries())
+            .filter(([key]) => key !== 'hmac')
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([key, value]) => `${key}=${value}`)
+            .join('&');
+
+          // Send to backend for HMAC validation
+          const response = await fetch('/api/shopify/validate-hmac', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ params: sortedParams, hmac })
+          });
+
+          return response.ok;
+        }
+      }
     }
   },
   notion: {
     type: "oauth",
     config: {
       clientId: import.meta.env.VITE_NOTION_CLIENT_ID || "",
-      clientSecret: import.meta.env.VITE_NOTION_CLIENT_SECRET || "",
       authUrl: "https://api.notion.com/v1/oauth/authorize",
       tokenUrl: "https://api.notion.com/v1/oauth/token",
       scopes: [
@@ -89,14 +96,35 @@ const providers: Record<string, ProviderConfig> = {
         "write_pages"
       ],
       category: "productivity",
-      description: "Connect your Notion workspace to sync pages and databases"
+      description: "Connect your Notion workspace to sync pages and databases",
+      processCallback: {
+        type: 'backend'
+      }
+    }
+  },
+  airtable: {
+    type: "oauth",
+    config: {
+      clientId: import.meta.env.VITE_AIRTABLE_CLIENT_ID || "",
+      authUrl: "https://airtable.com/oauth2/v1/authorize",
+      tokenUrl: "https://airtable.com/oauth2/v1/token",
+      scopes: [
+        "data.records:read",
+        "data.records:write",
+        "schema.bases:read",
+        "schema.bases:write"
+      ],
+      category: "database",
+      description: "Connect your Airtable bases to sync data across your organization",
+      processCallback: {
+        type: 'backend'
+      }
     }
   },
   klaviyo: {
     type: "oauth",
     config: {
       clientId: import.meta.env.VITE_KLAVIYO_CLIENT_ID || "",
-      clientSecret: import.meta.env.VITE_KLAVIYO_CLIENT_SECRET || "",
       authUrl: "https://www.klaviyo.com/oauth/authorize",
       tokenUrl: "https://www.klaviyo.com/oauth/token",
       scopes: [
@@ -108,54 +136,16 @@ const providers: Record<string, ProviderConfig> = {
         "write-profiles"
       ],
       category: "marketing",
-      description: "Connect your Klaviyo account to sync marketing campaigns and customer data"
-    }
-  },
-  bigcommerce: {
-    type: "oauth",
-    config: {
-      clientId: import.meta.env.VITE_BIGCOMMERCE_CLIENT_ID || "",
-      clientSecret: import.meta.env.VITE_BIGCOMMERCE_CLIENT_SECRET || "",
-      authUrl: "https://login.bigcommerce.com/oauth2/authorize",
-      tokenUrl: "https://login.bigcommerce.com/oauth2/token",
-      scopes: [
-        "store_v2_products",
-        "store_v2_orders",
-        "store_v2_customers",
-        "store_v2_information",
-        "store_v2_marketing"
-      ],
-      category: "commerce",
-      description: "Connect your BigCommerce store to sync products, orders, and customers"
-    }
-  },
-  woocommerce: {
-    type: "api_key",
-    config: {
-      category: "commerce",
-      description: "Connect your WooCommerce store to sync products, orders, and customers",
-      requiredParameters: ["store_url"],
-      fields: [
-        {
-          name: "consumer_key",
-          label: "Consumer Key",
-          placeholder: "ck_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-          type: "text"
-        },
-        {
-          name: "consumer_secret",
-          label: "Consumer Secret",
-          placeholder: "cs_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-          type: "password"
-        }
-      ]
+      description: "Connect your Klaviyo account to sync marketing campaigns and customer data",
+      processCallback: {
+        type: 'backend'
+      }
     }
   },
   google_sheets: {
     type: "oauth",
     config: {
       clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID || "",
-      clientSecret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET || "",
       authUrl: "https://accounts.google.com/o/oauth2/v2/auth",
       tokenUrl: "https://oauth2.googleapis.com/token",
       scopes: [
@@ -163,14 +153,16 @@ const providers: Record<string, ProviderConfig> = {
         "https://www.googleapis.com/auth/drive.file"
       ],
       category: "productivity",
-      description: "Connect your Google Sheets to sync data across your spreadsheets"
+      description: "Connect your Google Sheets to sync data across your spreadsheets",
+      processCallback: {
+        type: 'backend'
+      }
     }
   },
   mailchimp: {
     type: "oauth",
     config: {
       clientId: import.meta.env.VITE_MAILCHIMP_CLIENT_ID || "",
-      clientSecret: import.meta.env.VITE_MAILCHIMP_CLIENT_SECRET || "",
       authUrl: "https://login.mailchimp.com/oauth2/authorize",
       tokenUrl: "https://login.mailchimp.com/oauth2/token",
       scopes: [
@@ -182,7 +174,10 @@ const providers: Record<string, ProviderConfig> = {
         "subscribers_write"
       ],
       category: "marketing",
-      description: "Connect your Mailchimp account to sync campaigns and subscriber data"
+      description: "Connect your Mailchimp account to sync campaigns and subscriber data",
+      processCallback: {
+        type: 'backend'
+      }
     }
   }
 };
@@ -204,7 +199,7 @@ export const initiateOAuth = (
 
   const config = providerConfig.config as OAuthProviderConfig;
   
-  if (!config.clientId || !config.clientSecret) {
+  if (!config.clientId) {
     throw new Error(`Missing OAuth configuration for ${provider}`);
   }
   
@@ -220,7 +215,23 @@ export const initiateOAuth = (
   // Construct auth URL with placeholders replaced
   let authUrl = config.authUrl;
   for (const [key, value] of Object.entries(params)) {
-    authUrl = authUrl.replace(`{${key}}`, value);
+    if (key === 'shop' && provider === 'shopify') {
+      // For Shopify, we need to extract the myshopify.com domain
+      // First try to get the myshopify.com domain directly
+      const myshopifyMatch = value.match(/https?:\/\/([^.]+)\.myshopify\.com/);
+      if (myshopifyMatch) {
+        authUrl = authUrl.replace(`{${key}}`, myshopifyMatch[1]);
+      } else {
+        // If it's a custom domain, we need to make an API call to get the myshopify.com domain
+        // For now, we'll throw an error asking for the myshopify.com domain
+        throw new Error(
+          "For custom domains, please provide the myshopify.com domain (e.g., store-name.myshopify.com) " +
+          "instead of the custom domain. You can find this in your Shopify admin under Settings > Domains."
+        );
+      }
+    } else {
+      authUrl = authUrl.replace(`{${key}}`, value);
+    }
   }
   
   // Build redirect URI
@@ -279,7 +290,6 @@ const exchangeToken = async (
     },
     body: JSON.stringify({
       client_id: config.clientId,
-      client_secret: config.clientSecret,
       code,
       redirect_uri: params.redirectUri,
       grant_type: "authorization_code"
@@ -296,7 +306,9 @@ const exchangeToken = async (
 // Process OAuth callback
 export const processOAuthCallback = async (
   code: string,
-  state: string
+  state: string,
+  provider: string,
+  searchParams: URLSearchParams
 ) => {
   try {
     // Verify state parameter
@@ -308,63 +320,47 @@ export const processOAuthCallback = async (
 
     // Decode state
     const stateData = JSON.parse(atob(state));
-    const { provider, connectionName, timestamp, nonce, ...params } = stateData;
+    const { provider: stateProvider, connectionName, timestamp, nonce, ...params } = stateData;
     
     // Verify timestamp to prevent replay attacks
     if (Date.now() - timestamp > 3600000) { // 1 hour
       throw new Error("OAuth state expired");
     }
-    
-    // Get user info
-    const { data: sessionData } = await supabase.auth.getSession();
-    if (!sessionData.session) {
-      throw new Error("User not authenticated");
+
+    const providerConfig = providers[provider];
+    if (!providerConfig || providerConfig.type !== 'oauth') {
+      throw new Error('Invalid provider configuration');
     }
-    
-    // Exchange code for tokens
-    const tokenData = await exchangeToken(provider, code, {
-      ...params,
-      redirectUri: stateData.redirectUri
+
+    const config = providerConfig.config as OAuthProviderConfig;
+
+    // Handle provider-specific validation
+    if (config.processCallback.validateParams) {
+      const isValid = await config.processCallback.validateParams(searchParams);
+      if (!isValid) {
+        throw new Error(`Invalid parameters for ${provider} callback`);
+      }
+    }
+
+    // Send to backend for processing
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_API}/oauth-callback`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        code,
+        state,
+        provider,
+        connectionName,
+        ...Object.fromEntries(searchParams.entries())
+      })
     });
-    
-    // Get integration info
-    const { data: integrationData, error: integrationError } = await supabase
-      .from("integrations")
-      .select("id")
-      .eq("name", provider)
-      .single();
-    
-    if (integrationError) {
-      throw new Error("Integration not found");
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || `Failed to process ${provider} callback`);
     }
-    
-    // Prepare auth data
-    const authData = {
-      access_token: tokenData.access_token,
-      refresh_token: tokenData.refresh_token,
-      expires_at: tokenData.expires_in ? Date.now() + (tokenData.expires_in * 1000) : null,
-      provider,
-      ...params,
-      timestamp: new Date().toISOString()
-    };
-    
-    // Create connection
-    const { data, error } = await supabase
-      .from("integration_connections")
-      .insert([{
-        integration_id: integrationData.id,
-        connection_name: connectionName,
-        connection_status: "active",
-        user_id: sessionData.session.user.id,
-        auth_data: authData
-      }])
-      .select();
-    
-    if (error) {
-      throw error;
-    }
-    
-    return data[0];
+
+    return response.json();
   } catch (error) {
     console.error("Error processing OAuth callback:", error);
     throw error;
