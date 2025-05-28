@@ -1,18 +1,28 @@
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { createHmac } from "https://deno.land/std@0.168.0/crypto/mod.ts";
-
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, ApiKey"
 };
 
 console.info('server started');
-
+async function validateHmac(params, secret, hmacToCompare) {
+  const sortedParams = Object.entries(params).filter(([key])=>key !== 'hmac').sort(([a], [b])=>a.localeCompare(b)).map(([key, value])=>`${key}=${value}`).join('&');
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey("raw", enc.encode(secret), {
+    name: "HMAC",
+    hash: "SHA-256"
+  }, false, [
+    "sign"
+  ]);
+  const signature = await crypto.subtle.sign("HMAC", key, enc.encode(sortedParams));
+  const calculatedHmac = Array.from(new Uint8Array(signature)).map((b)=>b.toString(16).padStart(2, '0')).join('');
+  // Compare the generated HMAC with the one from Shopify (case-insensitive)
+  return calculatedHmac === hmacToCompare || calculatedHmac === hmacToCompare.toLowerCase();
+}
 Deno.serve(async (req)=>{
-  
   if (req.method === 'OPTIONS') {
     return new Response('ok', {
       headers: corsHeaders
@@ -20,7 +30,7 @@ Deno.serve(async (req)=>{
   }
   try {
     // Get the request body
-    const { code, state, connectionName, provider, ...params } = await req.json();
+    const { code, state, connectionName, provider, token_url, ...params } = await req.json();
     if (!provider) {
       throw new Error('Provider not specified');
     }
@@ -37,26 +47,21 @@ Deno.serve(async (req)=>{
       if (!hmac || !shop) {
         throw new Error('Missing required Shopify parameters');
       }
-      // Validate HMAC
-      const sortedParams = Object.entries({
+      const isValid = await validateHmac({
         ...params,
         code,
         shop
-      }).filter(([key])=>key !== 'hmac').sort(([a], [b])=>a.localeCompare(b)).map(([key, value])=>`${key}=${value}`).join('&');
-      const calculatedHmac = createHmac('sha256', integration.client_secret).update(sortedParams).digest('hex');
-      if (calculatedHmac !== hmac) {
+      }, integration.client_secret, hmac);
+      if (!isValid) {
         throw new Error('Invalid HMAC signature');
       }
     }
     // Get the user from the state
     const stateData = JSON.parse(atob(state));
     const { user_id } = stateData;
+    
     // Exchange the code for tokens
-    let tokenUrl = integration.token_url;
-    if (provider === 'shopify') {
-      tokenUrl = `https://${params.shop}/admin/oauth/access_token`;
-    }
-    const tokenResponse = await fetch(tokenUrl, {
+    const tokenResponse = await fetch(token_url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -98,7 +103,8 @@ Deno.serve(async (req)=>{
         'Content-Type': 'application/json',
         'Connection': 'keep-alive',
         ...corsHeaders
-      }
+      },
+      status: 200
     });
   } catch (error) {
     return new Response(JSON.stringify({
