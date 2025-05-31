@@ -1,86 +1,225 @@
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
+
+// Types
+interface OAuthCallbackRequest {
+  code: string;
+  state: string;
+  connectionName: string;
+  provider: string;
+  [key: string]: string;
+}
+
+interface TokenResponse {
+  access_token: string;
+  refresh_token?: string;
+  expires_in?: number;
+  error?: string;
+  error_description?: string;
+}
+
+interface Integration {
+  id: string;
+  name: string;
+  client_id: string;
+  client_secret: string;
+  token_url: string;
+  auth_url: string;
+}
+
+interface StateData {
+  user_id: string;
+  redirectUri: string;
+}
+
+// Constants
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, ApiKey"
+} as const;
+
+// Utility functions
+const validateHmac = async (params: Record<string, string>, secret: string, hmacToCompare: string): Promise<boolean> => {
+  const sortedParams = Object.entries(params)
+    .filter(([key]) => key !== 'hmac')
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, value]) => `${key}=${value}`)
+    .join('&');
+
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+
+  const signature = await crypto.subtle.sign("HMAC", key, enc.encode(sortedParams));
+  const calculatedHmac = Array.from(new Uint8Array(signature))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+
+  return calculatedHmac === hmacToCompare || calculatedHmac === hmacToCompare.toLowerCase();
 };
 
-console.info('server started');
-async function validateHmac(params, secret, hmacToCompare) {
-  const sortedParams = Object.entries(params).filter(([key])=>key !== 'hmac').sort(([a], [b])=>a.localeCompare(b)).map(([key, value])=>`${key}=${value}`).join('&');
-  const enc = new TextEncoder();
-  const key = await crypto.subtle.importKey("raw", enc.encode(secret), {
-    name: "HMAC",
-    hash: "SHA-256"
-  }, false, [
-    "sign"
-  ]);
-  const signature = await crypto.subtle.sign("HMAC", key, enc.encode(sortedParams));
-  const calculatedHmac = Array.from(new Uint8Array(signature)).map((b)=>b.toString(16).padStart(2, '0')).join('');
-  // Compare the generated HMAC with the one from Shopify (case-insensitive)
-  return calculatedHmac === hmacToCompare || calculatedHmac === hmacToCompare.toLowerCase();
-}
-Deno.serve(async (req)=>{
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', {
-      headers: corsHeaders
-    });
+const processShopifyTokenUrl = (tokenUrl: string, shop: string): string => {
+  const shopMatch = shop.match(/https?:\/\/([^.]+)\.myshopify\.com/);
+  if (!shopMatch) {
+    throw new Error('Invalid Shopify domain format');
   }
-  try {
-    // Get the request body
-    const { code, state, connectionName, provider, token_url, ...params } = await req.json();
-    if (!provider) {
-      throw new Error('Provider not specified');
+  return tokenUrl.replace('{shop}', shopMatch[1]);
+};
+
+const createErrorResponse = (message: string, status = 400) => {
+  return new Response(
+    JSON.stringify({ error: message }),
+    {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status
     }
-    // Create Supabase client
-    const supabaseClient = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
-    // Get the provider configuration
-    const { data: integration, error: integrationError } = await supabaseClient.from('integrations').select('*').eq('name', provider).single();
-    if (integrationError || !integration) {
-      throw new Error('Integration not found');
-    }
-    // Handle provider-specific validation
-    if (provider === 'shopify') {
-      const { hmac, shop } = params;
-      if (!hmac || !shop) {
-        throw new Error('Missing required Shopify parameters');
-      }
-      const isValid = await validateHmac({
-        ...params,
-        code,
-        shop
-      }, integration.client_secret, hmac);
-      if (!isValid) {
-        throw new Error('Invalid HMAC signature');
-      }
-    }
-    // Get the user from the state
-    const stateData = JSON.parse(atob(state));
-    const { user_id } = stateData;
-    
-    // Exchange the code for tokens
-    const tokenResponse = await fetch(token_url, {
-      method: 'POST',
+  );
+};
+
+const createSuccessResponse = (data: unknown) => {
+  return new Response(
+    JSON.stringify(data),
+    {
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Connection': 'keep-alive',
+        ...corsHeaders
       },
+      status: 200
+    }
+  );
+};
+
+const validateShopifyRequest = async (params: Record<string, string>, integration: Integration): Promise<void> => {
+  const { hmac, shop } = params;
+  if (!hmac || !shop) {
+    throw new Error('Missing required Shopify parameters');
+  }
+
+  const isValid = await validateHmac(
+    { ...params, shop },
+    integration.client_secret,
+    hmac
+  );
+
+  if (!isValid) {
+    throw new Error('Invalid HMAC signature');
+  }
+};
+
+const prepareTokenRequest = (
+  provider: string,
+  integration: Integration,
+  code: string,
+  stateData: StateData
+): RequestInit => {
+  const baseConfig: RequestInit = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
+
+  if (provider === 'Shopify') {
+    return {
+      ...baseConfig,
       body: JSON.stringify({
         client_id: integration.client_id,
         client_secret: integration.client_secret,
-        code,
-        redirect_uri: stateData.redirectUri,
-        grant_type: 'authorization_code'
+        code
       })
-    });
-    if (!tokenResponse.ok) {
-      throw new Error('Failed to exchange token');
+    };
+  }
+
+  return {
+    ...baseConfig,
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Authorization': `Basic ${btoa(`${integration.client_id}:${integration.client_secret}`)}`
+    },
+    body: new URLSearchParams({
+      code,
+      redirect_uri: stateData.redirectUri,
+      grant_type: 'authorization_code'
+    }).toString()
+  };
+};
+
+// Main handler
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
+  }
+
+  try {
+    const { code, state, connectionName, provider, ...params } = await req.json() as OAuthCallbackRequest;
+    
+    if (!provider) {
+      throw new Error('Provider not specified');
     }
-    const tokenData = await tokenResponse.json();
-    // Create the connection
-    const { data, error } = await supabaseClient.from('integration_connections').insert([
-      {
+
+    // Initialize Supabase client
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    // Fetch integration configuration
+    const { data: integration, error: integrationError } = await supabaseClient
+      .from('integrations')
+      .select('*')
+      .eq('name', provider)
+      .single();
+
+    if (integrationError || !integration) {
+      throw new Error('Integration not found');
+    }
+
+    // Provider-specific validation
+    if (provider === 'Shopify') {
+      await validateShopifyRequest(params, integration);
+    }
+
+    // Process state and get user ID
+    const stateData = JSON.parse(atob(state)) as StateData;
+    const { user_id } = stateData;
+
+    // Process token URL for provider-specific templates
+    let tokenUrl = integration.token_url;
+    if (provider === 'Shopify' && params.shop) {
+      tokenUrl = processShopifyTokenUrl(tokenUrl, params.shop);
+    }
+
+    // Exchange code for tokens
+    const tokenRequestConfig = prepareTokenRequest(provider, integration, code, stateData);
+    const tokenResponse = await fetch(tokenUrl, tokenRequestConfig);
+
+    if (!tokenResponse.ok) {
+      const errorData = await tokenResponse.json() as TokenResponse;
+      console.error('Token exchange failed:', {
+        provider,
+        status: tokenResponse.status,
+        statusText: tokenResponse.statusText,
+        error: errorData
+      });
+      throw new Error(
+        `Failed to exchange token: ${errorData.error_description || tokenResponse.statusText}`
+      );
+    }
+
+    const tokenData = await tokenResponse.json() as TokenResponse;
+
+    // Create connection record
+    const { data, error } = await supabaseClient
+      .from('integration_connections')
+      .insert([{
         integration_id: integration.id,
         connection_name: connectionName,
         connection_status: 'active',
@@ -93,28 +232,16 @@ Deno.serve(async (req)=>{
           ...params,
           timestamp: new Date().toISOString()
         }
-      }
-    ]).select();
+      }])
+      .select();
+
     if (error) {
       throw error;
     }
-    return new Response(JSON.stringify(data[0]), {
-      headers: {
-        'Content-Type': 'application/json',
-        'Connection': 'keep-alive',
-        ...corsHeaders
-      },
-      status: 200
-    });
+
+    return createSuccessResponse(data[0]);
   } catch (error) {
-    return new Response(JSON.stringify({
-      error: error.message
-    }), {
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'application/json'
-      },
-      status: 400
-    });
+    console.error('OAuth callback error:', error);
+    return createErrorResponse(error instanceof Error ? error.message : 'Unknown error occurred');
   }
 });

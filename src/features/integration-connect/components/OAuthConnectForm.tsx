@@ -68,13 +68,13 @@ const OAuthConnectForm = ({
       
       // Initiate OAuth flow
       const oauthUrl = initiateOAuth(
-        integration.name.toLowerCase(),
+        integration.name,
         params,
         connectionName
       );
       
       // Redirect to OAuth provider
-      window.location.href = oauthUrl;
+      window.location.href = await oauthUrl;
     } catch (error) {
       console.error("Error initiating OAuth flow:", error);
       toast({

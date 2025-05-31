@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, CheckCircle2, Loader2, Trash2 } from "lucide-react";
@@ -9,8 +8,6 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { useQueryClient } from "@tanstack/react-query";
-import { updateConnectionStatus, deleteConnection } from "@/features/integrations/services/integrationService";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,79 +20,67 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { ConnectionStatus } from "@/features/integrations/components/IntegrationCard";
+import { fetchConnectionById, updateConnectionStatus, deleteConnection } from "@/services/integrationService";
+import type { Database } from "@/integrations/supabase/types";
 
-// Mock data
-const getConnectionDetails = (integrationId: string, connectionId: string) => {
-  const connections = {
-    "1": { // Shopify
-      "conn1": {
-        id: "conn1",
-        name: "My Store",
-        status: "active" as const,
-        createdAt: "2023-09-15T12:30:00Z",
-        lastSync: "2023-10-10T08:45:00Z",
-        settings: {
-          syncInterval: "hourly",
-          enableWebhooks: true,
-        },
-        integration: {
-          id: "1",
-          name: "Shopify",
-          icon: "https://cdn.shopify.com/s/files/1/0533/2089/files/shopify-logo-small.png"
-        }
-      },
-      "conn2": {
-        id: "conn2",
-        name: "Test Store",
-        status: "error" as const,
-        createdAt: "2023-10-01T15:20:00Z",
-        lastSync: "2023-10-09T22:10:00Z",
-        error: "Authentication failed. Please reconnect your account.",
-        settings: {
-          syncInterval: "daily",
-          enableWebhooks: false,
-        },
-        integration: {
-          id: "1",
-          name: "Shopify",
-          icon: "https://cdn.shopify.com/s/files/1/0533/2089/files/shopify-logo-small.png"
-        }
-      }
-    },
-    "2": { // Airtable
-      "conn3": {
-        id: "conn3",
-        name: "Marketing Database",
-        status: "active" as const,
-        createdAt: "2023-08-20T09:15:00Z",
-        lastSync: "2023-10-10T06:30:00Z",
-        settings: {
-          syncInterval: "daily",
-          enableWebhooks: true,
-        },
-        integration: {
-          id: "2",
-          name: "Airtable",
-          icon: "https://seeklogo.com/images/A/airtable-logo-216B9AF035-seeklogo.com.png"
-        }
-      }
-    }
-  };
-
-  return connections[integrationId as keyof typeof connections]?.[connectionId];
+type Connection = Database['public']['Tables']['integration_connections']['Row'] & {
+  integrations: Database['public']['Views']['integrations_public']['Row'];
 };
 
 const IntegrationDetail = () => {
-  const { integrationId, connectionId } = useParams<{ integrationId: string, connectionId: string }>();
+  const { connectionId } = useParams<{ connectionId: string }>();
   const navigate = useNavigate();
   const [isUpdating, setIsUpdating] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [connection, setConnection] = useState<Connection | null>(null);
+  const [connectionName, setConnectionName] = useState("");
+  const [settings, setSettings] = useState({
+    syncInterval: "daily",
+    enableWebhooks: true
+  });
   
-  const connection = integrationId && connectionId 
-    ? getConnectionDetails(integrationId, connectionId) 
-    : null;
+  useEffect(() => {
+    const loadConnection = async () => {
+      if (!connectionId) return;
+      
+      try {
+        setIsLoading(true);
+        const data = await fetchConnectionById(connectionId);
+        if (!data) {
+          throw new Error("Connection not found");
+        }
+        setConnection(data as Connection);
+        setConnectionName(data.connection_name);
+        setSettings({
+          syncInterval: (data.auth_data as any)?.syncInterval || "daily",
+          enableWebhooks: (data.auth_data as any)?.enableWebhooks ?? true
+        });
+      } catch (error) {
+        console.error("Error loading connection:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load connection details",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadConnection();
+  }, [connectionId]);
   
-  if (!connection) {
+  if (isLoading) {
+    return (
+      <div className="py-8 text-center">
+        <h2 className="text-2xl font-semibold mb-2">Loading...</h2>
+        <p className="text-muted-foreground mb-6">Please wait while we load the connection details.</p>
+      </div>
+    );
+  }
+
+  if (!connection || !connection.integrations) {
     return (
       <div className="py-8 text-center">
         <h2 className="text-2xl font-semibold mb-2">Connection not found</h2>
@@ -106,9 +91,6 @@ const IntegrationDetail = () => {
       </div>
     );
   }
-
-  const [connectionName, setConnectionName] = useState(connection.name);
-  const [settings, setSettings] = useState(connection.settings);
   
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -124,8 +106,7 @@ const IntegrationDetail = () => {
     setIsUpdating(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await updateConnectionStatus(connection.id, connection.connection_status as ConnectionStatus);
       
       toast({
         title: "Settings updated",
@@ -146,7 +127,7 @@ const IntegrationDetail = () => {
     setIsSyncing(true);
     
     try {
-      // Simulate API call
+      // TODO: Implement sync functionality
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       toast({
@@ -166,12 +147,11 @@ const IntegrationDetail = () => {
   
   const handleDelete = async () => {
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await deleteConnection(connection.id);
       
       toast({
         title: "Connection removed",
-        description: `${connection.integration.name} connection "${connection.name}" has been removed`,
+        description: `${connection.integrations.name} connection "${connection.connection_name}" has been removed`,
       });
       
       navigate("/integrations");
@@ -186,12 +166,12 @@ const IntegrationDetail = () => {
   
   const handleReconnect = async () => {
     try {
-      // Simulate API call
+      // TODO: Implement reconnect functionality
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       toast({
         title: "Reconnection successful",
-        description: `${connection.integration.name} connection has been reestablished`,
+        description: `${connection.integrations.name} connection has been reestablished`,
       });
       
       navigate("/integrations");
@@ -205,7 +185,7 @@ const IntegrationDetail = () => {
   };
   
   const getStatusBadge = () => {
-    switch (connection.status) {
+    switch (connection.connection_status) {
       case 'active':
         return <Badge className="bg-green-500/20 text-green-600">Connected</Badge>;
       case 'error':
@@ -235,18 +215,18 @@ const IntegrationDetail = () => {
         <div className="flex items-center gap-4">
           <div className="flex-shrink-0 h-12 w-12 rounded bg-gray-100 flex items-center justify-center">
             <img 
-              src={connection.integration.icon} 
-              alt={connection.integration.name} 
+              src={connection.integrations.icon || "https://via.placeholder.com/32"} 
+              alt={connection.integrations.name} 
               className="h-8 w-8" 
               onError={(e) => (e.currentTarget.src = "https://via.placeholder.com/32")} 
             />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-semibold">{connection.name}</h1>
+              <h1 className="text-2xl font-semibold">{connection.connection_name}</h1>
               {getStatusBadge()}
             </div>
-            <p className="text-muted-foreground">{connection.integration.name} connection</p>
+            <p className="text-muted-foreground">{connection.integrations.name} connection</p>
           </div>
         </div>
         
@@ -266,7 +246,7 @@ const IntegrationDetail = () => {
             )}
           </Button>
           
-          {connection.status === "error" && (
+          {connection.connection_status === "error" && (
             <Button onClick={handleReconnect}>
               Reconnect
             </Button>
@@ -274,10 +254,10 @@ const IntegrationDetail = () => {
         </div>
       </div>
 
-      {connection.status === "error" && connection.error && (
+      {connection.connection_status === "error" && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
           <p className="font-medium">Connection Error</p>
-          <p className="text-sm">{connection.error}</p>
+          <p className="text-sm">Please check your connection settings and try reconnecting.</p>
         </div>
       )}
 
@@ -286,7 +266,7 @@ const IntegrationDetail = () => {
           <Card>
             <CardHeader>
               <CardTitle>Connection Settings</CardTitle>
-              <CardDescription>Configure how your {connection.integration.name} connection works</CardDescription>
+              <CardDescription>Configure how your {connection.integrations.name} connection works</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -340,7 +320,7 @@ const IntegrationDetail = () => {
                   <AlertDialogHeader>
                     <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This will permanently delete the connection "{connection.name}" and remove all associated data. 
+                      This will permanently delete the connection "{connection.connection_name}" and remove all associated data. 
                       This action cannot be undone.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
@@ -389,12 +369,12 @@ const IntegrationDetail = () => {
               
               <div className="space-y-1">
                 <p className="text-xs text-muted-foreground">Created</p>
-                <p className="text-sm">{formatDate(connection.createdAt)}</p>
+                <p className="text-sm">{formatDate(connection.created_at)}</p>
               </div>
               
               <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">Last Synced</p>
-                <p className="text-sm">{formatDate(connection.lastSync)}</p>
+                <p className="text-xs text-muted-foreground">Last Updated</p>
+                <p className="text-sm">{formatDate(connection.updated_at)}</p>
               </div>
             </CardContent>
           </Card>

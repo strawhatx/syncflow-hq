@@ -63,6 +63,11 @@ export type Database = {
           id: string
           name: string
           updated_at: string
+          auth_url: string | null
+          token_url: string | null
+          redirect_url: string | null
+          scopes: string[] | null
+          required_parameters: string[] | null
         }
         Insert: {
           auth_type: string
@@ -73,6 +78,11 @@ export type Database = {
           id?: string
           name: string
           updated_at?: string
+          auth_url?: string | null
+          token_url?: string | null
+          redirect_url?: string | null
+          scopes?: string[] | null
+          required_parameters?: string[] | null
         }
         Update: {
           auth_type?: string
@@ -83,6 +93,11 @@ export type Database = {
           id?: string
           name?: string
           updated_at?: string
+          auth_url?: string | null
+          token_url?: string | null
+          redirect_url?: string | null
+          scopes?: string[] | null
+          required_parameters?: string[] | null
         }
         Relationships: []
       }
@@ -112,7 +127,23 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      integrations_public: {
+        Row: {
+          id: string
+          name: string
+          description: string
+          icon: string | null
+          auth_type: string
+          category: string
+          auth_url: string | null
+          token_url: string | null
+          redirect_url: string | null
+          scopes: string[] | null
+          required_parameters: string[] | null
+          created_at: string
+          updated_at: string
+        }
+      }
     }
     Functions: {
       [_ in never]: never

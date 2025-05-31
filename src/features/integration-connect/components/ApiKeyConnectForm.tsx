@@ -8,8 +8,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { createConnection } from "@/services/integrationService";
-import { Integration } from "@/services/integrationService";
+import { createConnection, Integration } from "@/services/integrationService";
 
 interface ApiKeyConnectFormProps {
   integration: Integration;

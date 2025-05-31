@@ -29,7 +29,7 @@ export function useOAuthCallback(
           await processOAuthCallback(code, state);
           
           // Invalidate integrations query to refresh the data
-          queryClient.invalidateQueries({ queryKey: ['integrations'] });
+          queryClient.invalidateQueries({ queryKey: ['integrations_public'] });
           
           // Get connection name from state
           const stateData = JSON.parse(atob(state));

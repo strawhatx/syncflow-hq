@@ -1,29 +1,23 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Connection, ConnectionStatus } from "@/features/integrations/components/IntegrationCard";
-import { getProviderConfig } from "./oauthService";
+import type { Database } from "@/integrations/supabase/types";
 
 export type AuthType = "oauth" | "api_key" | "basic";
 
-interface DatabaseIntegration {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  auth_type: string;
-  category: string;
-  required_scopes?: string[];
-  created_at: string;
-  updated_at: string;
-}
+type DatabaseIntegration = Database['public']['Views']['integrations_public']['Row'];
 
 export interface Integration {
   id: string;
   name: string;
   description: string;
-  icon: string;
+  icon: string | null;
   authType: AuthType;
   category: string;
-  requiredScopes?: string[];
+  scopes?: string[];
+  requiredParameters?: string[];
+  authUrl?: string;
+  tokenUrl?: string;
+  redirectUrl?: string;
 }
 
 export interface IntegrationWithConnections extends Integration {
@@ -35,7 +29,7 @@ export const fetchIntegrations = async (): Promise<IntegrationWithConnections[]>
   try {
     // First, fetch all integrations from the database
     const { data: integrations, error: integrationsError } = await supabase
-      .from('integrations')
+      .from('integrations_public')
       .select('*');
 
     if (integrationsError) {
@@ -56,16 +50,19 @@ export const fetchIntegrations = async (): Promise<IntegrationWithConnections[]>
     // Map database integrations to our frontend model
     const integrationsWithConnections = (integrations as DatabaseIntegration[]).map(integration => {
       const integrationConnections = connections?.filter(conn => conn.integration_id === integration.id) || [];
-      const providerConfig = getProviderConfig(integration.name.toLowerCase());
-      
+
       return {
         id: integration.id,
         name: integration.name,
         icon: integration.icon,
         description: integration.description,
-        authType: providerConfig?.type || "oauth",
+        authType: integration.auth_type as AuthType,
         category: integration.category,
-        requiredScopes: integration.required_scopes,
+        scopes: integration.scopes || undefined,
+        requiredParameters: integration.required_parameters || undefined,
+        authUrl: integration.auth_url || undefined,
+        tokenUrl: integration.token_url || undefined,
+        redirectUrl: integration.redirect_url || undefined,
         connections: integrationConnections.map(conn => ({
           id: conn.id,
           name: conn.connection_name,
@@ -85,7 +82,7 @@ export const fetchIntegrations = async (): Promise<IntegrationWithConnections[]>
 export const fetchIntegrationById = async (integrationId: string): Promise<Integration | null> => {
   try {
     const { data, error } = await supabase
-      .from('integrations')
+      .from('integrations_public')
       .select('*')
       .eq('id', integrationId)
       .single();
@@ -96,16 +93,19 @@ export const fetchIntegrationById = async (integrationId: string): Promise<Integ
     }
 
     const integration = data as DatabaseIntegration;
-    const providerConfig = getProviderConfig(integration.name.toLowerCase());
 
     return integration ? {
       id: integration.id,
       name: integration.name,
       icon: integration.icon,
       description: integration.description,
-      authType: providerConfig?.type || "oauth",
+      authType: integration.auth_type as AuthType,
       category: integration.category,
-      requiredScopes: integration.required_scopes
+      scopes: integration.scopes || undefined,
+      requiredParameters: integration.required_parameters || undefined,
+      authUrl: integration.auth_url || undefined,
+      tokenUrl: integration.token_url || undefined,
+      redirectUrl: integration.redirect_url || undefined
     } : null;
   } catch (error) {
     console.error("Error in fetchIntegrationById:", error);
@@ -136,15 +136,15 @@ export const fetchConnectionById = async (connectionId: string) => {
 
 // Create a new connection
 export const createConnection = async (
-  integrationId: string, 
-  connectionName: string, 
+  integrationId: string,
+  connectionName: string,
   status: ConnectionStatus = "active",
   authData?: any,
   apiKey?: string
 ) => {
   try {
     const { data: session } = await supabase.auth.getSession();
-    
+
     if (!session.session?.user) {
       throw new Error("User not authenticated");
     }
@@ -152,7 +152,7 @@ export const createConnection = async (
     const { data, error } = await supabase
       .from('integration_connections')
       .insert([
-        { 
+        {
           integration_id: integrationId,
           connection_name: connectionName,
           connection_status: status,
@@ -180,8 +180,8 @@ export const updateConnectionStatus = async (connectionId: string, status: Conne
   try {
     const { data, error } = await supabase
       .from('integration_connections')
-      .update({ 
-        connection_status: status, 
+      .update({
+        connection_status: status,
         updated_at: new Date().toISOString()
       })
       .eq('id', connectionId)

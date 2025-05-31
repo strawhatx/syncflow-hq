@@ -57,9 +57,9 @@ interface ProviderConfig {
 // Get provider configuration from database
 const getProviderConfig = async (provider: string): Promise<ProviderConfig | null> => {
   const { data, error } = await supabase
-    .from('integrations')
+    .from('integrations_public')
     .select('*')
-    .eq('name', provider.toLowerCase())
+    .eq('name', provider)
     .single();
 
   if (error || !data) return null;
@@ -140,7 +140,7 @@ export const initiateOAuth = async (
   // Construct auth URL with placeholders replaced
   let authUrl = config.authUrl;
   for (const [key, value] of Object.entries(params)) {
-    if (key === 'shop' && provider === 'shopify') {
+    if (key === 'shop' && provider === 'Shopify') {
       // For Shopify, we need to extract the myshopify.com domain
       const myshopifyMatch = value.match(/https?:\/\/([^.]+)\.myshopify\.com/);
       if (myshopifyMatch) {
@@ -274,7 +274,7 @@ export const processOAuthCallback = async (
 // Get all available providers
 export const getAvailableProviders = async () => {
   const { data, error } = await supabase
-    .from('integrations')
+    .from('integrations_public')
     .select('*');
 
   if (error) throw error;

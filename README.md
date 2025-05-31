@@ -60,6 +60,18 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
+
+
+**Run Edge Functions:** 
+supabase functions serve --env-file supabase/.env
+
+**Debug Edge Functions:**
+- supabase functions serve oauth-callback --env-file supabase/.env --inspect-mode brk
+
+**Migrations**
+ - supabase db diff --use-migra -f [migration name]
+
+
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/4a54184e-bd45-4db7-924d-f5b0521c8d3f) and click on Share -> Publish.

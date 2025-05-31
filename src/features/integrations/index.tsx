@@ -22,8 +22,8 @@ const Integrations = () => {
     navigate(`/integrations/${integrationId}/connect`);
   };
   
-  const handleManage = (integrationId: string, connectionId: string) => {
-    navigate(`/integrations/${integrationId}/connections/${connectionId}`);
+  const handleManage = (connectionId: string) => {
+    navigate(`/connections/${connectionId}`);
   };
 
   if (isLoading) {
@@ -96,7 +96,7 @@ const Integrations = () => {
                 isConnected={true}
                 connections={integration.connections}
                 onConnect={() => handleConnect(integration.id)}
-                onManage={(connectionId) => handleManage(integration.id, connectionId)}
+                onManage={handleManage}
               />
             ))}
           </div>

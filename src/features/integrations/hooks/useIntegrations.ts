@@ -29,7 +29,7 @@ export const useIntegrations = (): UseIntegrationsReturn => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const { data: integrations, isLoading, error } = useQuery({
-    queryKey: ['integrations'],
+    queryKey: ['integrations_public'],
     queryFn: fetchIntegrations
   });
 
