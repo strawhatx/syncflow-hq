@@ -41,29 +41,42 @@ const corsHeaders = {
 } as const;
 
 // Utility functions
-const validateHmac = async (params: Record<string, string>, secret: string, hmacToCompare: string): Promise<boolean> => {
+const validateHmac = async (
+  params: Record<string, string>,
+  secret: string,
+  hmacToCompare: string
+): Promise<boolean> => {
+  // Step 1: Build sorted param string (excluding hmac itself)
   const sortedParams = Object.entries(params)
     .filter(([key]) => key !== 'hmac')
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([key, value]) => `${key}=${value}`)
     .join('&');
 
-  const enc = new TextEncoder();
+  // Step 2: Create HMAC signature
+  const encoder = new TextEncoder();
   const key = await crypto.subtle.importKey(
     "raw",
-    enc.encode(secret),
+    encoder.encode(secret),
     { name: "HMAC", hash: "SHA-256" },
     false,
     ["sign"]
   );
 
-  const signature = await crypto.subtle.sign("HMAC", key, enc.encode(sortedParams));
+  const signature = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    encoder.encode(sortedParams)
+  );
+
   const calculatedHmac = Array.from(new Uint8Array(signature))
     .map(b => b.toString(16).padStart(2, '0'))
     .join('');
 
-  return calculatedHmac === hmacToCompare || calculatedHmac === hmacToCompare.toLowerCase();
+  // Step 3: Compare lowercased HMACs
+  return calculatedHmac === hmacToCompare.toLowerCase();
 };
+
 
 const processShopifyTokenUrl = (tokenUrl: string, shop: string): string => {
   const shopMatch = shop.match(/https?:\/\/([^.]+)\.myshopify\.com/);
@@ -104,7 +117,7 @@ const validateShopifyRequest = async (params: Record<string, string>, integratio
   }
 
   const isValid = await validateHmac(
-    { ...params, shop },
+    params,
     integration.client_secret,
     hmac
   );
@@ -127,7 +140,7 @@ const prepareTokenRequest = (
     }
   };
 
-  if (provider === 'Shopify') {
+  if (provider === 'shopify') {
     return {
       ...baseConfig,
       body: JSON.stringify({
@@ -175,7 +188,7 @@ Deno.serve(async (req) => {
     const { data: integration, error: integrationError } = await supabaseClient
       .from('integrations')
       .select('*')
-      .eq('name', provider)
+      .ilike('name', provider)
       .single();
 
     if (integrationError || !integration) {
@@ -183,7 +196,7 @@ Deno.serve(async (req) => {
     }
 
     // Provider-specific validation
-    if (provider === 'Shopify') {
+    if (provider === 'shopify') {
       await validateShopifyRequest(params, integration);
     }
 
@@ -193,7 +206,7 @@ Deno.serve(async (req) => {
 
     // Process token URL for provider-specific templates
     let tokenUrl = integration.token_url;
-    if (provider === 'Shopify' && params.shop) {
+    if (provider === 'shopify' && params.shop) {
       tokenUrl = processShopifyTokenUrl(tokenUrl, params.shop);
     }
 
