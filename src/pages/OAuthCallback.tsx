@@ -38,7 +38,7 @@ const OAuthCallback = () => {
         }
         
         // Process the callback
-        await processOAuthCallback(code, state, provider, searchParams);
+        await processOAuthCallback(state, provider, searchParams);
         
         // Invalidate queries to refresh data
         queryClient.invalidateQueries({ queryKey: ["integrations"] });

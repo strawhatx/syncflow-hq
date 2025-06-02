@@ -27,7 +27,7 @@ export function useOAuthCallback(
           setIsConnecting(true);
           
           // Process the OAuth callback
-          await processOAuthCallback(code, state, integration.name, searchParams);
+          await processOAuthCallback(state, integration.name, searchParams);
           
           // Invalidate integrations query to refresh the data
           queryClient.invalidateQueries({ queryKey: ['integrations_public'] });

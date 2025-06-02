@@ -46,7 +46,7 @@ const App = () => (
               <Route path="templates" element={<Templates />} />
               <Route path="integrations" element={<IntegrationsPage />} />
               <Route path="integrations/:id/connect" element={<IntegrationConnectPage />} />
-              <Route path="integrations/:integrationId/connections/:connectionId" element={<IntegrationDetail />} />
+              <Route path="connections/:connectionId" element={<IntegrationDetail />} />
               <Route path="logs" element={<Logs />} />
               <Route path="profile" element={<Profile />} />
             </Route>

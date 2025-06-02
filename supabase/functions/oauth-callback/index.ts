@@ -41,19 +41,23 @@ const corsHeaders = {
 } as const;
 
 // Utility functions
-const validateHmac = async (
-  params: Record<string, string>,
-  secret: string,
-  hmacToCompare: string
-): Promise<boolean> => {
-  // Step 1: Build sorted param string (excluding hmac itself)
+const validateHmac = async (params: Record<string, string>, secret: string, hmacToCompare: string): Promise<boolean> => {
+  // Log input parameters
+  console.log('HMAC Validation Input:', {
+    params,
+    secret: secret.substring(0, 5) + '...', // Only log first 5 chars of secret
+    hmacToCompare
+  });
+
   const sortedParams = Object.entries(params)
-    .filter(([key]) => key !== 'hmac')
+    .filter(([key]) => key !== 'hmac' && key !== 'signature')
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([key, value]) => `${key}=${value}`)
     .join('&');
 
-  // Step 2: Create HMAC signature
+  // Log sorted parameters
+  console.log('Sorted Parameters:', sortedParams);
+
   const encoder = new TextEncoder();
   const key = await crypto.subtle.importKey(
     "raw",
@@ -63,23 +67,23 @@ const validateHmac = async (
     ["sign"]
   );
 
-  const signature = await crypto.subtle.sign(
-    "HMAC",
-    key,
-    encoder.encode(sortedParams)
-  );
-
+  const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(sortedParams));
   const calculatedHmac = Array.from(new Uint8Array(signature))
     .map(b => b.toString(16).padStart(2, '0'))
     .join('');
 
-  // Step 3: Compare lowercased HMACs
+  // Log comparison
+  console.log('HMAC Comparison:', {
+    calculated: calculatedHmac,
+    received: hmacToCompare.toLowerCase(),
+    match: calculatedHmac === hmacToCompare.toLowerCase()
+  });
+
   return calculatedHmac === hmacToCompare.toLowerCase();
 };
 
-
 const processShopifyTokenUrl = (tokenUrl: string, shop: string): string => {
-  const shopMatch = shop.match(/https?:\/\/([^.]+)\.myshopify\.com/);
+  const shopMatch = shop.match(/^([a-z0-9-]+)\.myshopify\.com$/i);
   if (!shopMatch) {
     throw new Error('Invalid Shopify domain format');
   }
@@ -111,13 +115,27 @@ const createSuccessResponse = (data: unknown) => {
 };
 
 const validateShopifyRequest = async (params: Record<string, string>, integration: Integration): Promise<void> => {
-  const { hmac, shop } = params;
-  if (!hmac || !shop) {
+  const { hmac, shop, code } = params;
+  if (!hmac || !shop || !code) {
     throw new Error('Missing required Shopify parameters');
   }
 
+  // Log validation attempt
+  console.log('Validating Shopify Request:', {
+    shop,
+    hmac,
+    code,
+    params
+  });
+
+  // Create a new params object with all required parameters
+  const validationParams = {
+    ...params,
+    code // Ensure code is included in the validation
+  };
+
   const isValid = await validateHmac(
-    params,
+    validationParams,
     integration.client_secret,
     hmac
   );
@@ -172,7 +190,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { code, state, connectionName, provider, ...params } = await req.json() as OAuthCallbackRequest;
+    const { user_id, connectionName, provider, ...params } = await req.json() as OAuthCallbackRequest;
     
     if (!provider) {
       throw new Error('Provider not specified');
@@ -201,9 +219,8 @@ Deno.serve(async (req) => {
     }
 
     // Process state and get user ID
-    const stateData = JSON.parse(atob(state)) as StateData;
-    const { user_id } = stateData;
-
+    const stateData = JSON.parse(atob(params.state)) as StateData;
+  
     // Process token URL for provider-specific templates
     let tokenUrl = integration.token_url;
     if (provider === 'shopify' && params.shop) {
@@ -211,7 +228,7 @@ Deno.serve(async (req) => {
     }
 
     // Exchange code for tokens
-    const tokenRequestConfig = prepareTokenRequest(provider, integration, code, stateData);
+    const tokenRequestConfig = prepareTokenRequest(provider, integration, params.code, stateData);
     const tokenResponse = await fetch(tokenUrl, tokenRequestConfig);
 
     if (!tokenResponse.ok) {

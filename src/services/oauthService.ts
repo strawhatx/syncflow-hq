@@ -227,7 +227,6 @@ const exchangeToken = async (
 
 // Process OAuth callback
 export const processOAuthCallback = async (
-  code: string,
   state: string,
   provider: string,
   searchParams: URLSearchParams
@@ -246,13 +245,17 @@ export const processOAuthCallback = async (
       throw new Error("OAuth state expired");
     }
 
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError || !session?.user) {
+      throw new Error('User not authenticated');
+    }
+
     // Send to backend for processing
     const response = await fetch(`${import.meta.env.VITE_SUPABASE_API}/oauth-callback`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        code,
-        state,
+        user_id: session.user.id,
         provider,
         connectionName: stateData.connectionName,
         ...Object.fromEntries(searchParams.entries())
