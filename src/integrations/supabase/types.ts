@@ -51,53 +51,66 @@ export type Database = {
             referencedRelation: "integrations"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "integration_connections_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "integrations_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       integrations: {
         Row: {
           auth_type: string
+          auth_url: string | null
           category: string
+          client_id: string | null
+          client_secret: string | null
           created_at: string
           description: string
           icon: string | null
           id: string
           name: string
-          updated_at: string
-          auth_url: string | null
-          token_url: string | null
           redirect_url: string | null
-          scopes: string[] | null
           required_parameters: string[] | null
+          scopes: string[] | null
+          token_url: string | null
+          updated_at: string
         }
         Insert: {
           auth_type: string
+          auth_url?: string | null
           category: string
+          client_id?: string | null
+          client_secret?: string | null
           created_at?: string
           description: string
           icon?: string | null
           id?: string
           name: string
-          updated_at?: string
-          auth_url?: string | null
-          token_url?: string | null
           redirect_url?: string | null
-          scopes?: string[] | null
           required_parameters?: string[] | null
+          scopes?: string[] | null
+          token_url?: string | null
+          updated_at?: string
         }
         Update: {
           auth_type?: string
+          auth_url?: string | null
           category?: string
+          client_id?: string | null
+          client_secret?: string | null
           created_at?: string
           description?: string
           icon?: string | null
           id?: string
           name?: string
-          updated_at?: string
-          auth_url?: string | null
-          token_url?: string | null
           redirect_url?: string | null
-          scopes?: string[] | null
           required_parameters?: string[] | null
+          scopes?: string[] | null
+          token_url?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -129,20 +142,54 @@ export type Database = {
     Views: {
       integrations_public: {
         Row: {
-          id: string
-          name: string
-          description: string
-          icon: string | null
-          auth_type: string
-          category: string
+          auth_type: string | null
           auth_url: string | null
-          token_url: string | null
+          category: string | null
+          client_id: string | null
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string | null
+          name: string | null
           redirect_url: string | null
-          scopes: string[] | null
           required_parameters: string[] | null
-          created_at: string
-          updated_at: string
+          scopes: string[] | null
+          token_url: string | null
+          updated_at: string | null
         }
+        Insert: {
+          auth_type?: string | null
+          auth_url?: string | null
+          category?: string | null
+          client_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string | null
+          name?: string | null
+          redirect_url?: string | null
+          required_parameters?: string[] | null
+          scopes?: string[] | null
+          token_url?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          auth_type?: string | null
+          auth_url?: string | null
+          category?: string | null
+          client_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string | null
+          name?: string | null
+          redirect_url?: string | null
+          required_parameters?: string[] | null
+          scopes?: string[] | null
+          token_url?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
     }
     Functions: {
