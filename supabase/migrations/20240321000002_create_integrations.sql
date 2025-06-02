@@ -161,6 +161,7 @@ SELECT
   auth_url,
   token_url,
   redirect_url,
+  client_id,
   scopes,
   required_parameters,
   created_at,
