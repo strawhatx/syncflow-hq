@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
@@ -26,7 +27,7 @@ export function useOAuthCallback(
           setIsConnecting(true);
           
           // Process the OAuth callback
-          await processOAuthCallback(code, state);
+          await processOAuthCallback(code, state, integration.name, searchParams);
           
           // Invalidate integrations query to refresh the data
           queryClient.invalidateQueries({ queryKey: ['integrations_public'] });
@@ -62,7 +63,7 @@ export function useOAuthCallback(
         variant: "destructive",
       });
     }
-  }, [code, state, error, integration, setIsConnecting, queryClient, navigate]);
+  }, [code, state, error, integration, setIsConnecting, queryClient, navigate, searchParams]);
 
   return { code, state, error };
 }
