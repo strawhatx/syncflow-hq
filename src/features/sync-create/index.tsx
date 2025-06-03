@@ -7,6 +7,7 @@ import ConnectionStep from "./components/ConnectionStep";
 import EntityStep from "./components/EntityStep";
 import FieldsStep from "./components/FieldsStep";
 import DirectionStep from "./components/DirectionStep";
+import IntegrationConnectModal from "@/features/integration-connect/components/IntegrationConnectModal";
 
 const steps = [
   { id: 0, title: "Connections", description: "Select source and destination" },
@@ -50,6 +51,9 @@ const SyncCreate = () => {
   const [selectedEntity, setSelectedEntity] = useState<string | null>(null);
   const [syncDirection, setSyncDirection] = useState<"one-way" | "two-way">("one-way");
   const [conflictResolution, setConflictResolution] = useState<"source" | "destination" | "latest">("latest");
+  const [showConnectModal, setShowConnectModal] = useState(false);
+  const [connectIntegration, setConnectIntegration] = useState(null);
+  const [integrations, setIntegrations] = useState([]);
   
   const createSyncMutation = useMutation({
     mutationFn: async () => {
@@ -105,6 +109,12 @@ const SyncCreate = () => {
     }
   };
   
+  const handleCreateNewConnection = (integrationId) => {
+    const integration = integrations.find(i => i.id === integrationId);
+    setConnectIntegration(integration);
+    setShowConnectModal(true);
+  };
+  
   const renderStepContent = () => {
     switch (currentStep) {
       case 0:
@@ -118,6 +128,8 @@ const SyncCreate = () => {
             onDestinationSelect={setSelectedDestination}
             onSourceConnectionSelect={setSelectedSourceConnection}
             onDestinationConnectionSelect={setSelectedDestinationConnection}
+            onCreateNewConnection={handleCreateNewConnection}
+            setIntegrations={setIntegrations}
           />
         );
       case 1:
@@ -202,6 +214,13 @@ const SyncCreate = () => {
             : "Continue"}
         </button>
       </div>
+      {showConnectModal && connectIntegration && (
+        <IntegrationConnectModal
+          isOpen={showConnectModal}
+          onClose={() => setShowConnectModal(false)}
+          integration={connectIntegration}
+        />
+      )}
     </div>
   );
 };
