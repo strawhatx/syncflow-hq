@@ -11,7 +11,7 @@ export interface Integration {
   name: string;
   description: string;
   icon: string | null;
-  authType: AuthType;
+  auth_type: AuthType;
   category: string;
   scopes?: string[];
   requiredParameters?: string[];

@@ -49,13 +49,16 @@ const Syncs = () => {
     <div>
       <div className="mb-6 md:mb-8">
         <div className="flex justify-between items-center mb-2">
-          <h1 className="text-xl md:text-2xl font-semibold">Sync Syncs</h1>
-          <Link to="/syncs/create">
+          <h1 className="text-xl md:text-2xl font-semibold">Syncs</h1>
+
+          <Link to="/syncs/new">
             <Button>
               <Plus size={16} className="mr-2" />
-              Create Sync
+              New Sync
             </Button>
           </Link>
+       
+          
         </div>
         <p className="text-muted-foreground">Manage and monitor your data sync operations</p>
       </div>

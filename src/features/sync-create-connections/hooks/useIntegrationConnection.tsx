@@ -6,6 +6,8 @@ interface Integration {
   name: string;
   icon: string;
   description: string;
+  category: string;
+  auth_type: "oauth" | "api_key" | "basic";
 }
 
 interface Connection {
@@ -58,12 +60,15 @@ export const useIntegrationConnection = (integrationId: string | null) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('integrations_public')
-        .select('*');
+        .select('id, name, icon, description, category, auth_type');
       if (error) {
         console.error('Error fetching integrations:', error);
         throw error;
       }
-      return data || [];
+      return (data || []).map(i => ({
+        ...i,
+        auth_type: i.auth_type as "oauth" | "api_key" | "basic"
+      }));
     },
   });
 

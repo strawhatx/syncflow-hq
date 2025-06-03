@@ -1,33 +1,57 @@
-import { useState } from 'react';
-import { useCustomSelect } from '../hooks/useCustomSelect';
-import { CustomSelectButton } from '../helpers/CustomSelectButton';
-import { useIntegrationConnection } from '../hooks/useIntegrationConnection';
+import { useState, forwardRef, useImperativeHandle } from 'react';
+import { useCustomSelect } from '../../hooks/useCustomSelect';
+import { CustomSelectButton } from '../../helpers/CustomSelectButton';
+import { syncConfig, useIntegrationConnection } from '../../hooks/useIntegrationConnection';
+import IntegrationConnectModal from "@/features/integration-connect/components/IntegrationConnectModal";
 
 interface Integration {
   id: string;
   name: string;
   icon: string;
   description: string;
+  category: string;
+  auth_type: "oauth" | "api_key" | "basic";
 }
 
 type ConfigType = 'source' | 'destination';
 
-interface AppStepProps {
-  type: ConfigType;
-  onCreateNewConnection: (integration: Integration) => void;
-  onValidated?: (value: boolean) => void;
+export interface AppStepRef {
+  save: () => Promise<boolean>;
 }
 
-const AppStep = ({ type, onCreateNewConnection, onValidated }: AppStepProps) => {
+interface AppStepProps {
+  type: ConfigType;
+  syncId: string;
+}
+
+const AppStep = forwardRef<AppStepRef, AppStepProps>(({ type, syncId }, ref) => {
   const [app, setApp] = useState<string | null>(null);
   const [connection, setConnection] = useState<string | null>(null);
   const { CustomSelect, LoadingState } = useCustomSelect();
   const { integrations, connections, isLoadingIntegrations, isLoadingConnections } = useIntegrationConnection(app);
+  const [showConnectModal, setShowConnectModal] = useState(false);
+  const [connectIntegration, setConnectIntegration] = useState<Integration | null>(null);
+
+  useImperativeHandle(ref, () => ({
+    save: async () => {
+      if (!connection) return false;
+      try {
+        await syncConfig[type].save(syncId, connection);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+  }));
 
   const handleConnectionChange = (connectionId: string) => {
     setConnection(connectionId);
+  };
 
-    if (app && connection) onValidated(true);
+  const handleCreateNew = () => {
+    const integration = integrations.find(i => i.id === app);
+    setConnectIntegration(integration);
+    setShowConnectModal(true);
   };
 
   if (isLoadingIntegrations) {
@@ -63,15 +87,22 @@ const AppStep = ({ type, onCreateNewConnection, onValidated }: AppStepProps) => 
                   }))}
                   placeholder={`Select ${type} connection`}
                   isLoading={isLoadingConnections}
-                  onCreateNew={() => onCreateNewConnection(integrations.find(i => i.id === app))}
+                  onCreateNew={handleCreateNew}
                 />
               </div>
             )}
           </div>
         )}
       </div>
+      {showConnectModal && connectIntegration && (
+        <IntegrationConnectModal
+          isOpen={showConnectModal}
+          onClose={() => setShowConnectModal(false)}
+          integration={connectIntegration}
+        />
+      )}
     </div>
   );
-};
+});
 
 export default AppStep; 

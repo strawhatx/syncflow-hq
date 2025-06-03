@@ -11,7 +11,7 @@ interface Integration {
   icon: string;
   description: string;
   category: string;
-  authType: "oauth" | "api_key" | "basic";
+  auth_type: "oauth" | "api_key" | "basic";
 }
 
 interface IntegrationConnectModalProps {
@@ -54,7 +54,7 @@ const IntegrationConnectModal = ({ isOpen, onClose, integration }: IntegrationCo
 
           {/* Show the connection form here */}
           <div className="w-full max-w-md mb-6">
-            {integration.authType === "oauth" ? (
+            {integration.auth_type === "oauth" ? (
               <OAuthConnectForm
                 integration={integration}
                 isConnecting={isConnecting}
