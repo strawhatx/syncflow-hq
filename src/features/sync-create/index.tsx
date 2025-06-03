@@ -2,18 +2,21 @@ import { useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Sync, SyncDirection, ConflictResolution } from "@/integrations/supabase/types";
 import StepperHeader from "@/components/syncs/StepperHeader";
 import ConnectionStep from "./components/ConnectionStep";
 import EntityStep from "./components/EntityStep";
 import FieldsStep from "./components/FieldsStep";
 import DirectionStep from "./components/DirectionStep";
 import IntegrationConnectModal from "@/features/integration-connect/components/IntegrationConnectModal";
+import AppStep from "./components/AppStep";
 
 const steps = [
-  { id: 0, title: "Connections", description: "Select source and destination" },
-  { id: 1, title: "Entity", description: "Choose what to sync" },
-  { id: 2, title: "Fields", description: "Map data fields" },
-  { id: 3, title: "Direction", description: "Configure sync direction" },
+  { id: 0, title: "Source", description: "Select source" },
+  { id: 1, title: "Destination", description: "Select destination" },
+  { id: 2, title: "Entity", description: "Choose what to sync" },
+  { id: 3, title: "Fields", description: "Map data fields" },
+  { id: 4, title: "Direction", description: "Configure sync direction" },
 ];
 
 // Mock source fields - In a real app, these would come from the source integration
@@ -44,33 +47,34 @@ const destinationFields = [
 
 const SyncCreate = () => {
   const [currentStep, setCurrentStep] = useState(0);
-  const [selectedSource, setSelectedSource] = useState<string | null>(null);
-  const [selectedDestination, setSelectedDestination] = useState<string | null>(null);
-  const [selectedSourceConnection, setSelectedSourceConnection] = useState<string | null>(null);
-  const [selectedDestinationConnection, setSelectedDestinationConnection] = useState<string | null>(null);
-  const [selectedEntity, setSelectedEntity] = useState<string | null>(null);
+  const [sourceIsValidated, setSourceIsValidated] = useState(false);
+  const [destinationIsValidated, setDestinationIsValidated] = useState(false);
+   const [selectedEntity, setSelectedEntity] = useState<string | null>(null);
   const [syncDirection, setSyncDirection] = useState<"one-way" | "two-way">("one-way");
   const [conflictResolution, setConflictResolution] = useState<"source" | "destination" | "latest">("latest");
   const [showConnectModal, setShowConnectModal] = useState(false);
   const [connectIntegration, setConnectIntegration] = useState(null);
   const [integrations, setIntegrations] = useState([]);
-  
+
   const createSyncMutation = useMutation({
     mutationFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not authenticated");
 
+      const syncData = {
+        name: "New Sync",
+        user_id: user.id,
+        source_connection_id: selectedSourceConnection,
+        destination_connection_id: selectedDestinationConnection,
+        entity_type: selectedEntity,
+        sync_direction: syncDirection,
+        conflict_resolution: conflictResolution,
+        is_active: true,
+      };
+
       const { data: sync, error: syncError } = await supabase
         .from('syncs')
-        .insert({
-          name: "New Sync",
-          user_id: user.id,
-          source_integration_id: selectedSource,
-          destination_integration_id: selectedDestination,
-          entity_type: selectedEntity,
-          sync_direction: syncDirection,
-          conflict_resolution: conflictResolution,
-        })
+        .insert(syncData)
         .select()
         .single();
 
@@ -94,7 +98,7 @@ const SyncCreate = () => {
       return sync;
     },
   });
-  
+
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
@@ -102,51 +106,48 @@ const SyncCreate = () => {
       createSyncMutation.mutate();
     }
   };
-  
+
   const handleBack = () => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
   };
-  
+
   const handleCreateNewConnection = (integrationId) => {
     const integration = integrations.find(i => i.id === integrationId);
     setConnectIntegration(integration);
     setShowConnectModal(true);
   };
-  
+
   const renderStepContent = () => {
     switch (currentStep) {
       case 0:
         return (
-          <ConnectionStep
-            selectedSource={selectedSource}
-            selectedDestination={selectedDestination}
-            selectedSourceConnection={selectedSourceConnection}
-            selectedDestinationConnection={selectedDestinationConnection}
-            onSourceSelect={setSelectedSource}
-            onDestinationSelect={setSelectedDestination}
-            onSourceConnectionSelect={setSelectedSourceConnection}
-            onDestinationConnectionSelect={setSelectedDestinationConnection}
+          <AppStep
             onCreateNewConnection={handleCreateNewConnection}
-            setIntegrations={setIntegrations}
           />
         );
       case 1:
+        return (
+          <AppStep
+            onCreateNewConnection={handleCreateNewConnection}
+          />
+        );
+      case 2:
         return (
           <EntityStep
             selectedEntity={selectedEntity}
             onEntitySelect={setSelectedEntity}
           />
         );
-      case 2:
+      case 3:
         return (
           <FieldsStep
             sourceFields={sourceFields}
             destinationFields={destinationFields}
           />
         );
-      case 3:
+      case 4:
         return (
           <DirectionStep
             syncDirection={syncDirection}
@@ -159,26 +160,28 @@ const SyncCreate = () => {
         return null;
     }
   };
-  
+
   const isStepValid = () => {
     switch (currentStep) {
       case 0:
-        return !!selectedSource && !!selectedDestination && !!selectedSourceConnection && !!selectedDestinationConnection;
+        return sourceIsValidated;
       case 1:
-        return !!selectedEntity;
+        return destinationIsValidated;
       case 2:
-        return true; // Field mapping is optional
+        return !!selectedEntity;
       case 3:
+        return true; // Field mapping is optional
+      case 4:
         return true; // Direction is always valid
       default:
         return false;
     }
   };
-  
+
   return (
     <div>
       <div className="mb-6">
-        <button 
+        <button
           className="flex items-center text-muted-foreground hover:text-foreground transition-colors"
           onClick={() => window.history.back()}
         >
@@ -186,30 +189,30 @@ const SyncCreate = () => {
           <span>Back</span>
         </button>
       </div>
-      
+
       <StepperHeader steps={steps} currentStep={currentStep} />
-      
+
       <div className="mb-8">
         {renderStepContent()}
       </div>
-      
+
       <div className="flex justify-between">
-        <button 
+        <button
           className="px-3 py-1.5 text-sm rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
           onClick={handleBack}
           disabled={currentStep === 0}
         >
           Previous
         </button>
-        
-        <button 
+
+        <button
           className="px-3 py-1.5 text-sm rounded-md bg-primary text-white hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={handleNext}
           disabled={!isStepValid() || createSyncMutation.isPending}
         >
-          {currentStep === steps.length - 1 
-            ? createSyncMutation.isPending 
-              ? "Creating..." 
+          {currentStep === steps.length - 1
+            ? createSyncMutation.isPending
+              ? "Creating..."
               : "Create Sync"
             : "Continue"}
         </button>

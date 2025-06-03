@@ -142,8 +142,8 @@ export type Database = {
         Row: {
           id: string
           name: string
-          source_integration_id: string
-          destination_integration_id: string
+          source_connection_id: string
+          destination_connection_id: string
           entity_type: string
           sync_direction: 'one-way' | 'two-way'
           conflict_resolution: 'source' | 'destination' | 'latest'
@@ -155,8 +155,8 @@ export type Database = {
         Insert: {
           id?: string
           name: string
-          source_integration_id: string
-          destination_integration_id: string
+          source_connection_id: string
+          destination_connection_id: string
           entity_type: string
           sync_direction: 'one-way' | 'two-way'
           conflict_resolution: 'source' | 'destination' | 'latest'
@@ -168,8 +168,8 @@ export type Database = {
         Update: {
           id?: string
           name?: string
-          source_integration_id?: string
-          destination_integration_id?: string
+          source_connection_id?: string
+          destination_connection_id?: string
           entity_type?: string
           sync_direction?: 'one-way' | 'two-way'
           conflict_resolution?: 'source' | 'destination' | 'latest'
@@ -180,17 +180,17 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "syncs_source_integration_id_fkey"
-            columns: ["source_integration_id"]
+            foreignKeyName: "syncs_source_connection_id_fkey"
+            columns: ["source_connection_id"]
             isOneToOne: false
-            referencedRelation: "integrations"
+            referencedRelation: "integration_connections"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "syncs_destination_integration_id_fkey"
-            columns: ["destination_integration_id"]
+            foreignKeyName: "syncs_destination_connection_id_fkey"
+            columns: ["destination_connection_id"]
             isOneToOne: false
-            referencedRelation: "integrations"
+            referencedRelation: "integration_connections"
             referencedColumns: ["id"]
           },
           {
@@ -419,3 +419,20 @@ export const Constants = {
     Enums: {},
   },
 } as const
+
+export type SyncDirection = 'one-way' | 'two-way';
+export type ConflictResolution = 'source' | 'destination' | 'latest';
+
+export interface Sync {
+  id: string;
+  name: string;
+  user_id: string;
+  source_connection_id: string;
+  destination_connection_id: string;
+  entity_type: string;
+  sync_direction: SyncDirection;
+  conflict_resolution: ConflictResolution;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
