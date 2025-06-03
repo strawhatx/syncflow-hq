@@ -35,6 +35,11 @@ const IntegrationCard = ({
   onConnect,
   onManage 
 }: IntegrationCardProps) => {
+  const getImagePath = (icon_name: string) => {
+    if (!icon_name) return;
+    return `/svg/${icon_name}.svg`;
+  };
+
   const getStatusColor = (status: ConnectionStatus) => {
     switch (status) {
       case 'active':
@@ -51,12 +56,12 @@ const IntegrationCard = ({
   };
 
   return (
-    <div className="border rounded-lg p-4 hover:border-primary/50 transition-colors">
+    <div className="border rounded-lg p-4 hover:border-primary/50 transition-colors relative">
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className="flex-shrink-0 h-10 w-10 rounded bg-gray-100 flex items-center justify-center">
             <img 
-              src={icon || "https://via.placeholder.com/32"} 
+              src={getImagePath(icon) || "https://via.placeholder.com/32"} 
               alt={name} 
               className="h-6 w-6" 
               onError={(e) => (e.currentTarget.src = "https://via.placeholder.com/32")} 
@@ -67,32 +72,7 @@ const IntegrationCard = ({
             <p className="text-sm text-muted-foreground">{description}</p>
           </div>
         </div>
-        
-        {isConnected && connections.length > 0 && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                Manage
-                <ChevronDown className="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {connections.map((connection) => (
-                <DropdownMenuItem
-                  key={connection.id}
-                  onClick={() => onManage?.(connection.id)}
-                >
-                  <div className="flex items-center gap-2">
-                    <div className={`w-2 h-2 rounded-full ${getStatusColor(connection.status).split(' ')[0]}`} />
-                    <span>{connection.name}</span>
-                  </div>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
       </div>
-      
       {isConnected && connections.length > 0 ? (
         <div className="space-y-3 mb-4">
           {connections.slice(0, 2).map((connection) => (
@@ -108,7 +88,6 @@ const IntegrationCard = ({
               </Badge>
             </div>
           ))}
-          
           {connections.length > 2 && (
             <div className="text-sm text-muted-foreground">
               +{connections.length - 2} more connections
@@ -116,20 +95,36 @@ const IntegrationCard = ({
           )}
         </div>
       ) : null}
-      
-      <Button 
-        className="w-full" 
-        onClick={onConnect}
-      >
-        {isConnected ? (
-          <>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Connection
-          </>
-        ) : (
-          "Connect"
-        )}
-      </Button>
+      <div className="flex justify-end">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="w-full">
+              Manage
+              <ChevronDown className="ml-2 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-full" align="end">
+           
+            {isConnected && connections.length > 0 && connections.map((connection) => (
+              <DropdownMenuItem
+                key={connection.id}
+                onClick={() => onManage?.(connection.id)}
+              >
+                <div className="flex items-center gap-2">
+                  <div className={`w-2 h-2 rounded-full ${getStatusColor(connection.status).split(' ')[0]}`} />
+                  <span>{connection.name}</span>
+                </div>
+              </DropdownMenuItem>
+            ))} 
+
+            {isConnected && connections.length > 0 && <div className="border-t my-1" />}
+            <DropdownMenuItem onClick={onConnect}>
+              <Plus className="mr-2 h-4 w-4" /> Add Connection
+            </DropdownMenuItem>
+            
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </div>
   );
 };
