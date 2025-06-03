@@ -34,7 +34,7 @@ INSERT INTO public.integrations (
 (
   'Shopify',
   'Connect your Shopify store to sync products, orders, and customers',
-  'https://cdn.shopify.com/s/files/1/0533/2089/files/shopify-logo-small.png',
+  'shopify-icon',
   'oauth',
   'commerce',
   'https://{shop}.myshopify.com/admin/oauth/authorize',
@@ -51,7 +51,7 @@ INSERT INTO public.integrations (
 (
   'Notion',
   'Organize your e-commerce operations in Notion databases and pages',
-  'https://upload.wikimedia.org/wikipedia/commons/4/45/Notion_app_logo.png',
+  'notion-icon',
   'oauth',
   'productivity',
   'https://api.notion.com/v1/oauth/authorize',
@@ -67,7 +67,7 @@ INSERT INTO public.integrations (
 (
   'Google Sheets',
   'Use Google Sheets to store and manage your e-commerce data',
-  'https://upload.wikimedia.org/wikipedia/commons/3/30/Google_Sheets_logo_%282014-2020%29.svg',
+  'google_sheets-icon',
   'oauth',
   'database',
   'https://accounts.google.com/o/oauth2/v2/auth',
@@ -82,7 +82,7 @@ INSERT INTO public.integrations (
 (
   'Airtable',
   'Use Airtable as a powerful database for your e-commerce data',
-  'https://seeklogo.com/images/A/airtable-logo-216B9AF035-seeklogo.com.png',
+  'airtable-icon',
   'oauth',
   'database',
   'https://airtable.com/oauth2/v1/authorize',
@@ -99,7 +99,7 @@ INSERT INTO public.integrations (
 (
   'Klaviyo',
   'Sync customer data with Klaviyo for better email marketing',
-  'https://cdn.worldvectorlogo.com/logos/klaviyo-1.svg',
+  'klaviyo-icon',
   'api_key',
   'marketing',
   'https://www.klaviyo.com/oauth/authorize',
@@ -118,7 +118,7 @@ INSERT INTO public.integrations (
 (
   'Mailchimp',
   'Keep customer data in sync with your Mailchimp lists',
-  'https://cdn.worldvectorlogo.com/logos/mailchimp-freddie-icon.svg',
+  'mailchimp-icon',
   'api_key',
   'marketing',
   'https://login.mailchimp.com/oauth2/authorize',

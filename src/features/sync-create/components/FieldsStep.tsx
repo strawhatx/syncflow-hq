@@ -1,5 +1,5 @@
 import React from 'react';
-import FieldMapperItem from '../components/FieldMapperItem';
+import FieldMapperItem from '@/components/syncs/FieldMapperItem';
 
 interface Field {
   name: string;

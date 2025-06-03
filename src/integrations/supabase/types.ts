@@ -138,6 +138,111 @@ export type Database = {
         }
         Relationships: []
       }
+      syncs: {
+        Row: {
+          id: string
+          name: string
+          source_integration_id: string
+          destination_integration_id: string
+          entity_type: string
+          sync_direction: 'one-way' | 'two-way'
+          conflict_resolution: 'source' | 'destination' | 'latest'
+          is_active: boolean
+          created_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          source_integration_id: string
+          destination_integration_id: string
+          entity_type: string
+          sync_direction: 'one-way' | 'two-way'
+          conflict_resolution: 'source' | 'destination' | 'latest'
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          source_integration_id?: string
+          destination_integration_id?: string
+          entity_type?: string
+          sync_direction?: 'one-way' | 'two-way'
+          conflict_resolution?: 'source' | 'destination' | 'latest'
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "syncs_source_integration_id_fkey"
+            columns: ["source_integration_id"]
+            isOneToOne: false
+            referencedRelation: "integrations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "syncs_destination_integration_id_fkey"
+            columns: ["destination_integration_id"]
+            isOneToOne: false
+            referencedRelation: "integrations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "syncs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      field_mappings: {
+        Row: {
+          id: string
+          sync_id: string
+          source_field_name: string
+          source_field_type: string
+          destination_field_name: string
+          destination_field_type: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          sync_id: string
+          source_field_name: string
+          source_field_type: string
+          destination_field_name: string
+          destination_field_type: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          sync_id?: string
+          source_field_name?: string
+          source_field_type?: string
+          destination_field_name?: string
+          destination_field_type?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "field_mappings_sync_id_fkey"
+            columns: ["sync_id"]
+            isOneToOne: false
+            referencedRelation: "syncs"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       integrations_public: {

@@ -1,20 +1,18 @@
 import { useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
-import StepperHeader from "./components/StepperHeader";
-import SourceStep from "./components/SourceStep";
-import DestinationStep from "./components/DestinationStep";
+import { supabase } from "@/integrations/supabase/client";
+import StepperHeader from "@/components/syncs/StepperHeader";
+import ConnectionStep from "./components/ConnectionStep";
 import EntityStep from "./components/EntityStep";
 import FieldsStep from "./components/FieldsStep";
 import DirectionStep from "./components/DirectionStep";
 
 const steps = [
-  { id: 0, title: "Source", description: "Select a data source" },
-  { id: 1, title: "Destination", description: "Select where to send data" },
-  { id: 2, title: "Entity", description: "Choose what to sync" },
-  { id: 3, title: "Fields", description: "Map data fields" },
-  { id: 4, title: "Direction", description: "Configure sync direction" },
+  { id: 0, title: "Connections", description: "Select source and destination" },
+  { id: 1, title: "Entity", description: "Choose what to sync" },
+  { id: 2, title: "Fields", description: "Map data fields" },
+  { id: 3, title: "Direction", description: "Configure sync direction" },
 ];
 
 // Mock source fields - In a real app, these would come from the source integration
@@ -47,15 +45,22 @@ const SyncCreate = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedSource, setSelectedSource] = useState<string | null>(null);
   const [selectedDestination, setSelectedDestination] = useState<string | null>(null);
+  const [selectedSourceConnection, setSelectedSourceConnection] = useState<string | null>(null);
+  const [selectedDestinationConnection, setSelectedDestinationConnection] = useState<string | null>(null);
   const [selectedEntity, setSelectedEntity] = useState<string | null>(null);
   const [syncDirection, setSyncDirection] = useState<"one-way" | "two-way">("one-way");
   const [conflictResolution, setConflictResolution] = useState<"source" | "destination" | "latest">("latest");
   
   const createSyncMutation = useMutation({
     mutationFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not authenticated");
+
       const { data: sync, error: syncError } = await supabase
         .from('syncs')
         .insert({
+          name: "New Sync",
+          user_id: user.id,
           source_integration_id: selectedSource,
           destination_integration_id: selectedDestination,
           entity_type: selectedEntity,
@@ -104,34 +109,32 @@ const SyncCreate = () => {
     switch (currentStep) {
       case 0:
         return (
-          <SourceStep
+          <ConnectionStep
             selectedSource={selectedSource}
+            selectedDestination={selectedDestination}
+            selectedSourceConnection={selectedSourceConnection}
+            selectedDestinationConnection={selectedDestinationConnection}
             onSourceSelect={setSelectedSource}
+            onDestinationSelect={setSelectedDestination}
+            onSourceConnectionSelect={setSelectedSourceConnection}
+            onDestinationConnectionSelect={setSelectedDestinationConnection}
           />
         );
       case 1:
-        return (
-          <DestinationStep
-            selectedSource={selectedSource}
-            selectedDestination={selectedDestination}
-            onDestinationSelect={setSelectedDestination}
-          />
-        );
-      case 2:
         return (
           <EntityStep
             selectedEntity={selectedEntity}
             onEntitySelect={setSelectedEntity}
           />
         );
-      case 3:
+      case 2:
         return (
           <FieldsStep
             sourceFields={sourceFields}
             destinationFields={destinationFields}
           />
         );
-      case 4:
+      case 3:
         return (
           <DirectionStep
             syncDirection={syncDirection}
@@ -148,14 +151,12 @@ const SyncCreate = () => {
   const isStepValid = () => {
     switch (currentStep) {
       case 0:
-        return !!selectedSource;
+        return !!selectedSource && !!selectedDestination && !!selectedSourceConnection && !!selectedDestinationConnection;
       case 1:
-        return !!selectedDestination;
-      case 2:
         return !!selectedEntity;
-      case 3:
+      case 2:
         return true; // Field mapping is optional
-      case 4:
+      case 3:
         return true; // Direction is always valid
       default:
         return false;
@@ -182,7 +183,7 @@ const SyncCreate = () => {
       
       <div className="flex justify-between">
         <button 
-          className="px-4 py-2 rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
+          className="px-3 py-1.5 text-sm rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
           onClick={handleBack}
           disabled={currentStep === 0}
         >
@@ -190,7 +191,7 @@ const SyncCreate = () => {
         </button>
         
         <button 
-          className="px-4 py-2 rounded-md bg-primary text-white hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-3 py-1.5 text-sm rounded-md bg-primary text-white hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={handleNext}
           disabled={!isStepValid() || createSyncMutation.isPending}
         >

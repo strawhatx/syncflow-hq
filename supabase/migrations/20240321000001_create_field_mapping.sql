@@ -13,7 +13,8 @@ CREATE TABLE syncs (
     conflict_resolution conflict_resolution NOT NULL DEFAULT 'latest',
     is_active BOOLEAN DEFAULT true,
     created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    user_id UUID NOT NULL REFERENCES profiles(id)
 );
 
 -- Create field mappings table
@@ -28,9 +29,64 @@ CREATE TABLE field_mappings (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Enable RLS
 ALTER TABLE syncs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE field_mappings ENABLE ROW LEVEL SECURITY;
 
--- Create policies
-CREATE POLICY "Enable read access for all users" ON syncs FOR SELECT USING (true);
-CREATE POLICY "Enable read access for all users" ON field_mappings FOR SELECT USING (true);
+-- Create policies for syncs
+CREATE POLICY "Users can view their own syncs"
+    ON syncs FOR SELECT
+    USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can create their own syncs"
+    ON syncs FOR INSERT
+    WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their own syncs"
+    ON syncs FOR UPDATE
+    USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete their own syncs"
+    ON syncs FOR DELETE
+    USING (auth.uid() = user_id);
+
+-- Create policies for field mappings
+CREATE POLICY "Users can view field mappings for their syncs"
+    ON field_mappings FOR SELECT
+    USING (
+        EXISTS (
+            SELECT 1 FROM syncs
+            WHERE syncs.id = field_mappings.sync_id
+            AND syncs.user_id = auth.uid()
+        )
+    );
+
+CREATE POLICY "Users can create field mappings for their syncs"
+    ON field_mappings FOR INSERT
+    WITH CHECK (
+        EXISTS (
+            SELECT 1 FROM syncs
+            WHERE syncs.id = field_mappings.sync_id
+            AND syncs.user_id = auth.uid()
+        )
+    );
+
+CREATE POLICY "Users can update field mappings for their syncs"
+    ON field_mappings FOR UPDATE
+    USING (
+        EXISTS (
+            SELECT 1 FROM syncs
+            WHERE syncs.id = field_mappings.sync_id
+            AND syncs.user_id = auth.uid()
+        )
+    );
+
+CREATE POLICY "Users can delete field mappings for their syncs"
+    ON field_mappings FOR DELETE
+    USING (
+        EXISTS (
+            SELECT 1 FROM syncs
+            WHERE syncs.id = field_mappings.sync_id
+            AND syncs.user_id = auth.uid()
+        )
+    );

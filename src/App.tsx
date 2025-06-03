@@ -5,12 +5,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import DashboardPage from "./pages/Dashboard";
 import Syncs from "./pages/Syncs";
-import SyncCreate from "./pages/SyncCreate";
+import SyncCreatePage from "./pages/SyncCreate";
 import SyncDetails from "./pages/SyncDetails";
 import Templates from "./pages/Templates";
 import IntegrationsPage from "./pages/Integrations";
-import IntegrationConnectPage from "./pages/IntegrationConnect";
-import IntegrationDetail from "./pages/IntegrationDetail";
+import IntegrationDetailPage from "./pages/IntegrationDetail";
 import OAuthCallback from "./pages/OAuthCallback";
 import Logs from "./pages/Logs";
 import NotFound from "./pages/NotFound";
@@ -41,12 +40,11 @@ const App = () => (
             }>
               <Route path="dashboard" element={<DashboardPage />} />
               <Route path="syncs" element={<Syncs />} />
-              <Route path="syncs/create" element={<SyncCreate />} />
+              <Route path="syncs/create" element={<SyncCreatePage />} />
               <Route path="syncs/:id" element={<SyncDetails />} />
               <Route path="templates" element={<Templates />} />
               <Route path="integrations" element={<IntegrationsPage />} />
-              <Route path="integrations/:id/connect" element={<IntegrationConnectPage />} />
-              <Route path="connections/:connectionId" element={<IntegrationDetail />} />
+              <Route path="connections/:connectionId" element={<IntegrationDetailPage />} />
               <Route path="logs" element={<Logs />} />
               <Route path="profile" element={<Profile />} />
             </Route>

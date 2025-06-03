@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { Plus, Search, Loader2 } from "lucide-react";
 import IntegrationCard from "./components/IntegrationCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useIntegrations, categories } from "./hooks/useIntegrations";
+import IntegrationConnectModal from "../integration-connect/components/IntegrationConnectModal";
+import { IntegrationWithConnections } from "@/services/integrationService";
 
 const Integrations = () => {
   const navigate = useNavigate();
@@ -18,8 +21,10 @@ const Integrations = () => {
     error
   } = useIntegrations();
 
-  const handleConnect = (integrationId: string) => {
-    navigate(`/integrations/${integrationId}/connect`);
+  const [selectedIntegration, setSelectedIntegration] = useState<IntegrationWithConnections | null>(null);
+
+  const handleConnect = (integration: IntegrationWithConnections) => {
+    setSelectedIntegration(integration);
   };
   
   const handleManage = (connectionId: string) => {
@@ -95,7 +100,7 @@ const Integrations = () => {
                 description={integration.description}
                 isConnected={true}
                 connections={integration.connections}
-                onConnect={() => handleConnect(integration.id)}
+                onConnect={() => handleConnect(integration)}
                 onManage={handleManage}
               />
             ))}
@@ -114,11 +119,19 @@ const Integrations = () => {
               description={integration.description}
               isConnected={false}
               connections={[]}
-              onConnect={() => handleConnect(integration.id)}
+              onConnect={() => handleConnect(integration)}
             />
           ))}
         </div>
       </div>
+
+      {selectedIntegration && (
+        <IntegrationConnectModal
+          isOpen={!!selectedIntegration}
+          onClose={() => setSelectedIntegration(null)}
+          integration={selectedIntegration}
+        />
+      )}
     </div>
   );
 };
