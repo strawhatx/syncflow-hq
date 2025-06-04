@@ -1,0 +1,1 @@
+ALTER TABLE syncs ADD COLUMN IF NOT EXISTS setup_stage TEXT DEFAULT 'connections'; 

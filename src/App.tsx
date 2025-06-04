@@ -18,52 +18,62 @@ import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { AuthProvider } from "./contexts/AuthContext";
 import { SidebarLayout, SidebarSyncLayout } from "./layouts/Index";
-import Sync from "./pages/SyncCreateConnections";
 import SyncCreateMappings from "./features/sync-create-mappings";
 import SyncCreateConnections from "./features/sync-create-connections";
 import SyncCreateAuthorize from "./pages/SyncCreateAuthorize";
-
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { HeaderContentProvider } from '@/contexts/HeaderContentContext';
+import { SidebarClosedLayout } from "./layouts/SidebarClosedLayout";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<IndexPage />} />
-            <Route path="/auth" element={<AuthPage />} />
-            <Route path="/:provider/callback" element={<OAuthCallback />} />
+    <HeaderContentProvider>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<IndexPage />} />
+              <Route path="/auth" element={<AuthPage />} />
+              <Route path="/:provider/callback" element={<OAuthCallback />} />
 
-            <Route path="/syncs" element={
-              <ProtectedRoute> <SidebarSyncLayout currentStep={0} />  </ProtectedRoute>
-            }>
-              <Route path="syncs/edit/connect/:id" element={<SyncCreateConnections />} />
-              <Route path="syncs/edit/mapping/:id" element={<SyncCreateMappings />} />
-              <Route path="syncs/edit/authorize/:id" element={<SyncCreateAuthorize />} />
-            </Route>
+              <Route path="/syncs/edit/" element={
+                <ProtectedRoute> <SidebarSyncLayout currentStep={0} />  </ProtectedRoute>
+              }>
+                <Route path="sync/edit/connect/:id" element={<SyncCreateConnections />} />
+                <Route path="sync/edit/mapping/:id" element={<SyncCreateMappings />} />
+                <Route path="sync/edit/authorize/:id" element={<SyncCreateAuthorize />} />
+              </Route>
 
-            <Route path="/" element={
-              <ProtectedRoute> <SidebarLayout />  </ProtectedRoute>
-            }>
-               <Route path="syncs" element={<Syncs />} />
-              <Route path="syncs/:id" element={<SyncDetails />} />
-              <Route path="dashboard" element={<DashboardPage />} />
-              <Route path="integrations" element={<IntegrationsPage />} />
-              <Route path="connections/:connectionId" element={<IntegrationDetailPage />} />
-              <Route path="logs" element={<Logs />} />
-              <Route path="profile" element={<Profile />} />  
-              <Route path="templates" element={<Templates />} />
-            </Route>
+              <Route path="/" element={
+                <ProtectedRoute> <SidebarClosedLayout />  </ProtectedRoute>
+              }>
+                 <Route path="templates" element={<Templates />} />
+              </Route>
 
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
+              <Route path="/" element={
+                <ProtectedRoute> <SidebarLayout />  </ProtectedRoute>
+              }>
+                <Route path="syncs" element={<Syncs />} />
+                <Route path="syncs/:id" element={<SyncDetails />} />
+                <Route path="dashboard" element={<DashboardPage />} />
+                <Route path="integrations" element={<IntegrationsPage />} />
+                <Route path="connections/:connectionId" element={<IntegrationDetailPage />} />
+                <Route path="logs" element={<Logs />} />
+                <Route path="profile" element={<Profile />} />
+               
+              </Route>
+
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </HeaderContentProvider>
+    <ReactQueryDevtools initialIsOpen={false} />
   </QueryClientProvider>
 );
 

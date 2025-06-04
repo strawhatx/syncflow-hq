@@ -151,6 +151,7 @@ export type Database = {
           created_at: string
           updated_at: string
           user_id: string
+          setup_stage: string
         }
         Insert: {
           id?: string
@@ -164,6 +165,7 @@ export type Database = {
           created_at?: string
           updated_at?: string
           user_id: string
+          setup_stage?: string
         }
         Update: {
           id?: string
@@ -177,6 +179,7 @@ export type Database = {
           created_at?: string
           updated_at?: string
           user_id?: string
+          setup_stage?: string
         }
         Relationships: [
           {
@@ -435,4 +438,40 @@ export interface Sync {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export type TemplateCategory = {
+  id: string;
+  name: string;
+  description: string | null;
+  created_at: string;
+}
+
+export type Template = {
+  id: string;
+  name: string;
+  source_integration_id: string;
+  destination_integration_id: string;
+  sync_direction: SyncDirection;
+  matching_key: string;
+  field_mappings: Json;
+  description: string | null;
+  category_id: string;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  source_integration: {
+    id: string;
+    name: string;
+    icon: string | null;
+  };
+  destination_integration: {
+    id: string;
+    name: string;
+    icon: string | null;
+  };
+  category: {
+    id: string;
+    name: string;
+  };
 }
