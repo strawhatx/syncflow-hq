@@ -98,9 +98,7 @@ const UserProfile = ({ avatarUrl, avatarFallback, fullName, email, onNavigate }:
     </SidebarMenuButton>
 );
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-    // Note: I'm using state to show active item.
-    // IRL you should use the url/router.
+export function DoubleSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const { content } = useHeaderContent();
     const { signOut } = useAuth();
     const { profile } = useProfile();
@@ -112,18 +110,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const email = profile?.email || "Not available";
     
     return (
-        <Sidebar
-            collapsible="icon"
-            className="overflow-hidden *:data-[sidebar=sidebar]:flex-row"
-            {...props}
-        >
-            {/* This is the first sidebar */}
-            {/* We disable collapsible and adjust width to icon. */}
-            {/* This will make the sidebar appear as icons. */}
-            <Sidebar
-                collapsible="none"
-                className="w-[calc(var(--sidebar-width-icon)+1px)]! border-r"
-            >
+        <div className="flex h-screen">
+            {/* First sidebar - fixed icon-only */}
+            <div className="w-[calc(var(--sidebar-width-icon)+1px)] border-r bg-sidebar flex flex-col">
                 <SidebarHeader>
                     <BrandLogo />
                 </SidebarHeader>
@@ -162,12 +151,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         />
                     </SidebarMenu>
                 </SidebarFooter>
-            </Sidebar>
+            </div>
 
-            {/* This is the second sidebar */}
-            {/* We disable collapsible and let it fill remaining space */}
-            {/* <Sidebar collapsible="none" className="hidden flex-1 md:flex">*/}
-            {content}
-        </Sidebar>
+            {/* Second sidebar - content */}
+            <div className="w-[350px] border-r bg-sidebar">
+                
+            </div>
+        </div>
     )
 }

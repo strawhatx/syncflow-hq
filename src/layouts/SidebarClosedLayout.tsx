@@ -5,6 +5,7 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from "../components/ui/
 import { Separator } from "../components/ui/separator";
 import Sidebar from "../components/layout/Sidebar";
 import { useHeaderContent } from "@/contexts/HeaderContentContext";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Sidebar Layout
 interface BreadcrumbItem {
@@ -41,15 +42,16 @@ export const SidebarClosedLayout = () => {
     const location = useLocation();
     const breadcrumbs = generateBreadcrumbs(location.pathname);
     const { content } = useHeaderContent();
+    const isMobile = useIsMobile();
 
     return (
-        <SidebarProvider>
+        <SidebarProvider defaultOpen={false}>
             <Sidebar />
             <SidebarInset>
                 <header className="flex h-16 shrink-0 items-center justify-between gap-2 px-4 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
                     {/* Breadcrumbs on the Left */}
                     <div className="flex items-center gap-2">
-                        <SidebarTrigger />
+                        <SidebarTrigger disabled={!isMobile} />
                         <Separator orientation="vertical" className="mr-2 h-4" />
                         {breadcrumbs.length > 0 && (
                             <Breadcrumb>

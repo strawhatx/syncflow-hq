@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import DashboardPage from "./pages/Dashboard";
 import Syncs from "./pages/Syncs";
 import SyncDetails from "./pages/SyncDetails";
-import Templates from "./pages/Templates";
+import TemplatesPage from "./pages/Templates";
 import IntegrationsPage from "./pages/Integrations";
 import IntegrationDetailPage from "./pages/IntegrationDetail";
 import OAuthCallback from "./pages/OAuthCallback";
@@ -36,37 +36,36 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
+              {/* Public Routes */}
               <Route path="/" element={<IndexPage />} />
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/:provider/callback" element={<OAuthCallback />} />
 
-              <Route path="/syncs/edit/" element={
-                <ProtectedRoute> <SidebarSyncLayout currentStep={0} />  </ProtectedRoute>
-              }>
-                <Route path="sync/edit/connect/:id" element={<SyncCreateConnections />} />
-                <Route path="sync/edit/mapping/:id" element={<SyncCreateMappings />} />
-                <Route path="sync/edit/authorize/:id" element={<SyncCreateAuthorize />} />
+              {/* Protected Routes with SidebarClosedLayout */}
+              <Route element={<ProtectedRoute><SidebarClosedLayout /></ProtectedRoute>}>
+                <Route path="/templates" element={<TemplatesPage />} />
+                <Route path="/templates/:category" element={<TemplatesPage />} />
               </Route>
 
-              <Route path="/" element={
-                <ProtectedRoute> <SidebarClosedLayout />  </ProtectedRoute>
-              }>
-                 <Route path="templates" element={<Templates />} />
+              {/* Protected Routes with SidebarSyncLayout */}
+              <Route element={<ProtectedRoute><SidebarSyncLayout currentStep={0} /></ProtectedRoute>}>
+                <Route path="/syncs/edit/connect/:id" element={<SyncCreateConnections />} />
+                <Route path="/syncs/edit/mapping/:id" element={<SyncCreateMappings />} />
+                <Route path="/syncs/edit/authorize/:id" element={<SyncCreateAuthorize />} />
               </Route>
 
-              <Route path="/" element={
-                <ProtectedRoute> <SidebarLayout />  </ProtectedRoute>
-              }>
-                <Route path="syncs" element={<Syncs />} />
-                <Route path="syncs/:id" element={<SyncDetails />} />
-                <Route path="dashboard" element={<DashboardPage />} />
-                <Route path="integrations" element={<IntegrationsPage />} />
-                <Route path="connections/:connectionId" element={<IntegrationDetailPage />} />
-                <Route path="logs" element={<Logs />} />
-                <Route path="profile" element={<Profile />} />
-               
+              {/* Protected Routes with Main SidebarLayout */}
+              <Route element={<ProtectedRoute><SidebarLayout /></ProtectedRoute>}>
+                <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/syncs" element={<Syncs />} />
+                <Route path="/syncs/:id" element={<SyncDetails />} />
+                <Route path="/integrations" element={<IntegrationsPage />} />
+                <Route path="/connections/:connectionId" element={<IntegrationDetailPage />} />
+                <Route path="/logs" element={<Logs />} />
+                <Route path="/profile" element={<Profile />} />
               </Route>
 
+              {/* Catch all route */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
