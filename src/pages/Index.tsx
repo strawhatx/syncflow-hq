@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -49,9 +48,6 @@ const IndexPage = () => {
             <span className="text-xl font-bold">SyncStack</span>
           </div>
           <nav className="hidden md:flex items-center gap-6">
-            <Link to="/templates" className="text-muted-foreground hover:text-foreground transition-colors">
-              Templates
-            </Link>
             <Link to="/integrations" className="text-muted-foreground hover:text-foreground transition-colors">
               Integrations
             </Link>

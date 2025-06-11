@@ -1,43 +1,47 @@
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, useParams, useNavigate } from "react-router-dom";
 import { BreadcrumbPage, BreadcrumbSeparator } from "../components/ui/breadcrumb";
 import { BreadcrumbItem, BreadcrumbList, BreadcrumbLink, Breadcrumb } from "../components/ui/breadcrumb";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "../components/ui/sidebar";
 import { Separator } from "../components/ui/separator";
 import Sidebar from "../components/layout/Sidebar";
 import { useHeaderContent } from '@/contexts/HeaderContentContext';
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
-const steps = [
-    { label: "Connections" },
-    { label: "Mappings" },
-    { label: "Authorize" },
-];
+const stepsConfig = {
+    0: { label: "Connections", path: "connect" },
+    1: { label: "Mappings", path: "mapping" },
+    2: { label: "Authorize", path: "authorize" },
+} as const;
 
-const formatPathSegment = (segment: string): string => {
-    return segment
-        .split('-')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
-};
+const steps = Object.entries(stepsConfig).map(([step, config]) => ({
+    ...config,
+    step: parseInt(step)
+}));
 
-const generateBreadcrumbs = (pathname: string): { name: string; href: string }[] => {
-    const segments = pathname.split('/').filter(Boolean);
-    const breadcrumbs: { name: string; href: string }[] = [];
-    let currentPath = '';
-
-    segments.forEach((segment, index) => {
-        currentPath += `/${segment}`;
-        breadcrumbs.push({
-            name: formatPathSegment(segment),
-            href: currentPath
-        });
-    });
-    return breadcrumbs;
-};
-
-const SidebarSyncLayout = ({ currentStep = 0 }: { currentStep?: number }) => {
-    const location = useLocation();
-    const breadcrumbs = generateBreadcrumbs(location.pathname);
+const SidebarSyncLayout = () => {
     const { content } = useHeaderContent();
+    const { id } = useParams();
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    // Get the current step based on the URL path
+    const getCurrentStep = () => {
+        const path = location.pathname;
+        const step = steps.find(s => path.includes(s.path));
+        return step?.step ?? 0;
+    };
+
+    const currentStepIndex = getCurrentStep();
+
+    const handleStepClick = (index: number) => {
+        // Only allow navigation to previous steps or the current step
+        if (index <= currentStepIndex) {
+            navigate(`/syncs/edit/${steps[index].path}/${id}`);
+        }
+    };
 
     return (
         <SidebarProvider defaultOpen>
@@ -47,45 +51,49 @@ const SidebarSyncLayout = ({ currentStep = 0 }: { currentStep?: number }) => {
                     <div className="flex items-center gap-2">
                         <SidebarTrigger />
                         <Separator orientation="vertical" className="mr-2 h-4" />
-                        {breadcrumbs.length > 0 && (
-                            <Breadcrumb>
-                                <BreadcrumbList>
-                                    {breadcrumbs.map((item, index) => (
-                                        <BreadcrumbItem key={item.href} className={index === breadcrumbs.length - 1 ? "font-semibold" : ""}>
-                                            {index === breadcrumbs.length - 1 ? (
-                                                <BreadcrumbPage>{item.name}</BreadcrumbPage>
-                                            ) : (
-                                                <BreadcrumbLink href={item.href}>{item.name}</BreadcrumbLink>
-                                            )}
-                                            {index < breadcrumbs.length - 1 && <BreadcrumbSeparator />}
-                                        </BreadcrumbItem>
-                                    ))}
-                                </BreadcrumbList>
-                            </Breadcrumb>
-                        )}
+                        <Breadcrumb>
+                            <BreadcrumbList>
+                                <BreadcrumbItem >
+                                    <BreadcrumbLink href={"/syncs"}>Syncs</BreadcrumbLink>
+                                    <BreadcrumbSeparator />
+                                </BreadcrumbItem>
+
+                                <BreadcrumbItem className='font-semibold'>
+                                    <BreadcrumbPage>{id}</BreadcrumbPage>
+                                </BreadcrumbItem>
+                            </BreadcrumbList>
+                        </Breadcrumb>
                     </div>
                     <div>{content}</div>
                 </header>
                 <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
                     {/* Stepper */}
-                    <div className="w-full max-w-4xl mx-auto pt-8">
-                        <div className="flex items-center justify-center mb-8">
-                            {steps.map((step, idx) => (
-                                <div key={step.label} className="flex items-center">
-                                    <div
-                                        className={`px-4 pb-2 text-lg font-medium transition ${currentStep === idx
-                                            ? "text-primary border-b-2 border-primary"
-                                            : "text-muted-foreground"
-                                            }`}
-                                    >
-                                        {step.label}
+                    <div className="w-full max-w-4xl mx-auto pt-4">
+                        <Tabs value={steps[currentStepIndex].path} className="space-y-4">
+                            <TabsList>
+                                {steps.map((step, idx) => (
+                                    <div key={step.label} className="flex items-center flex-1">
+                                        <TabsTrigger
+                                            value={step.path}
+                                            onClick={() => handleStepClick(idx)}
+                                            disabled={idx > currentStepIndex}
+                                            className={cn(
+                                                "flex-1 gap-2",
+                                                idx > currentStepIndex && "text-muted-foreground cursor-not-allowed"
+                                            )}
+                                        >
+                                            <Badge variant={idx === currentStepIndex ? "default" : "outline"} className="h-5 w-5 p-0 flex items-center justify-center">
+                                                {idx + 1}
+                                            </Badge>
+                                            {step.label}
+                                        </TabsTrigger>
+                                        {idx < steps.length - 1 && (
+                                            <ChevronRight className="w-4 h-4 mx-2 text-muted-foreground" />
+                                        )}
                                     </div>
-                                    {idx < steps.length - 1 && (
-                                        <div className="w-8 h-0.5 bg-border mx-2" />
-                                    )}
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </TabsList>
+                        </Tabs>
                         {/* Step Content */}
                         <Outlet />
                     </div>

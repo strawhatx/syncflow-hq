@@ -1,5 +1,6 @@
 import { memo } from "react";
-import SyncStatusCard from "@/features/dashboard/components/SyncStatusCard";
+import SyncStatusCard from "@/components/syncs/SyncStatusCard";
+import { SetupStage } from "@/integrations/supabase/types";
 
 type Sync = {
   id: string;
@@ -9,7 +10,7 @@ type Sync = {
   source?: any;
   destination?: any;
   entityCount?: number;
-  setup_stage?: string;
+  setup_stage?: SetupStage;
 };
 
 const SyncsGrid = memo(({ syncs }: { syncs: Sync[] }) => (
@@ -23,11 +24,13 @@ const SyncsGrid = memo(({ syncs }: { syncs: Sync[] }) => (
           key={sync.id}
           title={sync.name}
           status={status}
+          is_completed={sync.setup_stage === "complete"}
           lastSync={sync.lastSync}
           source={sync.source}
           destination={sync.destination}
           entityCount={sync.entityCount}
           syncId={sync.id}
+          setup_stage={sync.setup_stage}
         />
       );
     })}

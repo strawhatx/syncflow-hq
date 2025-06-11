@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useCallback } from "react";
+import { SetupStage } from "@/integrations/supabase/types";
 
 export type Sync = {
   id: string;
@@ -11,11 +12,18 @@ export type Sync = {
   source?: any;
   destination?: any;
   entityCount?: number;
-  setup_stage?: string;
+  setup_stage?: SetupStage;
 };
 
 const fetchSyncs = async (): Promise<Sync[]> => {
-  const { data, error } = await supabase.from("syncs").select("*");
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("User not authenticated");
+  
+  const { data, error } = await supabase
+    .from("syncs")
+    .select("*")
+    .eq("user_id", user.id);
+    
   if (error) throw error;
   return data || [];
 };
@@ -37,14 +45,14 @@ const useSyncs = (search: string) => {
         .from("syncs")
         .insert({
           name: "Untitled Sync",
+          user_id: user.id,
           source_connection_id: null,
           destination_connection_id: null,
-          entity_type: null,
+          entity_type: "none",
           sync_direction: "two-way",
           conflict_resolution: "latest",
           is_active: true,
-          user_id: user.id,
-          setup_stage: "connections",
+          setup_stage: "connect" as SetupStage,
         })
         .select()
         .single();
@@ -53,7 +61,7 @@ const useSyncs = (search: string) => {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["syncs"] });
-      navigate(`/syncs/${data.id}`);
+      navigate(`/syncs/edit/connect/${data.id}`);
     },
   });
 

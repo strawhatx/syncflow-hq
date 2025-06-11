@@ -142,6 +142,7 @@ export type Database = {
         Row: {
           id: string
           name: string
+          user_id: string
           source_connection_id: string
           destination_connection_id: string
           entity_type: string
@@ -150,12 +151,12 @@ export type Database = {
           is_active: boolean
           created_at: string
           updated_at: string
-          user_id: string
-          setup_stage: string
+          setup_stage: SetupStage
         }
         Insert: {
           id?: string
           name: string
+          user_id: string
           source_connection_id: string
           destination_connection_id: string
           entity_type: string
@@ -164,12 +165,12 @@ export type Database = {
           is_active?: boolean
           created_at?: string
           updated_at?: string
-          user_id: string
-          setup_stage?: string
+          setup_stage?: SetupStage
         }
         Update: {
           id?: string
           name?: string
+          user_id?: string
           source_connection_id?: string
           destination_connection_id?: string
           entity_type?: string
@@ -178,10 +179,16 @@ export type Database = {
           is_active?: boolean
           created_at?: string
           updated_at?: string
-          user_id?: string
-          setup_stage?: string
+          setup_stage?: SetupStage
         }
         Relationships: [
+          {
+            foreignKeyName: "syncs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "syncs_source_connection_id_fkey"
             columns: ["source_connection_id"]
@@ -194,13 +201,6 @@ export type Database = {
             columns: ["destination_connection_id"]
             isOneToOne: false
             referencedRelation: "integration_connections"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "syncs_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
             referencedColumns: ["id"]
           }
         ]
@@ -425,11 +425,11 @@ export const Constants = {
 
 export type SyncDirection = 'one-way' | 'two-way';
 export type ConflictResolution = 'source' | 'destination' | 'latest';
+export type SetupStage = 'connect' | 'mapping' | 'authorize' | 'complete';
 
 export interface Sync {
   id: string;
   name: string;
-  user_id: string;
   source_connection_id: string;
   destination_connection_id: string;
   entity_type: string;
@@ -438,6 +438,7 @@ export interface Sync {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  setup_stage: SetupStage;
 }
 
 export type TemplateCategory = {

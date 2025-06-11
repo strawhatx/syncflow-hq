@@ -1,7 +1,7 @@
 
 import { Activity, ArrowRight, ArrowUpDown, RefreshCw } from "lucide-react";
 import StatCard from "./components/StatCard";
-import SyncStatusCard from "./components/SyncStatusCard";
+import SyncStatusCard from "@/components/syncs/SyncStatusCard";
 import SyncActivityLog from "./components/SyncActivityLog";
 
 // Mock data
@@ -38,7 +38,8 @@ const syncSyncs = [
     source: { name: "Shopify", icon: "https://cdn.shopify.com/s/files/1/0533/2089/files/shopify-logo-small.png" },
     destination: { name: "Airtable", icon: "https://seeklogo.com/images/A/airtable-logo-216B9AF035-seeklogo.com.png" },
     entityCount: 852,
-    syncId: "1"
+    syncId: "1",
+    is_completed: true
   },
   {
     title: "Orders to Notion",
@@ -47,7 +48,8 @@ const syncSyncs = [
     source: { name: "Shopify", icon: "https://cdn.shopify.com/s/files/1/0533/2089/files/shopify-logo-small.png" },
     destination: { name: "Notion", icon: "https://upload.wikimedia.org/wikipedia/commons/4/45/Notion_app_logo.png" },
     entityCount: 1243,
-    syncId: "2"
+    syncId: "2",
+    is_completed: true
   },
   {
     title: "Customer Data",
@@ -56,7 +58,8 @@ const syncSyncs = [
     source: { name: "Shopify", icon: "https://cdn.shopify.com/s/files/1/0533/2089/files/shopify-logo-small.png" },
     destination: { name: "Klaviyo", icon: "https://cdn.worldvectorlogo.com/logos/klaviyo-1.svg" },
     entityCount: 3287,
-    syncId: "3"
+    syncId: "3",
+    is_completed: false
   },
 ];
 
@@ -139,6 +142,7 @@ const Dashboard = () => {
               key={index}
               title={sync.title}
               status={sync.status}
+              is_completed={sync?.is_completed ?? false}
               lastSync={sync.lastSync}
               source={sync.source}
               destination={sync.destination}

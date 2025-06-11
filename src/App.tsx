@@ -6,11 +6,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import DashboardPage from "./pages/Dashboard";
 import Syncs from "./pages/Syncs";
 import SyncDetails from "./pages/SyncDetails";
-import TemplatesPage from "./pages/Templates";
 import IntegrationsPage from "./pages/Integrations";
 import IntegrationDetailPage from "./pages/IntegrationDetail";
 import OAuthCallback from "./pages/OAuthCallback";
-import Logs from "./pages/Logs";
 import NotFound from "./pages/NotFound";
 import IndexPage from "./pages/Index";
 import AuthPage from "./pages/Auth";
@@ -23,7 +21,6 @@ import SyncCreateConnections from "./features/sync-create-connections";
 import SyncCreateAuthorize from "./pages/SyncCreateAuthorize";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { HeaderContentProvider } from '@/contexts/HeaderContentContext';
-import { SidebarClosedLayout } from "./layouts/SidebarClosedLayout";
 
 const queryClient = new QueryClient();
 
@@ -41,14 +38,8 @@ const App = () => (
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/:provider/callback" element={<OAuthCallback />} />
 
-              {/* Protected Routes with SidebarClosedLayout */}
-              <Route element={<ProtectedRoute><SidebarClosedLayout /></ProtectedRoute>}>
-                <Route path="/templates" element={<TemplatesPage />} />
-                <Route path="/templates/:category" element={<TemplatesPage />} />
-              </Route>
-
               {/* Protected Routes with SidebarSyncLayout */}
-              <Route element={<ProtectedRoute><SidebarSyncLayout currentStep={0} /></ProtectedRoute>}>
+              <Route element={<ProtectedRoute><SidebarSyncLayout /></ProtectedRoute>}>
                 <Route path="/syncs/edit/connect/:id" element={<SyncCreateConnections />} />
                 <Route path="/syncs/edit/mapping/:id" element={<SyncCreateMappings />} />
                 <Route path="/syncs/edit/authorize/:id" element={<SyncCreateAuthorize />} />
@@ -58,10 +49,9 @@ const App = () => (
               <Route element={<ProtectedRoute><SidebarLayout /></ProtectedRoute>}>
                 <Route path="/dashboard" element={<DashboardPage />} />
                 <Route path="/syncs" element={<Syncs />} />
-                <Route path="/syncs/:id" element={<SyncDetails />} />
+                <Route path="/syncs/view/:id" element={<SyncDetails />} />
                 <Route path="/integrations" element={<IntegrationsPage />} />
                 <Route path="/connections/:connectionId" element={<IntegrationDetailPage />} />
-                <Route path="/logs" element={<Logs />} />
                 <Route path="/profile" element={<Profile />} />
               </Route>
 
