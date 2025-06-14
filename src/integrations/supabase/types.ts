@@ -6,299 +6,215 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export type Database = {
+export interface Database {
   public: {
     Tables: {
-      integration_connections: {
-        Row: {
-          api_key: string | null
-          auth_data: Json | null
-          connection_name: string
-          connection_status: string
-          created_at: string
-          id: string
-          integration_id: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          api_key?: string | null
-          auth_data?: Json | null
-          connection_name: string
-          connection_status: string
-          created_at?: string
-          id?: string
-          integration_id: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          api_key?: string | null
-          auth_data?: Json | null
-          connection_name?: string
-          connection_status?: string
-          created_at?: string
-          id?: string
-          integration_id?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "integration_connections_integration_id_fkey"
-            columns: ["integration_id"]
-            isOneToOne: false
-            referencedRelation: "integrations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "integration_connections_integration_id_fkey"
-            columns: ["integration_id"]
-            isOneToOne: false
-            referencedRelation: "integrations_public"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      integrations: {
-        Row: {
-          auth_type: string
-          auth_url: string | null
-          category: string
-          client_id: string | null
-          client_secret: string | null
-          created_at: string
-          description: string
-          icon: string | null
-          id: string
-          name: string
-          redirect_url: string | null
-          required_parameters: string[] | null
-          scopes: string[] | null
-          token_url: string | null
-          updated_at: string
-        }
-        Insert: {
-          auth_type: string
-          auth_url?: string | null
-          category: string
-          client_id?: string | null
-          client_secret?: string | null
-          created_at?: string
-          description: string
-          icon?: string | null
-          id?: string
-          name: string
-          redirect_url?: string | null
-          required_parameters?: string[] | null
-          scopes?: string[] | null
-          token_url?: string | null
-          updated_at?: string
-        }
-        Update: {
-          auth_type?: string
-          auth_url?: string | null
-          category?: string
-          client_id?: string | null
-          client_secret?: string | null
-          created_at?: string
-          description?: string
-          icon?: string | null
-          id?: string
-          name?: string
-          redirect_url?: string | null
-          required_parameters?: string[] | null
-          scopes?: string[] | null
-          token_url?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
-          avatar_url: string | null
-          created_at: string | null
           id: string
-          updated_at: string | null
-          username: string | null
+          full_name: string | null
+          avatar_url: string | null
+          created_at: string
+          updated_at: string
         }
         Insert: {
-          avatar_url?: string | null
-          created_at?: string | null
           id: string
-          updated_at?: string | null
-          username?: string | null
+          full_name?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          updated_at?: string
         }
         Update: {
-          avatar_url?: string | null
-          created_at?: string | null
           id?: string
-          updated_at?: string | null
-          username?: string | null
+          full_name?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          updated_at?: string
         }
-        Relationships: []
+      }
+      teams: {
+        Row: {
+          id: string
+          name: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      team_members: {
+        Row: {
+          id: string
+          team_id: string
+          user_id: string
+          role: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          team_id: string
+          user_id: string
+          role: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          team_id?: string
+          user_id?: string
+          role?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      connectors: {
+        Row: {
+          id: string
+          name: string
+          type: string
+          provider: string
+          config: Json
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          type: string
+          provider: string
+          config: Json
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          type?: string
+          provider?: string
+          config?: Json
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      connections: {
+        Row: {
+          id: string
+          connector_id: string
+          name: string
+          config: Json
+          team_id: string
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          connector_id: string
+          name: string
+          config: Json
+          team_id: string
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          connector_id?: string
+          name?: string
+          config?: Json
+          team_id?: string
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
       }
       syncs: {
         Row: {
           id: string
           name: string
-          user_id: string
-          source_connection_id: string
-          destination_connection_id: string
-          entity_type: string
-          sync_direction: 'one-way' | 'two-way'
-          conflict_resolution: 'source' | 'destination' | 'latest'
+          source_id: string
+          destination_id: string
+          config: Json
+          team_id: string
+          setup_stage: string
           is_active: boolean
           created_at: string
           updated_at: string
-          setup_stage: SetupStage
         }
         Insert: {
           id?: string
           name: string
-          user_id: string
-          source_connection_id: string
-          destination_connection_id: string
-          entity_type: string
-          sync_direction: 'one-way' | 'two-way'
-          conflict_resolution: 'source' | 'destination' | 'latest'
+          source_id: string
+          destination_id: string
+          config: Json
+          team_id: string
+          setup_stage?: string
           is_active?: boolean
           created_at?: string
           updated_at?: string
-          setup_stage?: SetupStage
         }
         Update: {
           id?: string
           name?: string
-          user_id?: string
-          source_connection_id?: string
-          destination_connection_id?: string
-          entity_type?: string
-          sync_direction?: 'one-way' | 'two-way'
-          conflict_resolution?: 'source' | 'destination' | 'latest'
+          source_id?: string
+          destination_id?: string
+          config?: Json
+          team_id?: string
+          setup_stage?: string
           is_active?: boolean
           created_at?: string
           updated_at?: string
-          setup_stage?: SetupStage
         }
-        Relationships: [
-          {
-            foreignKeyName: "syncs_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "syncs_source_connection_id_fkey"
-            columns: ["source_connection_id"]
-            isOneToOne: false
-            referencedRelation: "integration_connections"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "syncs_destination_connection_id_fkey"
-            columns: ["destination_connection_id"]
-            isOneToOne: false
-            referencedRelation: "integration_connections"
-            referencedColumns: ["id"]
-          }
-        ]
       }
-      field_mappings: {
+      field_mapping: {
         Row: {
           id: string
           sync_id: string
-          source_field_name: string
-          source_field_type: string
-          destination_field_name: string
-          destination_field_type: string
+          source_field: string
+          destination_field: string
+          transformation_type: string | null
+          transformation_config: Json | null
           created_at: string
           updated_at: string
         }
         Insert: {
           id?: string
           sync_id: string
-          source_field_name: string
-          source_field_type: string
-          destination_field_name: string
-          destination_field_type: string
+          source_field: string
+          destination_field: string
+          transformation_type?: string | null
+          transformation_config?: Json | null
           created_at?: string
           updated_at?: string
         }
         Update: {
           id?: string
           sync_id?: string
-          source_field_name?: string
-          source_field_type?: string
-          destination_field_name?: string
-          destination_field_type?: string
+          source_field?: string
+          destination_field?: string
+          transformation_type?: string | null
+          transformation_config?: Json | null
           created_at?: string
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "field_mappings_sync_id_fkey"
-            columns: ["sync_id"]
-            isOneToOne: false
-            referencedRelation: "syncs"
-            referencedColumns: ["id"]
-          }
-        ]
       }
     }
     Views: {
-      integrations_public: {
-        Row: {
-          auth_type: string | null
-          auth_url: string | null
-          category: string | null
-          client_id: string | null
-          created_at: string | null
-          description: string | null
-          icon: string | null
-          id: string | null
-          name: string | null
-          redirect_url: string | null
-          required_parameters: string[] | null
-          scopes: string[] | null
-          token_url: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          auth_type?: string | null
-          auth_url?: string | null
-          category?: string | null
-          client_id?: string | null
-          created_at?: string | null
-          description?: string | null
-          icon?: string | null
-          id?: string | null
-          name?: string | null
-          redirect_url?: string | null
-          required_parameters?: string[] | null
-          scopes?: string[] | null
-          token_url?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          auth_type?: string | null
-          auth_url?: string | null
-          category?: string | null
-          client_id?: string | null
-          created_at?: string | null
-          description?: string | null
-          icon?: string | null
-          id?: string | null
-          name?: string | null
-          redirect_url?: string | null
-          required_parameters?: string[] | null
-          scopes?: string[] | null
-          token_url?: string | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       [_ in never]: never

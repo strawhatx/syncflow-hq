@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import DashboardPage from "./pages/Dashboard";
 import Syncs from "./pages/Syncs";
 import SyncDetails from "./pages/SyncDetails";
-import IntegrationsPage from "./pages/Integrations";
+import ConnectorsPage from "./pages/Connectors";
 import IntegrationDetailPage from "./pages/IntegrationDetail";
 import OAuthCallback from "./pages/OAuthCallback";
 import NotFound from "./pages/NotFound";
@@ -50,8 +50,8 @@ const App = () => (
                 <Route path="/dashboard" element={<DashboardPage />} />
                 <Route path="/syncs" element={<Syncs />} />
                 <Route path="/syncs/view/:id" element={<SyncDetails />} />
-                <Route path="/integrations" element={<IntegrationsPage />} />
-                <Route path="/connections/:connectionId" element={<IntegrationDetailPage />} />
+                <Route path="/connectors" element={<ConnectorsPage />} />
+                <Route path="/connectors/:connectorId" element={<IntegrationDetailPage />} />
                 <Route path="/profile" element={<Profile />} />
               </Route>
 

@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
-import { fetchConnectionById, updateConnectionStatus, deleteConnection } from "@/services/integrationService";
+import { fetchConnectionById, updateConnectionStatus, deleteConnection } from "@/services/connectionService";
+import { fetchConnectors } from "@/services/connectorService";
 import type { Database } from "@/integrations/supabase/types";
-import { ConnectionStatus } from "@/features/integrations/components/IntegrationCard";
+import { ConnectionStatus } from "@/features/connectors/components/IntegrationCard";
 
-type Connection = Database['public']['Tables']['integration_connections']['Row'] & {
-  integrations: Database['public']['Views']['integrations_public']['Row'];
-};
+type Connection = Database['public']['Tables']['connections']['Row'];
 
 interface ConnectionSettings {
   syncInterval: string;
@@ -37,10 +36,10 @@ export const useConnection = (connectionId: string | undefined) => {
           throw new Error("Connection not found");
         }
         setConnection(data as Connection);
-        setConnectionName(data.connection_name);
+        setConnectionName(data.name);
         setSettings({
-          syncInterval: (data.auth_data as any)?.syncInterval || "daily",
-          enableWebhooks: (data.auth_data as any)?.enableWebhooks ?? true
+          syncInterval: (data.config as any)?.syncInterval || "daily",
+          enableWebhooks: (data.config as any)?.enableWebhooks ?? true
         });
       } 
       
@@ -65,7 +64,7 @@ export const useConnection = (connectionId: string | undefined) => {
     setIsUpdating(true);
     
     try {
-      await updateConnectionStatus(connection!.id, connection!.connection_status as ConnectionStatus);
+      await updateConnectionStatus(connection!.id, connection!.is_active);
       
       toast({
         title: "Settings updated",
@@ -112,7 +111,7 @@ export const useConnection = (connectionId: string | undefined) => {
       
       toast({
         title: "Connection removed",
-        description: `${connection!.integrations.name} connection "${connection!.connection_name}" has been removed`,
+        description: `${connection!.connector_id} connection "${connection!.name}" has been removed`,
       });
       
       navigate("/integrations");
@@ -133,7 +132,7 @@ export const useConnection = (connectionId: string | undefined) => {
       
       toast({
         title: "Reconnection successful",
-        description: `${connection!.integrations.name} connection has been reestablished`,
+        description: `${connection!.name} connection has been reestablished`,
       });
       
       navigate("/integrations");
