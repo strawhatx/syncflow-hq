@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus } from "lucide-react";
-import { useTeamCreation } from "../hooks/useTeamCreation";
+import { useTeam } from "@/contexts/TeamContext";
 
 export const NoTeamFound = () => {
-    const { createTeam, isLoading } = useTeamCreation();
+    const { createTeamWithOwner, isLoading } = useTeam();
 
     return (
         <div className="flex flex-col items-center justify-center h-[90vh] px-4">
@@ -17,7 +17,7 @@ export const NoTeamFound = () => {
                 </CardHeader>
                 <CardContent className="flex justify-center pb-4">
                     <Button 
-                        onClick={createTeam} 
+                        onClick={createTeamWithOwner} 
                         size="sm" 
                         className="gap-1.5"
                         disabled={isLoading}
