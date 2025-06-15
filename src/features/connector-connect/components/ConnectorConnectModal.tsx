@@ -38,7 +38,7 @@ export default function ConnectorConnectModal({ isOpen, onClose, connector }: Co
 
       // Get the current team ID (you'll need to implement this)
       const { data: { team_id } } = await supabase
-        .from('team_members')
+        .from('view_team_members')
         .select('team_id')
         .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
         .single();

@@ -82,6 +82,18 @@ CREATE TABLE public.field_mapping (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Create view for team members
+CREATE VIEW public.view_team_members AS
+SELECT *
+FROM public.team_members
+WHERE team_id IN (
+  SELECT team_id
+  FROM public.team_members AS tm
+  WHERE tm.user_id = auth.uid()
+    AND tm.status = 'active'
+);
+
+
 -- Create indexes
 CREATE INDEX idx_team_members_team_id ON public.team_members(team_id);
 CREATE INDEX idx_team_members_user_id ON public.team_members(user_id);
@@ -128,28 +140,55 @@ CREATE POLICY "Team owners can update their teams"
     );
 
 -- Team members policies
+-- Users can view their team members
 CREATE POLICY "Users can view their team members"
     ON public.team_members
     FOR SELECT
     USING (
-        user_id = auth.uid() OR
-        team_id IN (
-            SELECT team_id 
-            FROM public.team_members 
-            WHERE user_id = auth.uid()
+        user_id = auth.uid()
+        OR team_id IN (
+            SELECT tm.team_id
+            FROM public.team_members AS tm
+            WHERE tm.user_id = auth.uid()
+              AND tm.status = 'active'
         )
     );
 
+-- Team owners can manage team members
 CREATE POLICY "Team owners can manage team members"
     ON public.team_members
     FOR ALL
     USING (
         team_id IN (
-            SELECT team_id 
-            FROM public.team_members 
-            WHERE user_id = auth.uid() 
-            AND role = 'owner'
+            SELECT tm.team_id
+            FROM public.team_members AS tm
+            WHERE tm.user_id = auth.uid()
+              AND tm.role = 'owner'
+              AND tm.status = 'active'
         )
+    );
+
+-- Team admins can manage non-owner members
+CREATE POLICY "Team admins can manage non-owner members"
+    ON public.team_members
+    FOR ALL
+    USING (
+        team_id IN (
+            SELECT tm.team_id
+            FROM public.team_members AS tm
+            WHERE tm.user_id = auth.uid()
+              AND tm.role = 'admin'
+              AND tm.status = 'active'
+        )
+        AND role != 'owner'
+    );
+
+-- Users can remove themselves
+CREATE POLICY "Users can remove themselves"
+    ON public.team_members
+    FOR DELETE
+    USING (
+        user_id = auth.uid()
     );
 
 -- Connectors policies

@@ -21,6 +21,7 @@ import SyncCreateConnections from "./features/sync-create-connections";
 import SyncCreateAuthorize from "./pages/SyncCreateAuthorize";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { HeaderContentProvider } from '@/contexts/HeaderContentContext';
+import TeamsPage from "./pages/Teams";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +53,7 @@ const App = () => (
                 <Route path="/syncs/view/:id" element={<SyncDetails />} />
                 <Route path="/connectors" element={<ConnectorsPage />} />
                 <Route path="/connectors/:connectorId" element={<IntegrationDetailPage />} />
+                <Route path="/teams" element={<TeamsPage />} />
                 <Route path="/profile" element={<Profile />} />
               </Route>
 

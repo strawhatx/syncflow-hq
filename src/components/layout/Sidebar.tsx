@@ -19,6 +19,7 @@ import {
   Database,
   LayoutDashboard,
   LogOut,
+  Users,
   Zap
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -37,8 +38,8 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { title: "Dashboard", icon: LayoutDashboard, url: "/dashboard" },
   { title: "Syncs", icon: Activity, url: "/syncs" },
-  { title: "Connectors", icon: Database, url: "/integrations" },
-  { title: " m", icon: Clock, url: "/logs" },
+  { title: "Connectors", icon: Database, url: "/connectors" },
+  { title: "Teams", icon: Users, url: "/teams" },
 ];
 
 // Components
