@@ -1,25 +1,26 @@
 import { Eye, Shield, UserCheck, Crown } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 // Component for role item
 const RoleItem = ({ icon, title, description }) => (
     <div className="flex items-center space-x-3">
-        <div className="bg-white/10 p-2 rounded-lg">
+        <div className="bg-secondary/50 p-2 rounded-lg">
             {icon}
         </div>
         <div>
-            <div className="text-white font-medium">{title}</div>
-            <div className="text-gray-400 text-sm">{description}</div>
+            <div className="font-medium">{title}</div>
+            <div className="text-sm text-muted-foreground">{description}</div>
         </div>
     </div>
 );
 
 // Component for role permissions
 export const RolePermissions = () => (
-    <div className="bg-white/5 rounded-xl border border-white/10 overflow-hidden">
-        <div className="px-6 py-4 border-b border-white/10">
-            <h2 className="text-xl font-semibold text-white">Role Permissions</h2>
-        </div>
-        <div className="p-6">
+    <Card>
+        <CardHeader>
+            <CardTitle>Role Permissions</CardTitle>
+        </CardHeader>
+        <CardContent>
             <div className="space-y-4">
                 <RoleItem 
                     icon={<Crown className="h-5 w-5 text-yellow-400" />}
@@ -42,6 +43,6 @@ export const RolePermissions = () => (
                     description="Read-only access"
                 />
             </div>
-        </div>
-    </div>
+        </CardContent>
+    </Card>
 );

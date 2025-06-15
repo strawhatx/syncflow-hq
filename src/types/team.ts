@@ -1,5 +1,5 @@
 export type TeamRole = 'owner' | 'admin' | 'member';
-export type TeamMemberStatus = 'active' | 'inactive';
+export type TeamMemberStatus = 'active' | 'invited';
 export type InviteStatus = 'pending' | 'accepted' | 'expired';
 
 export interface Team {
@@ -19,10 +19,20 @@ export interface TeamMember {
     updated_at: string;
 }
 
+// Extended interface for team member with profile data
+export interface TeamMemberWithProfile extends TeamMember {
+    profile: {
+        full_name: string | null;
+        avatar_url: string | null;
+        email: string;
+    };
+}
+
 export interface TeamInvite {
     id: string;
     team_id: string;
     email: string;
+    verification_code: string;
     status: InviteStatus;
     created_at: string;
     updated_at: string;

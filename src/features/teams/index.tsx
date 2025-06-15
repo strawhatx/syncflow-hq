@@ -1,5 +1,5 @@
 import { useState } from "react";
-import InviteModal from "./components/InviteModal";
+import { InviteModal } from "./components/InviteModal";
 import { useTeam, TeamProvider } from "@/contexts/TeamContext";
 import { useTeamStats } from "./hooks/useTeamStats";
 import { TeamStats } from "./components/TeamStats";
@@ -10,6 +10,7 @@ import { RolePermissions } from "./components/RolePermissions";
 import { TeamHeader } from "./components/TeamHeader";
 import { NoTeamFound } from "./components/NoTeamFound";
 import { getRoleColor, getRoleIcon, getMemberStatusColor } from "./utils/roleUtils";
+import { TeamMemberWithProfile, TeamRole } from "@/types/team";
 
 const TeamsContent = () => {
     const [searchTerm, setSearchTerm] = useState("");
@@ -20,12 +21,19 @@ const TeamsContent = () => {
         currentMember: teamMember, 
         updateMemberRole, 
         removeMember, 
-        canInviteMembers,
-        inviteMember 
+        canInviteMembers
     } = useTeam();
 
     if (isLoading) return <div>Loading...</div>;
     if (!teamMember) return <NoTeamFound />;
+
+    const handleUpdateRole = (member: TeamMemberWithProfile) => {
+        updateMemberRole(member.id, member.role as TeamRole);
+    };
+
+    const handleRemoveMember = (member: TeamMemberWithProfile) => {
+        removeMember(member.id);
+    };
 
     return (
         <div className="space-y-8">
@@ -46,13 +54,13 @@ const TeamsContent = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2">
                     <TeamMembersList 
-                        members={teamMembers}
+                        members={teamMembers as TeamMemberWithProfile[]}
                         renderMember={(member) => (
                             <TeamMemberCard 
                                 key={member.id}
-                                member={member}
-                                onUpdateRole={(member) => updateMemberRole(member.id, 'admin')}
-                                onRemoveMember={(member) => removeMember(member.id)}
+                                member={member as TeamMemberWithProfile}
+                                onUpdateRole={handleUpdateRole}
+                                onRemoveMember={handleRemoveMember}
                                 onCopyEmail={(email) => navigator.clipboard.writeText(email)}
                                 getRoleColor={getRoleColor}
                                 getRoleIcon={getRoleIcon}
@@ -61,24 +69,21 @@ const TeamsContent = () => {
                         )}
                     />
                 </div>
-                <div className="space-y-6">
+                <div>
                     <RolePermissions />
                 </div>
             </div>
 
-            <InviteModal 
-                isOpen={showInviteModal} 
+            <InviteModal
+                isOpen={showInviteModal}
                 onClose={() => setShowInviteModal(false)}
-                onInvite={inviteMember}
             />
         </div>
     );
 };
 
-const Teams = () => (
+export const Teams = () => (
     <TeamProvider>
         <TeamsContent />
     </TeamProvider>
 );
-
-export default Teams;

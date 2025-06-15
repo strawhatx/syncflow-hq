@@ -1,4 +1,5 @@
 import { Mail, Users, UserCheck, Shield } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 
 // Component for stats cards  
 export const StatCard = ({ title, type, stats }) => {
@@ -17,16 +18,18 @@ export const StatCard = ({ title, type, stats }) => {
     };
   
     return (
-      <div className="bg-white/5 p-6 rounded-xl border border-white/10">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-gray-400 text-sm">{title}</p>
-            <p className="text-2xl font-bold text-white">{value}</p>
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">{title}</p>
+              <p className="text-2xl font-bold">{value}</p>
+            </div>
+            <div className={`${bgColors[type]} p-3 rounded-lg`}>
+              {icons[type]}
+            </div>
           </div>
-          <div className={`${bgColors[type]} p-3 rounded-lg`}>
-            {icons[type]}
-          </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     );
   };

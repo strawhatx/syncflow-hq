@@ -26,7 +26,7 @@ serve(async (req) => {
     }
 
     const result = await resend.emails.send({
-      from: 'contact@syncflow.com',
+      from: 'support@syncflow.com',
       to: email,
       subject: subject,
       text: message,

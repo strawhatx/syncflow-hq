@@ -78,6 +78,38 @@ export interface Database {
           updated_at?: string
         }
       }
+      team_invites: {
+        Row: {
+          id: string
+          team_id: string
+          email: string
+          verification_code: string
+          status: 'pending' | 'accepted' | 'expired'
+          expires_at: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          team_id: string
+          email: string
+          verification_code: string
+          status?: 'pending' | 'accepted' | 'expired'
+          expires_at: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          team_id?: string
+          email?: string
+          verification_code?: string
+          status?: 'pending' | 'accepted' | 'expired'
+          expires_at?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
       connectors: {
         Row: {
           id: string
