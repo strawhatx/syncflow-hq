@@ -74,8 +74,8 @@ const TeamsContent = () => {
                 </div>
             </div>
 
-            <InviteModal
-                isOpen={showInviteModal}
+            <InviteModal 
+                isOpen={showInviteModal} 
                 onClose={() => setShowInviteModal(false)}
             />
         </div>

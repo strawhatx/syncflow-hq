@@ -1,4 +1,4 @@
-import Teams from "@/features/teams";
+import { Teams } from "@/features/teams";
 
 const TeamsPage = () => {
   return (

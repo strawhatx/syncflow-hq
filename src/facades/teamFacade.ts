@@ -1,7 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { teamFactory } from '@/factories/teamFactory';
 import { TeamRole, TeamMemberStatus, InviteStatus } from '@/types/team';
-import { randomBytes } from 'crypto';
 import { Database } from '@/integrations/supabase/types';
 
 type TeamInvite = Database['public']['Tables']['team_invites']['Row'];
@@ -16,8 +15,10 @@ class TeamError extends Error {
 }
 
 function generateVerificationCode(): string {
-    const bytes = randomBytes(32);
-    return bytes.toString('hex').slice(0, 6).toUpperCase();
+    const array = new Uint8Array(6);
+    crypto.getRandomValues(array);
+    return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('').slice(0, 12);
+
 }
 
 async function sendInviteEmail(email: string, verificationCode: string, teamName: string) {
@@ -81,7 +82,7 @@ export const teamFacade = {
                 .from('teams')
                 .select(`
                     *,
-                    team_members(
+                    view_team_members!inner(
                         *,
                         profiles:user_id(
                             full_name,
@@ -100,7 +101,7 @@ export const teamFacade = {
             // Transform the data to match TeamMemberWithProfile interface
             const transformedTeam = {
                 ...team,
-                team_members: team.team_members.map((member: any) => ({
+                team_members: team.view_team_members.map((member: any) => ({
                     ...member,
                     profile: member.profiles
                 }))
@@ -310,7 +311,7 @@ export const teamFacade = {
     async getTeamMembersByTeam(teamId: string): Promise<TeamMember[]> {
         try {
             const { data: members, error } = await supabase
-                .from('team_members')
+                .from('view_team_members')
                 .select('*')
                 .eq('team_id', teamId);
 

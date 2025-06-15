@@ -13,8 +13,8 @@ export const TeamMembersList = ({ members, renderMember }: TeamMembersListProps)
     </CardHeader>
     <CardContent className="p-0">
       <div className="divide-y divide-border">
-        {members.map(renderMember)}
-      </div>
+      {members.map(renderMember)}
+    </div>
     </CardContent>
   </Card>
 ); 
