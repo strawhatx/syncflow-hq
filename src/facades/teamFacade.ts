@@ -39,7 +39,7 @@ async function sendInviteEmail(email: string, verificationCode: string, teamName
 export const teamFacade = {
     async createTeamWithOwner(userId: string, teamName: string): Promise<Team> {
         const team = teamFactory.createTeam({ name: teamName });
-        
+
         try {
             const { data: newTeam, error: teamError } = await supabase
                 .from('teams')
@@ -99,15 +99,18 @@ export const teamFacade = {
             if (!team) throw new TeamError('Team not found', 'TEAM_NOT_FOUND');
 
             // Transform the data to match TeamMemberWithProfile interface
-            const transformedTeam = {
-                ...team,
-                team_members: team.view_team_members.map((member: any) => ({
+            // lets optimize this approch using map
+            const members = new Map(
+                team.view_team_members.map((member: any) => [member.id, {
                     ...member,
                     profile: member.profiles
-                }))
-            };
+                }])
+            )
 
-            return transformedTeam;
+            return {
+                ...team,
+                team_members: members
+            }
         } catch (error) {
             if (error instanceof TeamError) throw error;
             throw new TeamError('Failed to fetch team', 'TEAM_FETCH_FAILED');

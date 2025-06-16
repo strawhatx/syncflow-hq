@@ -16,6 +16,7 @@ DROP TYPE IF EXISTS public.setup_stage;
 CREATE TABLE public.teams (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
+    created_by UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -82,17 +83,36 @@ CREATE TABLE public.field_mapping (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Create view for team members
-CREATE VIEW public.view_team_members AS
-SELECT *
-FROM public.team_members
-WHERE team_id IN (
-  SELECT team_id
-  FROM public.team_members AS tm
-  WHERE tm.user_id = auth.uid()
-    AND tm.status = 'active'
-);
+-- Create functions
+CREATE OR REPLACE FUNCTION public.get_team_ids_for_user(uid UUID)
+RETURNS UUID[] AS $$
+    SELECT ARRAY(
+        SELECT team_id
+        FROM public.team_members
+        WHERE user_id = uid
+          AND status = 'active'
+    );
+$$ LANGUAGE sql STABLE;
 
+CREATE OR REPLACE FUNCTION public.get_role_based_team_ids_for_user(uid UUID, role TEXT)
+RETURNS UUID[] AS $$
+    SELECT ARRAY(
+        SELECT team_id
+        FROM public.team_members
+        WHERE user_id = uid
+          AND role = role
+          AND status = 'active'
+    );
+$$ LANGUAGE sql STABLE;
+
+CREATE OR REPLACE FUNCTION public.get_accessible_sync_ids_for_user(uid UUID)
+RETURNS UUID[] AS $$
+    SELECT ARRAY(
+        SELECT s.id
+        FROM public.syncs s
+        WHERE s.team_id = ANY(public.get_team_ids_for_user(uid))
+    );
+$$ LANGUAGE sql STABLE;
 
 -- Create indexes
 CREATE INDEX idx_team_members_team_id ON public.team_members(team_id);
@@ -120,23 +140,14 @@ CREATE POLICY "Users can view their teams"
     ON public.teams
     FOR SELECT
     USING (
-        id IN (
-            SELECT team_id 
-            FROM public.team_members 
-            WHERE user_id = auth.uid()
-        )
+        id = ANY(public.get_team_ids_for_user(auth.uid()))
     );
 
 CREATE POLICY "Team owners can update their teams"
     ON public.teams
     FOR UPDATE
     USING (
-        id IN (
-            SELECT team_id 
-            FROM public.team_members 
-            WHERE user_id = auth.uid() 
-            AND role = 'owner'
-        )
+        id = ANY(public.get_role_based_team_ids_for_user(auth.uid(), 'owner'))
     );
 
 -- Team members policies
@@ -145,13 +156,7 @@ CREATE POLICY "Users can view their team members"
     ON public.team_members
     FOR SELECT
     USING (
-        user_id = auth.uid()
-        OR team_id IN (
-            SELECT tm.team_id
-            FROM public.team_members AS tm
-            WHERE tm.user_id = auth.uid()
-              AND tm.status = 'active'
-        )
+        team_id = ANY(public.get_team_ids_for_user(auth.uid()))
     );
 
 -- Team owners can manage team members
@@ -159,13 +164,7 @@ CREATE POLICY "Team owners can manage team members"
     ON public.team_members
     FOR ALL
     USING (
-        team_id IN (
-            SELECT tm.team_id
-            FROM public.team_members AS tm
-            WHERE tm.user_id = auth.uid()
-              AND tm.role = 'owner'
-              AND tm.status = 'active'
-        )
+        team_id = ANY(public.get_role_based_team_ids_for_user(auth.uid(), 'owner'))
     );
 
 -- Team admins can manage non-owner members
@@ -173,13 +172,7 @@ CREATE POLICY "Team admins can manage non-owner members"
     ON public.team_members
     FOR ALL
     USING (
-        team_id IN (
-            SELECT tm.team_id
-            FROM public.team_members AS tm
-            WHERE tm.user_id = auth.uid()
-              AND tm.role = 'admin'
-              AND tm.status = 'active'
-        )
+        team_id = ANY(public.get_role_based_team_ids_for_user(auth.uid(), 'admin'))
         AND role != 'owner'
     );
 
@@ -202,24 +195,14 @@ CREATE POLICY "Team members can view their team's connections"
     ON public.connections
     FOR SELECT
     USING (
-        EXISTS (
-            SELECT 1 
-            FROM public.team_members 
-            WHERE team_members.team_id = connections.team_id 
-            AND team_members.user_id = auth.uid()
-        )
+        team_id = ANY(public.get_team_ids_for_user(auth.uid()))
     );
 
 CREATE POLICY "Team members can manage their team's connections"
     ON public.connections
     FOR ALL
     USING (
-        EXISTS (
-            SELECT 1 
-            FROM public.team_members 
-            WHERE team_members.team_id = connections.team_id 
-            AND team_members.user_id = auth.uid()
-        )
+        team_id = ANY(public.get_team_ids_for_user(auth.uid()))
     );
 
 -- Syncs policies
@@ -227,51 +210,27 @@ CREATE POLICY "Team members can view their team's syncs"
     ON public.syncs
     FOR SELECT
     USING (
-        team_id IN (
-            SELECT team_id 
-            FROM public.team_members 
-            WHERE user_id = auth.uid()
-        )
+        team_id = ANY(public.get_team_ids_for_user(auth.uid()))
     );
 
 CREATE POLICY "Team members can manage their team's syncs"
     ON public.syncs
     FOR ALL
     USING (
-        team_id IN (
-            SELECT team_id 
-            FROM public.team_members 
-            WHERE user_id = auth.uid()
-        )
+        team_id = ANY(public.get_team_ids_for_user(auth.uid()))
     );
 
 -- Field mapping policies
 CREATE POLICY "Team members can view their team's field mappings"
     ON public.field_mapping
     FOR SELECT
-    USING (
-        sync_id IN (
-            SELECT id 
-            FROM public.syncs 
-            WHERE team_id IN (
-                SELECT team_id 
-                FROM public.team_members 
-                WHERE user_id = auth.uid()
-            )
-        )
+     USING (
+        sync_id = ANY(public.get_accessible_sync_ids_for_user(auth.uid()))
     );
 
 CREATE POLICY "Team members can manage their team's field mappings"
     ON public.field_mapping
     FOR ALL
-    USING (
-        sync_id IN (
-            SELECT id 
-            FROM public.syncs 
-            WHERE team_id IN (
-                SELECT team_id 
-                FROM public.team_members 
-                WHERE user_id = auth.uid()
-            )
-        )
-    ); 
+     USING (
+        sync_id = ANY(public.get_accessible_sync_ids_for_user(auth.uid()))
+    );

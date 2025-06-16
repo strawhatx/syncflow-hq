@@ -16,16 +16,16 @@ CREATE TABLE IF NOT EXISTS team_invites (
     UNIQUE(team_id, email)
 );
 
--- Create view for team members
-CREATE VIEW public.view_team_invites AS
-SELECT *
-FROM public.team_invites
-WHERE team_id IN (
-  SELECT team_id
-  FROM public.team_members AS tm
-  WHERE tm.user_id = auth.uid()
-   AND tm.role IN ('owner', 'admin')
-);
+CREATE OR REPLACE FUNCTION public.get_owned_or_admin_team_ids_for_user(uid UUID)
+RETURNS UUID[] AS $$
+    SELECT ARRAY(
+        SELECT team_id
+        FROM public.team_members
+        WHERE user_id = uid
+          AND role IN ('owner', 'admin')
+          AND status = 'active'
+    );
+$$ LANGUAGE sql STABLE;
 
 -- Add RLS policies for team_invites
 ALTER TABLE team_invites ENABLE ROW LEVEL SECURITY;
@@ -35,12 +35,7 @@ CREATE POLICY "Team owners and admins can create invites"
     ON team_invites FOR INSERT
     TO authenticated
     WITH CHECK (
-        EXISTS (
-            SELECT 1 FROM team_members
-            WHERE team_members.team_id = team_invites.team_id
-            AND team_members.user_id = auth.uid()
-            AND team_members.role IN ('owner', 'admin')
-        )
+        team_id = ANY(public.get_owned_or_admin_team_ids_for_user(auth.uid()))
     );
 
 -- Allow team owners and admins to update invites
@@ -48,12 +43,7 @@ CREATE POLICY "Team owners and admins can update invites"
     ON team_invites FOR UPDATE
     TO authenticated
     USING (
-        EXISTS (
-            SELECT 1 FROM team_members
-            WHERE team_members.team_id = team_invites.team_id
-            AND team_members.user_id = auth.uid()
-            AND team_members.role IN ('owner', 'admin')
-        )
+        team_id = ANY(public.get_owned_or_admin_team_ids_for_user(auth.uid()))
     );
 
 -- Allow team owners and admins to delete invites
@@ -61,12 +51,7 @@ CREATE POLICY "Team owners and admins can delete invites"
     ON team_invites FOR DELETE
     TO authenticated
     USING (
-        EXISTS (
-            SELECT 1 FROM team_members
-            WHERE team_members.team_id = team_invites.team_id
-            AND team_members.user_id = auth.uid()
-            AND team_members.role IN ('owner', 'admin')
-        )
+       team_id = ANY(public.get_owned_or_admin_team_ids_for_user(auth.uid()))
     );
 
 -- Create function to automatically update updated_at
