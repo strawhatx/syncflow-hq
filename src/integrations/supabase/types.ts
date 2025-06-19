@@ -14,6 +14,7 @@ export interface Database {
           id: string
           full_name: string | null
           avatar_url: string | null
+          email: string | null
           created_at: string
           updated_at: string
         }
@@ -21,6 +22,7 @@ export interface Database {
           id: string
           full_name?: string | null
           avatar_url?: string | null
+          email?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -28,6 +30,7 @@ export interface Database {
           id?: string
           full_name?: string | null
           avatar_url?: string | null
+          email?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -36,18 +39,21 @@ export interface Database {
         Row: {
           id: string
           name: string
+          created_by: string
           created_at: string
           updated_at: string
         }
         Insert: {
           id?: string
           name: string
+          created_by: string
           created_at?: string
           updated_at?: string
         }
         Update: {
           id?: string
           name?: string
+          created_by?: string
           created_at?: string
           updated_at?: string
         }
@@ -58,6 +64,7 @@ export interface Database {
           team_id: string
           user_id: string
           role: string
+          status: string
           created_at: string
           updated_at: string
         }
@@ -66,6 +73,7 @@ export interface Database {
           team_id: string
           user_id: string
           role: string
+          status?: string
           created_at?: string
           updated_at?: string
         }
@@ -74,6 +82,7 @@ export interface Database {
           team_id?: string
           user_id?: string
           role?: string
+          status?: string
           created_at?: string
           updated_at?: string
         }
@@ -184,6 +193,7 @@ export interface Database {
           team_id: string
           setup_stage: string
           is_active: boolean
+          created_by: string
           created_at: string
           updated_at: string
         }
@@ -196,6 +206,7 @@ export interface Database {
           team_id: string
           setup_stage?: string
           is_active?: boolean
+          created_by: string
           created_at?: string
           updated_at?: string
         }
@@ -208,6 +219,7 @@ export interface Database {
           team_id?: string
           setup_stage?: string
           is_active?: boolean
+          created_by?: string
           created_at?: string
           updated_at?: string
         }

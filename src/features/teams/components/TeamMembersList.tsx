@@ -9,7 +9,7 @@ interface TeamMembersListProps {
 export const TeamMembersList = ({ members, renderMember }: TeamMembersListProps) => (
   <Card>
     <CardHeader>
-      <CardTitle>Team Members</CardTitle>
+      <CardTitle className="text-xl font-semibold">Team Members</CardTitle>
     </CardHeader>
     <CardContent className="p-0">
       <div className="divide-y divide-border">

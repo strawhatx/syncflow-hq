@@ -1,6 +1,4 @@
 import { CheckCircle, Mail, Edit, Copy, Trash2 } from "lucide-react";
-import { useTeamMember } from "@/hooks/useTeamMember";
-import { hasPermission } from "@/lib/permissions";
 import { TeamMemberWithProfile } from "@/types/team";
 import { useTeam } from "@/contexts/TeamContext";
 import { Card, CardContent } from "@/components/ui/card";
@@ -28,30 +26,30 @@ export const TeamMemberCard = ({
 }: TeamMemberCardProps) => {
   const { canUpdateRole, canRemoveMember } = useTeam();
 
-  const avatarFallback = member.profile.full_name?.[0]?.toUpperCase() || 'U';
+  const avatarFallback = member.username?.[0]?.toUpperCase() || 'U';
 
   return (
-    <Card>
-      <CardContent className="p-6">
+    <div className="p-4 border-t-2">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-            <Avatar className="h-12 w-12">
-              <AvatarImage src={member.profile.avatar_url || undefined} alt={member.profile.full_name || 'User'} />
-              <AvatarFallback>{avatarFallback}</AvatarFallback>
-            </Avatar>
+          <Avatar className="h-12 w-12">
+            <AvatarImage src={member.avatar_url || undefined} alt={member.username || 'User'} />
+            <AvatarFallback>{avatarFallback}</AvatarFallback>
+          </Avatar>
           <div>
             <div className="flex items-center space-x-2">
-                <h3 className="text-lg font-semibold">{member.profile.full_name || 'Anonymous'}</h3>
+              <h3 className="text-md font-semibold">{member.username || 'Anonymous'}</h3>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <span className="text-xs text-muted-foreground">
+                Joined {new Date(member.created_at).toLocaleDateString()}
+              </span>
+
               <div className={`inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(member.role)}`}>
                 {getRoleIcon(member.role)}
                 <span className="capitalize">{member.role}</span>
               </div>
-            </div>
-              <p className="text-sm text-muted-foreground">{member.profile.email}</p>
-            <div className="flex items-center space-x-4 mt-1">
-                <span className="text-xs text-muted-foreground">
-                  Joined {new Date(member.created_at).toLocaleDateString()}
-              </span>
             </div>
           </div>
         </div>
@@ -63,35 +61,35 @@ export const TeamMemberCard = ({
           </div>
           <div className="flex items-center space-x-1">
             {canUpdateRole && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                onClick={() => onUpdateRole(member)}
-              >
-                <Edit className="h-4 w-4" />
-                </Button>
-            )}
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => onCopyEmail(member.profile.email)}
+                onClick={() => onUpdateRole(member)}
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onCopyEmail(member.email)}
             >
               <Copy className="h-4 w-4" />
-              </Button>
+            </Button>
             {canRemoveMember && member.role !== 'owner' && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-destructive hover:text-destructive hover:bg-destructive/10"
                 onClick={() => onRemoveMember(member)}
               >
                 <Trash2 className="h-4 w-4" />
-                </Button>
+              </Button>
             )}
           </div>
         </div>
       </div>
-      </CardContent>
-    </Card>
+    </div>
+
   );
 }; 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { InviteModal } from "./components/InviteModal";
 import { useTeam, TeamProvider } from "@/contexts/TeamContext";
 import { useTeamStats } from "./hooks/useTeamStats";
@@ -11,18 +11,48 @@ import { TeamHeader } from "./components/TeamHeader";
 import { NoTeamFound } from "./components/NoTeamFound";
 import { getRoleColor, getRoleIcon, getMemberStatusColor } from "./utils/roleUtils";
 import { TeamMemberWithProfile, TeamRole } from "@/types/team";
+import { useHeaderContent } from "@/contexts/HeaderContentContext";
 
 const TeamsContent = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [showInviteModal, setShowInviteModal] = useState(false);
+    const { setContent } = useHeaderContent();
+
     const { 
         members: teamMembers, 
-        loading: isLoading, 
+        loading: isLoading,
+        loadCurrentUserTeam,
         currentMember: teamMember, 
         updateMemberRole, 
         removeMember, 
         canInviteMembers
     } = useTeam();
+
+    // Call useTeamStats once at the top level to maintain hook order
+    const teamStats = useTeamStats(teamMembers);
+
+    const headerContent = (
+        <TeamHeader
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                canInviteMembers={canInviteMembers()}
+                onInviteClick={() => setShowInviteModal(true)}
+            />
+    );
+
+    useEffect(() => {
+        loadCurrentUserTeam();
+    }, [loadCurrentUserTeam]);
+
+    // Effect for setting content
+    useEffect(() => {
+        setContent(headerContent);
+    }, [searchTerm, canInviteMembers, setShowInviteModal, setContent, headerContent]);
+
+    // Separate effect for cleanup
+    useEffect(() => {
+        return () => {setContent(null)};
+    }, [setContent]);
 
     if (isLoading) return <div>Loading...</div>;
     if (!teamMember) return <NoTeamFound />;
@@ -37,18 +67,11 @@ const TeamsContent = () => {
 
     return (
         <div className="space-y-8">
-            <TeamHeader
-                searchTerm={searchTerm}
-                onSearchChange={setSearchTerm}
-                canInviteMembers={canInviteMembers()}
-                onInviteClick={() => setShowInviteModal(true)}
-            />
-            
-            <TeamStats stats={useTeamStats(teamMembers)}>
-                <StatCard title="Total Members" type="total" stats={useTeamStats(teamMembers)} />
-                <StatCard title="Active Members" type="active" stats={useTeamStats(teamMembers)} />
-                <StatCard title="Pending Invites" type="pending" stats={useTeamStats(teamMembers)} />
-                <StatCard title="Admins" type="admins" stats={useTeamStats(teamMembers)} />
+            <TeamStats stats={teamStats}>
+                <StatCard title="Total Members" type="total" stats={teamStats} />
+                <StatCard title="Active Members" type="active" stats={teamStats} />
+                <StatCard title="Pending Invites" type="pending" stats={teamStats} />
+                <StatCard title="Admins" type="admins" stats={teamStats} />
             </TeamStats>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

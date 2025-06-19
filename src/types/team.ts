@@ -5,6 +5,7 @@ export type InviteStatus = 'pending' | 'accepted' | 'expired';
 export interface Team {
     id: string;
     name: string;
+    created_by: string;
     created_at: string;
     updated_at: string;
 }
@@ -21,11 +22,9 @@ export interface TeamMember {
 
 // Extended interface for team member with profile data
 export interface TeamMemberWithProfile extends TeamMember {
-    profile: {
-        full_name: string | null;
-        avatar_url: string | null;
-        email: string;
-    };
+    username: string | null;
+    avatar_url: string | null;
+    email: string;
 }
 
 export interface TeamInvite {
@@ -40,16 +39,17 @@ export interface TeamInvite {
 }
 
 export interface TeamActivity {
-  id: string;
-  user: string;
-  action: string;
-  target: string;
-  type: string;
-  timestamp: string;
+    id: string;
+    user: string;
+    action: string;
+    target: string;
+    type: string;
+    timestamp: string;
 }
 
 export interface CreateTeamParams {
     name: string;
+    created_by: string;
 }
 
 export interface CreateTeamMemberParams {

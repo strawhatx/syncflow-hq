@@ -23,7 +23,7 @@ export const StatCard = ({ title, type, stats }) => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">{title}</p>
-              <p className="text-2xl font-bold">{value}</p>
+              <p className="text-xl font-bold">{value || 0}</p>
             </div>
             <div className={`${bgColors[type]} p-3 rounded-lg`}>
               {icons[type]}

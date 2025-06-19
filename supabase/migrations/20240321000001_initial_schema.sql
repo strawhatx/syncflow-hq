@@ -84,15 +84,18 @@ CREATE TABLE public.field_mapping (
 );
 
 -- Create functions
-CREATE OR REPLACE FUNCTION public.get_team_ids_for_user(uid UUID)
-RETURNS UUID[] AS $$
-    SELECT ARRAY(
+CREATE OR REPLACE FUNCTION public.get_team_ids_for_user(uid uuid)
+RETURNS uuid[] AS $$
+BEGIN
+    RETURN ARRAY(
         SELECT team_id
         FROM public.team_members
         WHERE user_id = uid
           AND status = 'active'
     );
-$$ LANGUAGE sql STABLE;
+END;
+$$ LANGUAGE plpgsql
+SET search_path = public;
 
 CREATE OR REPLACE FUNCTION public.get_role_based_team_ids_for_user(uid UUID, role TEXT)
 RETURNS UUID[] AS $$
@@ -103,7 +106,8 @@ RETURNS UUID[] AS $$
           AND role = role
           AND status = 'active'
     );
-$$ LANGUAGE sql STABLE;
+$$ LANGUAGE plpgsql
+SET search_path = public;
 
 CREATE OR REPLACE FUNCTION public.get_accessible_sync_ids_for_user(uid UUID)
 RETURNS UUID[] AS $$
@@ -112,7 +116,19 @@ RETURNS UUID[] AS $$
         FROM public.syncs s
         WHERE s.team_id = ANY(public.get_team_ids_for_user(uid))
     );
-$$ LANGUAGE sql STABLE;
+$$ LANGUAGE plpgsql
+SET search_path = public;
+
+-- Create view for team members
+CREATE OR REPLACE VIEW public.view_team_members AS
+SELECT
+  tm.*,
+  p.username,
+  p.avatar_url,
+  u.email
+FROM public.team_members tm
+LEFT JOIN public.profiles p ON tm.user_id = p.id
+LEFT JOIN auth.users u ON p.id = u.id;
 
 -- Create indexes
 CREATE INDEX idx_team_members_team_id ON public.team_members(team_id);
@@ -141,7 +157,14 @@ CREATE POLICY "Users can view their teams"
     FOR SELECT
     USING (
         id = ANY(public.get_team_ids_for_user(auth.uid()))
+        OR created_by = auth.uid()
     );
+
+CREATE POLICY "Authenticated users can create teams"
+    ON public.teams
+    FOR INSERT
+    TO authenticated
+    WITH CHECK (true);
 
 CREATE POLICY "Team owners can update their teams"
     ON public.teams
@@ -152,28 +175,45 @@ CREATE POLICY "Team owners can update their teams"
 
 -- Team members policies
 -- Users can view their team members
-CREATE POLICY "Users can view their team members"
+CREATE POLICY "Users can only view their own member"
     ON public.team_members
     FOR SELECT
     USING (
-        team_id = ANY(public.get_team_ids_for_user(auth.uid()))
+         (select auth.uid()) = user_id
     );
 
--- Team owners can manage team members
-CREATE POLICY "Team owners can manage team members"
+    -- Team owners can create team members
+CREATE POLICY "Users can create team members"
     ON public.team_members
-    FOR ALL
+    FOR INSERT
+        TO authenticated
+    WITH CHECK (true);
+
+-- Team owners can update team members
+CREATE POLICY "Team owners can update team members"
+    ON public.team_members
+    FOR UPDATE
     USING (
-        team_id = ANY(public.get_role_based_team_ids_for_user(auth.uid(), 'owner'))
+        team_id IN (
+        SELECT team_id
+        FROM public.team_members
+        WHERE user_id = auth.uid()
+          AND role = 'owner'
+          AND status = 'active'
+    )
     );
 
--- Team admins can manage non-owner members
-CREATE POLICY "Team admins can manage non-owner members"
+CREATE POLICY "Team owners can delete team members"
     ON public.team_members
-    FOR ALL
+    FOR DELETE
     USING (
-        team_id = ANY(public.get_role_based_team_ids_for_user(auth.uid(), 'admin'))
-        AND role != 'owner'
+        team_id IN (
+        SELECT team_id
+        FROM public.team_members
+        WHERE user_id = auth.uid()
+          AND role = 'owner'
+          AND status = 'active'
+    )
     );
 
 -- Users can remove themselves
@@ -198,9 +238,23 @@ CREATE POLICY "Team members can view their team's connections"
         team_id = ANY(public.get_team_ids_for_user(auth.uid()))
     );
 
-CREATE POLICY "Team members can manage their team's connections"
+CREATE POLICY "Team members can create their team's connections"
     ON public.connections
-    FOR ALL
+    FOR INSERT
+    WITH CHECK (
+        team_id = ANY(public.get_team_ids_for_user(auth.uid()))
+    );
+
+    CREATE POLICY "Team members can update their team's connections"
+    ON public.connections
+    FOR UPDATE
+    USING (
+        team_id = ANY(public.get_team_ids_for_user(auth.uid()))
+    );
+
+CREATE POLICY "Team members can delete their team's connections"
+    ON public.connections
+    FOR DELETE
     USING (
         team_id = ANY(public.get_team_ids_for_user(auth.uid()))
     );
@@ -213,9 +267,23 @@ CREATE POLICY "Team members can view their team's syncs"
         team_id = ANY(public.get_team_ids_for_user(auth.uid()))
     );
 
-CREATE POLICY "Team members can manage their team's syncs"
+CREATE POLICY "Team members can create their team's syncs"
     ON public.syncs
-    FOR ALL
+    FOR INSERT
+    WITH CHECK (
+        team_id = ANY(public.get_team_ids_for_user(auth.uid()))
+    );
+
+CREATE POLICY "Team members can update their team's syncs"
+    ON public.syncs
+    FOR UPDATE
+    USING (
+        team_id = ANY(public.get_team_ids_for_user(auth.uid()))
+    );
+
+CREATE POLICY "Team members can delete their team's syncs"
+    ON public.syncs
+    FOR DELETE
     USING (
         team_id = ANY(public.get_team_ids_for_user(auth.uid()))
     );
@@ -230,7 +298,21 @@ CREATE POLICY "Team members can view their team's field mappings"
 
 CREATE POLICY "Team members can manage their team's field mappings"
     ON public.field_mapping
-    FOR ALL
-     USING (
+    FOR INSERT
+    WITH CHECK (
+        sync_id = ANY(public.get_accessible_sync_ids_for_user(auth.uid()))
+    );
+
+CREATE POLICY "Team members can update their team's field mappings"
+    ON public.field_mapping
+    FOR UPDATE
+    USING (
+        sync_id = ANY(public.get_accessible_sync_ids_for_user(auth.uid()))
+    );
+
+CREATE POLICY "Team members can delete their team's field mappings"
+    ON public.field_mapping
+    FOR DELETE
+    USING (
         sync_id = ANY(public.get_accessible_sync_ids_for_user(auth.uid()))
     );

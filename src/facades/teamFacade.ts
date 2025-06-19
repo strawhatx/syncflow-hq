@@ -1,9 +1,8 @@
 import { supabase } from '@/integrations/supabase/client';
 import { teamFactory } from '@/factories/teamFactory';
-import { TeamRole, TeamMemberStatus, InviteStatus } from '@/types/team';
+import { TeamRole, TeamMemberStatus } from '@/types/team';
 import { Database } from '@/integrations/supabase/types';
 
-type TeamInvite = Database['public']['Tables']['team_invites']['Row'];
 type TeamMember = Database['public']['Tables']['team_members']['Row'];
 type Team = Database['public']['Tables']['teams']['Row'];
 
@@ -38,7 +37,7 @@ async function sendInviteEmail(email: string, verificationCode: string, teamName
 
 export const teamFacade = {
     async createTeamWithOwner(userId: string, teamName: string): Promise<Team> {
-        const team = teamFactory.createTeam({ name: teamName });
+        const team = teamFactory.createTeam({ name: teamName, created_by: userId });
 
         try {
             const { data: newTeam, error: teamError } = await supabase
@@ -49,25 +48,6 @@ export const teamFacade = {
 
             if (teamError) throw teamError;
             if (!newTeam) throw new TeamError('Failed to create team', 'TEAM_CREATE_FAILED');
-
-            const member = teamFactory.createTeamMember({
-                team_id: newTeam.id,
-                user_id: userId,
-                role: 'owner'
-            });
-
-            const { error: memberError } = await supabase
-                .from('team_members')
-                .insert(member);
-
-            if (memberError) {
-                // Rollback team creation if member creation fails
-                await supabase
-                    .from('teams')
-                    .delete()
-                    .eq('id', newTeam.id);
-                throw memberError;
-            }
 
             return newTeam;
         } catch (error) {
@@ -82,14 +62,7 @@ export const teamFacade = {
                 .from('teams')
                 .select(`
                     *,
-                    view_team_members!inner(
-                        *,
-                        profiles:user_id(
-                            full_name,
-                            avatar_url,
-                            email
-                        )
-                    ),
+                    view_team_members(*),
                     team_invites(*)
                 `)
                 .eq('id', teamId)
@@ -210,64 +183,6 @@ export const teamFacade = {
         }
     },
 
-    async verifyInvite(inviteId: string, code: string): Promise<TeamInvite> {
-        try {
-            const { data: invite, error: inviteError } = await supabase
-                .from('team_invites')
-                .select('*')
-                .eq('id', inviteId)
-                .single();
-
-            if (inviteError) throw inviteError;
-            if (!invite) throw new TeamError('Invite not found', 'INVITE_NOT_FOUND');
-            if (invite.status !== 'pending') throw new TeamError('Invite is no longer valid', 'INVITE_EXPIRED');
-            if (invite.verification_code !== code.toUpperCase()) throw new TeamError('Invalid verification code', 'INVALID_CODE');
-
-            return invite;
-        } catch (error) {
-            if (error instanceof TeamError) throw error;
-            throw new TeamError('Failed to verify invite', 'VERIFY_FAILED');
-        }
-    },
-
-    async acceptInvite(inviteId: string, userId: string) {
-        try {
-            // Get the invite
-            const { data: invite, error: inviteError } = await supabase
-                .from('team_invites')
-                .select('*')
-                .eq('id', inviteId)
-                .single();
-
-            if (inviteError) throw inviteError;
-            if (!invite) throw new TeamError('Invite not found', 'INVITE_NOT_FOUND');
-            if (invite.status !== 'pending') throw new TeamError('Invite is no longer valid', 'INVITE_EXPIRED');
-
-            // Create team member with default 'member' role
-            const { error: memberError } = await supabase
-                .from('team_members')
-                .insert({
-                    team_id: invite.team_id,
-                    user_id: userId,
-                    role: 'member',
-                    status: 'active'
-                });
-
-            if (memberError) throw memberError;
-
-            // Update invite status
-            const { error: updateError } = await supabase
-                .from('team_invites')
-                .update({ status: 'accepted' })
-                .eq('id', inviteId);
-
-            if (updateError) throw updateError;
-        } catch (error) {
-            if (error instanceof TeamError) throw error;
-            throw new TeamError('Failed to accept invite', 'ACCEPT_FAILED');
-        }
-    },
-
     async updateTeamName(teamId: string, newName: string) {
         try {
             const { error } = await supabase
@@ -297,9 +212,26 @@ export const teamFacade = {
     async getTeamMember(memberId: string): Promise<TeamMember> {
         try {
             const { data: member, error } = await supabase
-                .from('team_members')
-                .select('*, teams(*)')
+                .from('view_team_members')
+                .select('*')
                 .eq('id', memberId)
+                .single();
+
+            if (error) throw error;
+            if (!member) throw new TeamError('Member not found', 'MEMBER_NOT_FOUND');
+            return member;
+        } catch (error) {
+            if (error instanceof TeamError) throw error;
+            throw new TeamError('Failed to fetch team member', 'MEMBER_FETCH_FAILED');
+        }
+    },
+
+    async getTeamMemberByUserId(userId: string): Promise<TeamMember> {
+        try {
+            const { data: member, error } = await supabase
+                .from('view_team_members')
+                .select('*')
+                .eq('user_id', userId)
                 .single();
 
             if (error) throw error;
@@ -325,16 +257,34 @@ export const teamFacade = {
         }
     },
 
-    async getTeamMembersByUser(userId: string): Promise<TeamMember[]> {
+    async getTeamMembersByUser(userId: string): Promise<{ team_members: TeamMember[], team: Team }> {
         try {
-            const { data: members, error } = await supabase
-                .from('team_members')
+            const { data, error } = await supabase
+                .from('view_team_members')
                 .select('*, teams(*)')
                 .eq('user_id', userId);
 
             if (error) throw error;
-            return members || [];
+            if (!data || data.length === 0) {
+                throw new TeamError('User is not a member of any team', 'NO_TEAM_FOUND');
+            }
+
+            // Extract team info from the first member (all members should be from the same team)
+            const firstMember = data[0];
+            const team = firstMember.teams;
+
+            // Format the team members
+            const team_members = data.map((member: any) => ({
+                ...member,
+                profile: member.profiles
+            }));
+
+            return {
+                team_members,
+                team
+            };
         } catch (error) {
+            if (error instanceof TeamError) throw error;
             throw new TeamError('Failed to fetch user teams', 'TEAMS_FETCH_FAILED');
         }
     }

@@ -18,7 +18,7 @@ const RoleItem = ({ icon, title, description }) => (
 export const RolePermissions = () => (
     <Card>
         <CardHeader>
-            <CardTitle>Role Permissions</CardTitle>
+            <CardTitle className="text-xl font-semibold">Role Permissions</CardTitle>
         </CardHeader>
         <CardContent>
             <div className="space-y-4">
@@ -34,13 +34,8 @@ export const RolePermissions = () => (
                 />
                 <RoleItem 
                     icon={<UserCheck className="h-5 w-5 text-green-400" />}
-                    title="Developer"
+                    title="Member"
                     description="Create and edit sync flows"
-                />
-                <RoleItem 
-                    icon={<Eye className="h-5 w-5 text-gray-400" />}
-                    title="Viewer"
-                    description="Read-only access"
                 />
             </div>
         </CardContent>

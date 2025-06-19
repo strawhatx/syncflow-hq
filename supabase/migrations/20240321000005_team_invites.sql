@@ -25,10 +25,20 @@ RETURNS UUID[] AS $$
           AND role IN ('owner', 'admin')
           AND status = 'active'
     );
-$$ LANGUAGE sql STABLE;
+$$ LANGUAGE plpgsql
+SET search_path = public;
 
 -- Add RLS policies for team_invites
 ALTER TABLE team_invites ENABLE ROW LEVEL SECURITY;
+
+-- Allow team owners and admins to update invites
+CREATE POLICY "Team members can view invites"
+    ON team_invites FOR SELECT
+    TO authenticated
+    USING (
+        team_id = ANY(public.get_team_ids_for_user(auth.uid()))
+    );
+
 
 -- Allow team owners and admins to create invites
 CREATE POLICY "Team owners and admins can create invites"
@@ -54,14 +64,14 @@ CREATE POLICY "Team owners and admins can delete invites"
        team_id = ANY(public.get_owned_or_admin_team_ids_for_user(auth.uid()))
     );
 
--- Create function to automatically update updated_at
-CREATE OR REPLACE FUNCTION update_updated_at_column()
+CREATE OR REPLACE FUNCTION public.update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
     NEW.updated_at = NOW();
     RETURN NEW;
 END;
-$$ language 'plpgsql';
+$$ LANGUAGE plpgsql
+SET search_path = public;
 
 -- Create trigger for team_invites
 CREATE TRIGGER update_team_invites_updated_at

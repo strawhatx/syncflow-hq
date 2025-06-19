@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import { TeamMember, Team, TeamRole } from '@/types/team';
+    import { TeamMember, Team, TeamRole, TeamMemberStatus } from '@/types/team';
 import { teamFacade } from '@/facades/teamFacade';
 import { createPermissionStrategy } from '@/strategies/team';
+import { useAuth } from './AuthContext';
 
 interface TeamContextType {
     team: Team | null;
@@ -11,6 +12,7 @@ interface TeamContextType {
     currentMember: TeamMember | null;
     permissionStrategy: ReturnType<typeof createPermissionStrategy>;
     loadTeam: (teamId: string) => Promise<void>;
+    loadCurrentUserTeam: () => Promise<void>;
     createTeamWithOwner: (userId: string, teamName: string) => Promise<Team>;
     updateMemberRole: (memberId: string, newRole: TeamRole) => Promise<void>;
     removeMember: (memberId: string) => Promise<void>;
@@ -29,16 +31,26 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [error, setError] = useState<Error | null>(null);
     const [currentMember, setCurrentMember] = useState<TeamMember | null>(null);
     const permissionStrategy = createPermissionStrategy('role-based');
+    const { user } = useAuth();
 
     const loadTeam = useCallback(async (teamId: string) => {
         try {
             setLoading(true);
+            // Get team with members
             const teamData = await teamFacade.getTeamWithMembers(teamId);
             setTeam(teamData);
-            setMembers(teamData.team_members);
+            
+            // Convert Map to array and cast types
+            const membersArray = Array.from(teamData.team_members.values()).map((member: any) => ({
+                ...member,
+                role: member.role as TeamRole,
+                status: member.status as TeamMemberStatus
+            }));
+            setMembers(membersArray);
+            
             // Set current member based on user ID
-            const currentUserMember = teamData.team_members.find(
-                (m: TeamMember) => m.user_id === 'current-user-id' // Replace with actual user ID
+            const currentUserMember = membersArray.find(
+                (m: TeamMember) => m.user_id === user?.id
             );
             setCurrentMember(currentUserMember || null);
         } catch (err) {
@@ -46,7 +58,32 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [user?.id]);
+
+    const loadCurrentUserTeam = useCallback(async () => {
+        if (!user?.id) return;
+        
+        try {
+            setLoading(true);
+            const userTeamData = await teamFacade.getTeamMembersByUser(user.id);
+            setTeam(userTeamData.team);
+            
+            // Cast the members to proper types
+            const formattedMembers = userTeamData.team_members.map((member: any) => ({
+                ...member,
+                role: member.role as TeamRole,
+                status: member.status as TeamMemberStatus
+            }));
+            setMembers(formattedMembers);
+            
+            // Set current member (should be the first one since we're getting by user ID)
+            setCurrentMember(formattedMembers[0] || null);
+        } catch (err) {
+            setError(err instanceof Error ? err : new Error('Failed to load current user team'));
+        } finally {
+            setLoading(false);
+        }
+    }, [user?.id]);
 
     const createTeamWithOwner = useCallback(async (userId: string, teamName: string) => {
         try {
@@ -115,6 +152,7 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({ children
         currentMember,
         permissionStrategy,
         loadTeam,
+        loadCurrentUserTeam,
         createTeamWithOwner,
         updateMemberRole,
         removeMember,

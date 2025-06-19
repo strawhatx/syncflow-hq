@@ -1,11 +1,10 @@
 import { TeamMember, Team, CreateTeamMemberParams, CreateTeamParams } from '@/types/team';
 
 export const teamFactory = {
-    createTeamMember(params: CreateTeamMemberParams): TeamMember {
+    createTeamMember(params: CreateTeamMemberParams): Omit<TeamMember, 'id'> {
         const now = new Date().toISOString();
         const role = params.role || 'member';
         return {
-            id: null,
             team_id: params.team_id,
             user_id: params.user_id,
             role,
@@ -15,11 +14,11 @@ export const teamFactory = {
         };
     },
 
-    createTeam(params: CreateTeamParams): Team {
+    createTeam(params: CreateTeamParams): Omit<Team, 'id'> {
         const now = new Date().toISOString();
         return {
-            id: null,
             name: params.name,
+            created_by: params.created_by,
             created_at: now,
             updated_at: now
         };
