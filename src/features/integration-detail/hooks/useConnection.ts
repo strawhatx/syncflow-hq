@@ -2,9 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 import { fetchConnectionById, updateConnectionStatus, deleteConnection } from "@/services/connectionService";
-import { fetchConnectors } from "@/services/connectorService";
 import type { Database } from "@/integrations/supabase/types";
-import { ConnectionStatus } from "@/features/connectors/components/IntegrationCard";
 
 type Connection = Database['public']['Tables']['connections']['Row'];
 

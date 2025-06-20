@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { InviteModal } from "./components/InviteModal";
 import { useTeam, TeamProvider } from "@/contexts/TeamContext";
 import { useTeamStats } from "./hooks/useTeamStats";
@@ -13,7 +13,7 @@ import { getRoleColor, getRoleIcon, getMemberStatusColor } from "./utils/roleUti
 import { TeamMemberWithProfile, TeamRole } from "@/types/team";
 import { useHeaderContent } from "@/contexts/HeaderContentContext";
 
-const TeamsContent = () => {
+export const Teams = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [showInviteModal, setShowInviteModal] = useState(false);
     const { setContent } = useHeaderContent();
@@ -21,7 +21,7 @@ const TeamsContent = () => {
     const { 
         members: teamMembers, 
         loading: isLoading,
-        loadCurrentUserTeam,
+        initialLoading,
         currentMember: teamMember, 
         updateMemberRole, 
         removeMember, 
@@ -31,29 +31,26 @@ const TeamsContent = () => {
     // Call useTeamStats once at the top level to maintain hook order
     const teamStats = useTeamStats(teamMembers);
 
-    const headerContent = (
+    const headerContent = useCallback(() => (
         <TeamHeader
                 searchTerm={searchTerm}
                 onSearchChange={setSearchTerm}
                 canInviteMembers={canInviteMembers()}
                 onInviteClick={() => setShowInviteModal(true)}
             />
-    );
-
-    useEffect(() => {
-        loadCurrentUserTeam();
-    }, [loadCurrentUserTeam]);
+    ), [searchTerm, canInviteMembers]);
 
     // Effect for setting content
     useEffect(() => {
-        setContent(headerContent);
-    }, [searchTerm, canInviteMembers, setShowInviteModal, setContent, headerContent]);
+        setContent(headerContent());
+    }, [headerContent, setContent]);
 
     // Separate effect for cleanup
     useEffect(() => {
         return () => {setContent(null)};
     }, [setContent]);
 
+    if (initialLoading) return <div>Loading team data...</div>;
     if (isLoading) return <div>Loading...</div>;
     if (!teamMember) return <NoTeamFound />;
 
@@ -104,9 +101,3 @@ const TeamsContent = () => {
         </div>
     );
 };
-
-export const Teams = () => (
-    <TeamProvider>
-        <TeamsContent />
-    </TeamProvider>
-);

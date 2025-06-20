@@ -22,6 +22,7 @@ import SyncCreateAuthorize from "./pages/SyncCreateAuthorize";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { HeaderContentProvider } from '@/contexts/HeaderContentContext';
 import TeamsPage from "./pages/Teams";
+import { TeamProvider } from "./contexts/TeamContext";
 
 const queryClient = new QueryClient();
 
@@ -29,7 +30,8 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <HeaderContentProvider>
       <AuthProvider>
-        <TooltipProvider>
+        <TeamProvider>
+          <TooltipProvider>
           <Toaster />
           <Sonner />
           <BrowserRouter>
@@ -62,6 +64,7 @@ const App = () => (
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
+        </TeamProvider>
       </AuthProvider>
     </HeaderContentProvider>
     <ReactQueryDevtools initialIsOpen={false} />

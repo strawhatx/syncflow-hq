@@ -1,6 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { teamFactory } from '@/factories/teamFactory';
-import { TeamRole, TeamMemberStatus } from '@/types/team';
+import { TeamRole, TeamMemberStatus, CreateTeamParams } from '@/types/team';
 import { Database } from '@/integrations/supabase/types';
 
 type TeamMember = Database['public']['Tables']['team_members']['Row'];
@@ -11,6 +10,16 @@ class TeamError extends Error {
         super(message);
         this.name = 'TeamError';
     }
+}
+
+function createTeam(params: CreateTeamParams): Omit<Team, 'id'> {
+    const now = new Date().toISOString();
+    return {
+        name: params.name,
+        created_by: params.created_by,
+        created_at: now,
+        updated_at: now
+    };
 }
 
 function generateVerificationCode(): string {
@@ -35,9 +44,9 @@ async function sendInviteEmail(email: string, verificationCode: string, teamName
     }
 }
 
-export const teamFacade = {
+export const teamService = {
     async createTeamWithOwner(userId: string, teamName: string): Promise<Team> {
-        const team = teamFactory.createTeam({ name: teamName, created_by: userId });
+        const team = createTeam({ name: teamName, created_by: userId });
 
         try {
             const { data: newTeam, error: teamError } = await supabase

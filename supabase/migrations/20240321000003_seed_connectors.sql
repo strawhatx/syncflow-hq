@@ -1,8 +1,7 @@
 -- Insert initial connectors
-INSERT INTO public.connectors (id, name, type, provider, config, is_active)
+INSERT INTO public.connectors (name, type, provider, config, is_active)
 VALUES
     (
-        'supabase',
         'Supabase',
         'database',
         'supabase',
@@ -15,7 +14,6 @@ VALUES
         true
     ),
     (
-        'postgresql',
         'PostgreSQL',
         'database',
         'postgresql',
@@ -28,7 +26,6 @@ VALUES
         true
     ),
     (
-        'mongodb',
         'MongoDB',
         'database',
         'mongodb',
@@ -41,7 +38,6 @@ VALUES
         true
     ),
     (
-        'mysql',
         'MySQL',
         'database',
         'mysql',
@@ -54,7 +50,6 @@ VALUES
         true
     ),
     (
-        's3',
         'Amazon S3',
         'file',
         'aws',

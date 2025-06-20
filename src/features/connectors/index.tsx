@@ -11,8 +11,6 @@ import { ConnectorWithConnections } from "@/services/connectorService";
 const Connectors = () => {
   const navigate = useNavigate();
   const {
-    searchQuery,
-    setSearchQuery,
     connectedConnectors,
     availableConnectors,
     isLoading,
@@ -51,23 +49,6 @@ const Connectors = () => {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold mb-2">Connectors</h1>
-        <p className="text-muted-foreground">Connect your data sources to enable synchronization</p>
-      </div>
-      
-      <div className="mb-6 flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search connectors..."
-            className="pl-8"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-      </div>
-      
       {connectedConnectors.length > 0 && (
         <div className="mb-6">
           <h2 className="text-lg font-medium mb-4">Connected</h2>

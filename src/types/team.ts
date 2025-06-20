@@ -52,13 +52,6 @@ export interface CreateTeamParams {
     created_by: string;
 }
 
-export interface CreateTeamMemberParams {
-    team_id: string;
-    user_id: string;
-    role?: TeamRole;
-    status?: TeamMemberStatus;
-}
-
 export interface CreateTeamInviteParams {
     team_id: string;
     email: string;
