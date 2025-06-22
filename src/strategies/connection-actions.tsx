@@ -1,0 +1,132 @@
+// Strategy pattern for rendering connection actions
+
+import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/use-toast";
+import { createConnection } from "@/services/connectionService";
+import { initiateOAuth } from "@/services/oauthService";
+import { Connector } from "@/types/connectors";
+
+interface ConnectionActionsStrategy {
+    handleSubmitAction(
+        connector: Connector,
+        connectionName: string,
+        e: React.FormEvent,
+        setIsLoading: (isLoading: boolean) => void,
+        setError: (error: string | null) => void,
+        teamId?: string,
+        config?: Record<string, any>,
+        onClose?: () => void
+    ): Promise<void>
+    renderActions(isLoading: boolean): React.ReactNode
+}
+
+class OauthActionsStrategy implements ConnectionActionsStrategy {
+    async handleSubmitAction(
+        connector: Connector,
+        connectionName: string,
+        e: React.FormEvent,
+        setIsLoading: (isLoading: boolean) => void,
+        setError: (error: string | null) => void
+    ): Promise<void> {
+        try {
+            if (connector.provider !== "supabase" && connector.provider !== "airtable") {
+                throw new Error("Unsupported provider");
+            }
+
+            setIsLoading(true);
+            const params: Record<string, string> = {};
+            const oauthUrl = initiateOAuth(
+                connectionName,
+                connector.provider,
+                connector,
+                params
+            );
+
+            window.location.href = await oauthUrl;
+        } 
+        catch (err) {
+            setError(err instanceof Error ? err.message : "An error occurred initiating OAuth flow");
+            toast({
+                title: "Error",
+                description: err instanceof Error ? err.message : "An error occurred initiating OAuth flow",
+                variant: "destructive",
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    }
+    renderActions(isLoading: boolean): React.ReactNode {
+        return (
+            <Button
+                type="submit"
+                disabled={isLoading}
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-1 rounded-lg font-medium transition-all duration-200 flex items-center gap-2"
+            >
+                {isLoading ? "Authorizing..." : "Authorize"}
+            </Button>
+        );
+    }
+}
+
+class ApiKeyActionsStrategy implements ConnectionActionsStrategy {
+    async handleSubmitAction(
+        connector: Connector,
+        connectionName: string,
+        e: React.FormEvent,
+        setIsLoading: (isLoading: boolean) => void,
+        setError: (error: string | null) => void,
+        teamId?: string,
+        config?: Record<string, any>,
+        onClose?: () => void
+    ): Promise<void> {
+
+        e.preventDefault();
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            await createConnection(teamId, connector, connectionName, config);
+
+            toast({
+                title: "Connection created",
+                description: "Your connection has been successfully created.",
+            });
+
+            onClose();
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "An error occurred");
+            toast({
+                title: "Error",
+                description: err instanceof Error ? err.message : "An error occurred",
+                variant: "destructive",
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    }
+    renderActions(isLoading: boolean): React.ReactNode {
+        return (
+            <Button
+                type="submit"
+                disabled={isLoading}
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-1 rounded-lg font-medium transition-all duration-200 flex items-center gap-2"
+            >
+                {isLoading ? "Connecting..." : "Connect"}
+            </Button>
+        );
+    }
+}
+
+export class ConnectionActionsStrategyFactory {
+    static getStrategy(type: "oauth" | "api_key"): ConnectionActionsStrategy {
+        switch (type) {
+            case "oauth":
+                return new OauthActionsStrategy();
+            case "api_key":
+                return new ApiKeyActionsStrategy();
+
+            default:
+                throw new Error(`Unsupported type: ${type}`);
+        }
+    }
+}

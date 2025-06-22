@@ -7,7 +7,6 @@ import DashboardPage from "./pages/Dashboard";
 import Syncs from "./pages/Syncs";
 import SyncDetails from "./pages/SyncDetails";
 import ConnectorsPage from "./pages/Connectors";
-import IntegrationDetailPage from "./pages/IntegrationDetail";
 import OAuthCallback from "./pages/OAuthCallback";
 import NotFound from "./pages/NotFound";
 import IndexPage from "./pages/Index";
@@ -54,7 +53,6 @@ const App = () => (
                 <Route path="/syncs" element={<Syncs />} />
                 <Route path="/syncs/view/:id" element={<SyncDetails />} />
                 <Route path="/connectors" element={<ConnectorsPage />} />
-                <Route path="/connectors/:connectorId" element={<IntegrationDetailPage />} />
                 <Route path="/teams" element={<TeamsPage />} />
                 <Route path="/profile" element={<Profile />} />
               </Route>

@@ -123,7 +123,7 @@ export interface Database {
         Row: {
           id: string
           name: string
-          type: string
+          type: 'api_key' | 'oauth'
           provider: string
           config: Json
           is_active: boolean
@@ -133,7 +133,7 @@ export interface Database {
         Insert: {
           id?: string
           name: string
-          type: string
+          type: 'api_key' | 'oauth'
           provider: string
           config: Json
           is_active?: boolean
@@ -143,7 +143,7 @@ export interface Database {
         Update: {
           id?: string
           name?: string
-          type?: string
+          type?: 'api_key' | 'oauth'
           provider?: string
           config?: Json
           is_active?: boolean
@@ -254,6 +254,23 @@ export interface Database {
           transformation_config?: Json | null
           created_at?: string
           updated_at?: string
+        }
+      }
+      connector_oauth_configs_public: {
+        Row: {
+          id: string;
+          name: string;
+          type: 'api_key' | 'oauth';
+          provider: string;
+          client_id: string | null;
+          auth_url: string | null;
+          token_url: string | null;
+          redirect_url: string | null;
+          scopes: string[] | null;
+          required_parameters: string[] | null;
+          description: string | null;
+          created_at: string;
+          updated_at: string;
         }
       }
     }

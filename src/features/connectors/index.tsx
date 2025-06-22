@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { Plus, Search, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import ConnectorCard from "./components/ConnectorCard";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useConnectors } from "./hooks/useConnectors";
-import ConnectorConnectModal from "../connector-connect/components/ConnectorConnectModal";
+import ConnectorConnectModal from "./components/ConnectorConnectModal";
 import { ConnectorWithConnections } from "@/services/connectorService";
 
 const Connectors = () => {
@@ -57,8 +56,8 @@ const Connectors = () => {
               <ConnectorCard
                 key={connector.id}
                 name={connector.name}
-                icon={connector.icon}
-                description={connector.description}
+                icon={connector.config.icon}
+                description={connector.config.description}
                 isConnected={true}
                 connections={connector.connections}
                 onConnect={() => handleConnect(connector)}
@@ -76,8 +75,8 @@ const Connectors = () => {
             <ConnectorCard
               key={connector.id}
               name={connector.name}
-              icon={connector.icon}
-              description={connector.description}
+              icon={connector.config.icon}
+              description={connector.config.description}
               isConnected={false}
               connections={[]}
               onConnect={() => handleConnect(connector)}

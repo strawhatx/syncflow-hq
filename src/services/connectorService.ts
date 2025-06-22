@@ -1,24 +1,10 @@
 import { supabase } from "@/integrations/supabase/client";
+import { Database } from "@/integrations/supabase/types";
 
-export interface Connector {
-  id: string;
-  name: string;
-  type: 'database' | 'warehouse' | 'saas' | 'file' | 'api';
-  provider: string;
-  description: string;
-  icon: string;
-}
+type Connector = Database['public']['Tables']['connectors']['Row'];
+type Connection = Database['public']['Tables']['connections']['Row'];
 
-export interface Connection {
-  id: string;
-  connector_id: string;
-  name: string;
-  config: Record<string, any>;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface ConnectorWithConnections extends Connector {
+export interface ConnectorWithConnections extends Connector { 
   connections: Connection[];
 }
 

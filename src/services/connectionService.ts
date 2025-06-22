@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
+import { Connector, ConnectorProvider } from "@/types/connectors";
 
 type Connection = Database['public']['Tables']['connections']['Row'];
 
@@ -9,9 +10,44 @@ export const fetchConnectionById = async (id: string): Promise<Connection | null
     .select('*')
     .eq('id', id)
     .single();
-  
+
   if (error) throw error;
   return data;
+};
+
+export const createConnection = async (team_id: string, connector: Connector, connectionName: string, config: Record<string, any>) => {
+  // Validate required fields 
+  const missingFields = connector.config.required_fields.filter(
+    field => !config[field]
+  );
+
+  if (missingFields.length > 0) {
+    throw new Error(`Missing required fields: ${missingFields.join(", ")}`);
+  }
+
+  // Should not be able to create a connection if the team does not exist
+  if (!team_id) {
+    throw new Error("No team found");
+  }
+
+  // Should not be able to create a connection if the connection is invalid
+  const isValid = await validateConnection(connector, config);
+  if (!isValid) {
+    throw new Error("Invalid connection configuration");
+  }
+
+  // Insert the connection
+  const { error: insertError } = await supabase
+    .from('connections')
+    .insert({
+      connector_id: connector.id,
+      name: connectionName,
+      config,
+      team_id,
+      is_active: true
+    });
+
+  if (insertError) throw insertError;
 };
 
 export const updateConnectionStatus = async (id: string, isActive: boolean): Promise<void> => {
@@ -19,15 +55,53 @@ export const updateConnectionStatus = async (id: string, isActive: boolean): Pro
     .from('connections')
     .update({ is_active: isActive })
     .eq('id', id);
-  
+
   if (error) throw error;
 };
 
 export const deleteConnection = async (id: string): Promise<void> => {
+  // TODO: Should not be able to delete a connection if it is in use (syncing, webhooks, etc.)
   const { error } = await supabase
     .from('connections')
     .delete()
     .eq('id', id);
-  
+
   if (error) throw error;
-}; 
+};
+
+export const validateConnection = async (connector: Connector, config: Record<string, any>): Promise<boolean> => {
+  const missingFields = connector.config.required_fields.filter(
+    field => !config[field]
+  );
+
+  if (missingFields.length > 0) {
+    throw new Error(`Missing required fields: ${missingFields.join(", ")}`);
+  }
+
+  return await validate(connector.provider, config);
+};
+
+const validate = async (provider: ConnectorProvider, config: Record<string, any>): Promise<boolean> => {
+  try {
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_API}/validate-connection`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        provider,
+        config
+      })
+    });
+
+    if (!response.ok) {
+      return false;
+    }
+
+    const result = await response.json();
+    return result.valid as boolean;
+  } catch (error) {
+    console.error('Connection validation error:', error);
+    return false;
+  }
+}

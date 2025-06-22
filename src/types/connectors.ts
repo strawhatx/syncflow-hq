@@ -1,5 +1,5 @@
-export type ConnectorType = 'database' | 'warehouse' | 'saas' | 'file' | 'api';
-export type ConnectorProvider = 'supabase' | 'postgresql' | 'mongodb' | 'mysql' | 'aws';
+export type ConnectorType = 'oauth' | 'api_key';
+export type ConnectorProvider = 'supabase'|'airtable' | 'postgresql' | 'mongodb' | 'mysql' | 'aws';
 
 export interface ConnectorConfig {
   required_fields: string[];

@@ -36,7 +36,7 @@ CREATE TABLE public.team_members (
 CREATE TABLE public.connectors (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
-    type TEXT NOT NULL CHECK (type IN ('database', 'warehouse', 'saas', 'file', 'api')),
+    type TEXT NOT NULL CHECK (type IN ('api_key', 'oauth')),
     provider TEXT NOT NULL,
     config JSONB NOT NULL,
     team_id UUID REFERENCES public.teams(id) ON DELETE CASCADE,
