@@ -59,27 +59,27 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
-
+- Supabase
 
 
 **Run Edge Functions:** 
 supabase functions serve --env-file supabase/.env
 
 **Debug Edge Functions:**
-- supabase functions serve oauth-callback --env-file supabase/.env --inspect-mode brk
+- supabase functions serve validate-connection --env-file supabase/.env --inspect-mode brk
 
 **Migrations**
  - supabase db diff --use-migra -f [migration name]
 
 
-## How can I deploy this project?
+## Limitations 
+- Datasources must be accessable on the internet
 
-Simply open [Lovable](https://lovable.dev/projects/4a54184e-bd45-4db7-924d-f5b0521c8d3f) and click on Share -> Publish.
+## Connection String formats
+- MYSQL
+-- mysql://<username>:<password>@<host>:<port>/<database>
+-- mysql://user_abc:secret123@containers-us-west-45.railway.app:6582/railway
 
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+-MONGODB
+-- if you have a @ in your user name relace with %40
+-- mongodb+srv://<username>:<password>@<host>/<database>?retryWrites=true&w=majority&appName=Cluster18426

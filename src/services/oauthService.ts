@@ -40,7 +40,6 @@ const getProviderConfig = async (connector: Connector): Promise<ProviderConfig |
 
 // Initiate OAuth flow
 export const initiateOAuth = async (
-  team_id: string,
   connectionName: string,
   provider: "supabase" | "airtable",
   config: Connector,

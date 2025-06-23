@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Connection } from "@/services/connectorService";
-import { ConnectionStatus } from "./IntegrationCard";
+import { Connection } from "@/types/connectors";
 
 export type ConnectionStatus = "active" | "error" | "syncing" | "paused";
 

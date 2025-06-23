@@ -4,20 +4,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Connector } from "@/types/connectors";
-import { useToast } from "@/components/ui/use-toast";
 import { useTeam } from "@/contexts/TeamContext";
 import { ConnectionFieldsStrategyFactory } from "@/strategies/connection-fields";
 import { Zap } from "lucide-react";
 import { ConnectionActionsStrategyFactory } from "@/strategies/connection-actions";
+import { ConnectorWithConnections } from "@/services/connectorService";
 
 interface ConnectorConnectModalProps {
   isOpen: boolean;
   onClose: () => void;
-  connector: Connector;
+  connector: ConnectorWithConnections;
 }
 
 export default function ConnectorConnectModal({ isOpen, onClose, connector }: ConnectorConnectModalProps) {
-  const { toast } = useToast();
   const { team } = useTeam();
   const [connectionName, setConnectionName] = useState("");
   const [config, setConfig] = useState<Record<string, any>>({});

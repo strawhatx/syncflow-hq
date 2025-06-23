@@ -1,10 +1,11 @@
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "npm:@supabase/supabase-js@2";
 import { Client } from "npm:pg@8.16.2";
 import { MongoClient } from "npm:mongodb@6.17.0";
 import { createPool } from "npm:mysql2@3.14.1/promise";
 import { S3Client, ListBucketsCommand } from "npm:@aws-sdk/client-s3@3.832.0";
+import { handleCORS, handleReturnCORS } from "../utils/cors.ts";
+import { validateSupabaseToken } from "../utils/auth.ts";
 
 // Types
 interface ValidationRequest {
@@ -17,34 +18,17 @@ interface ValidationResponse {
   error?: string;
 }
 
-// Constants
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, ApiKey"
-} as const;
-
-const createErrorResponse = (message: string, status = 400) => {
+const createErrorResponse = (req: Request, message: string, status = 400) => {
   return new Response(
     JSON.stringify({ error: message }),
-    {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status
-    }
+    { headers: handleReturnCORS(req), status }
   );
 };
 
-const createSuccessResponse = (data: ValidationResponse) => {
+const createSuccessResponse = (data: ValidationResponse, req: Request) => {
   return new Response(
     JSON.stringify(data),
-    {
-      headers: {
-        'Content-Type': 'application/json',
-        'Connection': 'keep-alive',
-        ...corsHeaders
-      },
-      status: 200
-    }
+    { headers: handleReturnCORS(req), status: 200 }
   );
 };
 
@@ -56,9 +40,9 @@ const validatePostgreSQL = async (config: Record<string, any>): Promise<Validati
     await client.end();
     return { valid: true };
   } catch (error) {
-    return { 
-      valid: false, 
-      error: error instanceof Error ? error.message : 'Unknown PostgreSQL error' 
+    return {
+      valid: false,
+      error: error instanceof Error ? error.message : 'Unknown PostgreSQL error'
     };
   }
 };
@@ -70,24 +54,34 @@ const validateMongoDB = async (config: Record<string, any>): Promise<ValidationR
     await client.close();
     return { valid: true };
   } catch (error) {
-    return { 
-      valid: false, 
-      error: error instanceof Error ? error.message : 'Unknown MongoDB error' 
+    return {
+      valid: false,
+      error: error instanceof Error ? error.message : 'Unknown MongoDB error'
     };
   }
 };
 
 const validateMySQL = async (config: Record<string, any>): Promise<ValidationResponse> => {
   try {
-    const pool = createPool(config);
+    // Convert boolean SSL to proper mysql2 SSL object format
+    const mysqlConfig = { ...config };
+    if (typeof mysqlConfig.ssl === 'boolean') {
+      if (mysqlConfig.ssl) {
+        mysqlConfig.ssl = { rejectUnauthorized: false };
+      } else {
+        delete mysqlConfig.ssl;
+      }
+    }
+    
+    const pool = createPool(mysqlConfig);
     const connection = await pool.getConnection();
     connection.release();
     await pool.end();
     return { valid: true };
   } catch (error) {
-    return { 
-      valid: false, 
-      error: error instanceof Error ? error.message : 'Unknown MySQL error' 
+    return {
+      valid: false,
+      error: error instanceof Error ? error.message : 'Unknown MySQL error'
     };
   }
 };
@@ -98,26 +92,29 @@ const validateS3 = async (config: Record<string, any>): Promise<ValidationRespon
     await client.send(new ListBucketsCommand({}));
     return { valid: true };
   } catch (error) {
-    return { 
-      valid: false, 
-      error: error instanceof Error ? error.message : 'Unknown S3 error' 
+    return {
+      valid: false,
+      error: error instanceof Error ? error.message : 'Unknown S3 error'
     };
   }
 };
 
 // Main handler
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
-  }
+  const corsResponse = handleCORS(req);
+  if (corsResponse) return corsResponse;
+  
+  // Validate the JWT token
+  const authHeader = req.headers.get("Authorization");
+  await validateSupabaseToken(authHeader);
 
   if (req.method !== 'POST') {
-    return createErrorResponse('Method not allowed', 405);
+    return createErrorResponse(req, 'Method not allowed', 405);
   }
 
   try {
     const { provider, config }: ValidationRequest = await req.json();
-    
+
     if (!provider || !config) {
       throw new Error('Provider and config are required');
     }
@@ -138,17 +135,15 @@ Deno.serve(async (req) => {
         validationResult = await validateS3(config);
         break;
       default:
-        validationResult = { 
-          valid: false, 
-          error: `Unsupported provider: ${provider}` 
+        validationResult = {
+          valid: false,
+          error: `Unsupported provider: ${provider}`
         };
     }
 
-    return createSuccessResponse(validationResult);
+    return createSuccessResponse(validationResult, req);
   } catch (error) {
     console.error('Connection validation error:', error);
-    return createErrorResponse(
-      error instanceof Error ? error.message : 'Unknown error occurred'
-    );
+    return createErrorResponse(req, error instanceof Error ? error.message : 'Unknown error occurred', 500);
   }
 }); 

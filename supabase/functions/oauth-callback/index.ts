@@ -1,6 +1,7 @@
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { handleCORS } from "../utils/cors.ts";
 
 // Types
 interface OAuthCallbackRequest {
@@ -32,13 +33,6 @@ interface StateData {
   user_id: string;
   redirectUri: string;
 }
-
-// Constants
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, ApiKey"
-} as const;
 
 const createErrorResponse = (message: string, status = 400) => {
   return new Response(
@@ -92,9 +86,8 @@ const prepareTokenRequest = (
 
 // Main handler
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
-  }
+  const corsResponse = handleCORS(req);
+    if (corsResponse) return corsResponse;
 
   try {
     const { team_id, connectionName, provider, ...params } = await req.json() as OAuthCallbackRequest;
@@ -105,8 +98,8 @@ Deno.serve(async (req) => {
 
     // Initialize Supabase client
     const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      Deno.env.get('EF_SUPABASE_URL') ?? '',
+      Deno.env.get('EF_SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
     // Fetch integration configuration

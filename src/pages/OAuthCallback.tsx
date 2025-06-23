@@ -60,7 +60,7 @@ const OAuthCallback = () => {
                     description: error instanceof Error ? error.message : "An unknown error occurred",
                     variant: "destructive",
                 });
-                navigate("/integrations");
+                navigate("/connections");
             } finally {
                 setIsProcessing(false);
             }

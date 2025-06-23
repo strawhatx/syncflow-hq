@@ -3,7 +3,7 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Connector } from "@/types/connectors";
+import { ConnectorWithConnections } from "@/services/connectorService";
 
 interface ConnectionFieldsStrategy {
     renderFields(config?: Record<string, any>, setConfig?: (config: Record<string, any>) => void): React.ReactNode
@@ -87,13 +87,13 @@ class MongoFieldsStrategy implements ConnectionFieldsStrategy {
         return (
             <>
                 <div className="space-y-2">
-                    <Label htmlFor="uri">Connection URI</Label>
+                    <Label htmlFor="uri">Connection URL</Label>
                     <Input
-                        id="uri"
+                        id="url"
                         type="password"
                         placeholder="mongodb://username:password@host:port"
-                        value={config.uri || ""}
-                        onChange={(e) => setConfig({ ...config, uri: e.target.value })}
+                        value={config.url || ""}
+                        onChange={(e) => setConfig({ ...config, url: e.target.value })}
                     />
                 </div>
                 <div className="space-y-2">
@@ -147,8 +147,8 @@ class MySQLFieldsStrategy implements ConnectionFieldsStrategy {
                     <Input
                         id="username"
                         placeholder="root"
-                        value={config.username || ""}
-                        onChange={(e) => setConfig({ ...config, username: e.target.value })}
+                        value={config.user || ""}
+                        onChange={(e) => setConfig({ ...config, user: e.target.value })}
                     />
                 </div>
                 <div className="space-y-2">
@@ -238,6 +238,25 @@ class S3FieldsStrategy implements ConnectionFieldsStrategy {
     }
 }
 
+class ConnectionStringStrategy implements ConnectionFieldsStrategy {
+    renderFields(config: Record<string, any>, setConfig: (config: Record<string, any>) => void): React.ReactNode {
+        return (
+            <>
+                <div className="space-y-2">
+                    <Label htmlFor="connection_url">Secret Access Key</Label>
+                    <Input
+                        id="connection_url"
+                        type="password"
+                        placeholder="••••••••"
+                        value={config.connection_url || ""}
+                        onChange={(e) => setConfig({ ...config, connection_url: e.target.value })}
+                    />
+                </div>
+            </>
+        );
+    }
+}
+
 class DefaultFieldsStrategy implements ConnectionFieldsStrategy {
     renderFields(): React.ReactNode {
         return (
@@ -247,7 +266,7 @@ class DefaultFieldsStrategy implements ConnectionFieldsStrategy {
 }
 
 export class ConnectionFieldsStrategyFactory {
-    static getStrategy(connector: Connector): ConnectionFieldsStrategy {
+    static getStrategy(connector: ConnectorWithConnections): ConnectionFieldsStrategy {
         switch (connector.provider) {
             case "postgresql":
                 return new PostgresFieldsStrategy();
@@ -257,6 +276,9 @@ export class ConnectionFieldsStrategyFactory {
                 return new MySQLFieldsStrategy();
             case "aws":
                 return new S3FieldsStrategy();
+            
+            case "connecturl": // not an actual provider just a path for us to just use a connection string
+                return new ConnectionStringStrategy();
             default:
                 return new DefaultFieldsStrategy();
         }

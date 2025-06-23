@@ -10,11 +10,11 @@ VALUES
             "icon": "supabase-icon",
             "client_id": "supabase",
             "client_secret": "supabase",
-            "auth_url": "https://supabase.com/oauth2/v1/authorize",
-            "token_url": "https://supabase.com/oauth2/v1/token",
-            "scopes": ["base"],
-            "required_parameters": ["base_id"],
-            "redirect_url": "http://localhost:8080/oauth/airtable/callback"
+            "auth_url": "https://api.supabase.com/v1/oauth/authorize",
+            "token_url": "https://api.supabase.com/v1/oauth/token",
+            "scopes": ["projects.read", "projects.write"],
+            "required_parameters": []
+            "redirect_url": "http://localhost:3000/supabase/callback"
         }'::jsonb,
         true
     ),
@@ -29,9 +29,14 @@ VALUES
             "client_secret": "airtable",
             "auth_url": "https://airtable.com/oauth2/v1/authorize",
             "token_url": "https://airtable.com/oauth2/v1/token",
-            "scopes": ["base"],
-            "required_parameters": ["base_id"],
-            "redirect_url": "http://localhost:8080/oauth/airtable/callback"
+            "scopes": [
+                "data.records:read",
+                "data.records:write",
+                "schema.bases:read",
+                "schema.bases:write"
+            ],
+            "required_parameters": [],
+            "redirect_url": "http://localhost:3000/airtable/callback"
         }'::jsonb,
         true
     )
