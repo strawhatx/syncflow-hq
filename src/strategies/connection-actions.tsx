@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
-import { createConnection } from "@/services/connectionService";
+import { createConnection, updateConnection } from "@/services/connectionService";
 import { initiateOAuth } from "@/services/oauthService";
 import { Connector } from "@/types/connectors";
 
@@ -14,6 +14,7 @@ interface ConnectionActionsStrategy {
         setIsLoading: (isLoading: boolean) => void,
         setError: (error: string | null) => void,
         teamId?: string,
+        connection_id?: string,
         config?: Record<string, any>,
         onClose?: () => void
     ): Promise<void>
@@ -43,7 +44,7 @@ class OauthActionsStrategy implements ConnectionActionsStrategy {
             );
 
             window.location.href = await oauthUrl;
-        } 
+        }
         catch (err) {
             setError(err instanceof Error ? err.message : "An error occurred initiating OAuth flow");
             toast({
@@ -76,20 +77,28 @@ class ApiKeyActionsStrategy implements ConnectionActionsStrategy {
         setIsLoading: (isLoading: boolean) => void,
         setError: (error: string | null) => void,
         teamId?: string,
+        connection_id?: string,
         config?: Record<string, any>,
         onClose?: () => void
     ): Promise<void> {
-
+        const action = connection_id ? "create" : "update";
         e.preventDefault();
         setIsLoading(true);
         setError(null);
 
         try {
-            await createConnection(teamId, connector, connectionName, config);
+            // If the connection is being created, create a new connection 
+            // otherwise update the existing connection
+            if (action === "create") {
+                await createConnection(teamId, connector, connectionName, config);
+            }
+            else {
+                await updateConnection(connection_id, connectionName, connector, config);
+            }
 
             toast({
-                title: "Connection created",
-                description: "Your connection has been successfully created.",
+                title: `Connection ${action}d`,
+                description: `Your connection has been successfully ${action}d.`,
             });
 
             onClose();

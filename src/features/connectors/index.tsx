@@ -2,13 +2,12 @@ import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import ConnectorCard from "./components/ConnectorCard";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
 import { useConnectors } from "./hooks/useConnectors";
-import ConnectorConnectModal from "./components/ConnectorConnectModal";
+import ConnectorConnectModal from "../../components/connector/ConnectorConnectModal";
 import { ConnectorWithConnections } from "@/services/connectorService";
+import { Connector } from "@/types/connectors";
 
 const Connectors = () => {
-  const navigate = useNavigate();
   const {
     connectedConnectors,
     availableConnectors,
@@ -17,13 +16,16 @@ const Connectors = () => {
   } = useConnectors();
 
   const [selectedConnector, setSelectedConnector] = useState<ConnectorWithConnections | null>(null);
+  const [connectionId, setConnectionId] = useState<string | null>(null);
 
   const handleConnect = (connector: ConnectorWithConnections) => {
     setSelectedConnector(connector);
+    setConnectionId(undefined);
   };
-  
-  const handleManage = (connectionId: string) => {
-    navigate(`/connections/${connectionId}`);
+
+  const handleManage = (connectionId: string, connector: ConnectorWithConnections) => {
+    setConnectionId(connectionId);
+    setSelectedConnector(connector);
   };
 
   if (isLoading) {
@@ -56,18 +58,18 @@ const Connectors = () => {
               <ConnectorCard
                 key={connector.id}
                 name={connector.name}
-                icon={connector.config.icon}
-                description={connector.config.description}
+                icon={(connector.config as any).icon}
+                description={(connector.config as any).description}
                 isConnected={true}
                 connections={connector.connections}
                 onConnect={() => handleConnect(connector)}
-                onManage={handleManage}
+                onManage={(connectionId) => handleManage(connectionId, connector)}
               />
             ))}
           </div>
         </div>
       )}
-      
+
       <div>
         <h2 className="text-lg font-medium mb-4">Available Connectors</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -75,8 +77,8 @@ const Connectors = () => {
             <ConnectorCard
               key={connector.id}
               name={connector.name}
-              icon={connector.config.icon}
-              description={connector.config.description}
+              icon={(connector.config as any).icon}
+              description={(connector.config as any).description}
               isConnected={false}
               connections={[]}
               onConnect={() => handleConnect(connector)}
@@ -89,7 +91,8 @@ const Connectors = () => {
         <ConnectorConnectModal
           isOpen={!!selectedConnector}
           onClose={() => setSelectedConnector(null)}
-          connector={selectedConnector}
+          connector={selectedConnector as unknown as Connector}
+          connection_id={connectionId}
         />
       )}
     </div>

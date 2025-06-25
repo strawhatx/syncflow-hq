@@ -1,27 +1,43 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Connector } from "@/types/connectors";
 import { useTeam } from "@/contexts/TeamContext";
 import { ConnectionFieldsStrategyFactory } from "@/strategies/connection-fields";
 import { Zap } from "lucide-react";
 import { ConnectionActionsStrategyFactory } from "@/strategies/connection-actions";
-import { ConnectorWithConnections } from "@/services/connectorService";
+import { Connector } from "@/types/connectors";
+import { fetchConnectionById } from "@/services/connectionService";
 
 interface ConnectorConnectModalProps {
   isOpen: boolean;
   onClose: () => void;
-  connector: ConnectorWithConnections;
+  connector: Connector;
+  connection_id?: string;
 }
 
-export default function ConnectorConnectModal({ isOpen, onClose, connector }: ConnectorConnectModalProps) {
+export default function ConnectorConnectModal({ isOpen, onClose, connector, connection_id }: ConnectorConnectModalProps) {
   const { team } = useTeam();
   const [connectionName, setConnectionName] = useState("");
   const [config, setConfig] = useState<Record<string, any>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // if editing get data
+  useEffect(() => {
+    if (isOpen && connection_id)
+      fetchConnectionById(connection_id).then(connection => {
+        setConnectionName(connection.name);
+
+        // parse the json config
+        setConfig(
+          typeof connection.config === "string"
+            ? JSON.parse(connection.config)
+            : (connection.config as Record<string, any>)
+        );
+      })
+  }, [isOpen, connection_id]);
 
   const renderActions = () => {
     const strategy = ConnectionActionsStrategyFactory.getStrategy(connector.type);
@@ -31,16 +47,19 @@ export default function ConnectorConnectModal({ isOpen, onClose, connector }: Co
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    await ConnectionActionsStrategyFactory.getStrategy(connector.type).handleSubmitAction(
-      connector,
-      connectionName,
-      e,
-      setIsLoading,
-      setError,
-      team.id,
-      config,
-      onClose
-    );
+      await ConnectionActionsStrategyFactory.getStrategy(connector.type).handleSubmitAction(
+        connector,
+        connectionName,
+        e,
+        setIsLoading,
+        setError,
+        team.id,
+        // If the connection is being created, create a new connection to do that 
+        // we need to set the connection_id to undefined
+        isOpen && connection_id ? connection_id : undefined,
+        config,
+        onClose
+      );
   }
 
   const renderConfigFields = () => {

@@ -7,7 +7,7 @@ import DashboardPage from "./pages/Dashboard";
 import Syncs from "./pages/Syncs";
 import SyncDetails from "./pages/SyncDetails";
 import ConnectorsPage from "./pages/Connectors";
-import OAuthCallback from "./pages/OAuthCallback";
+import OAuthCallback from "./pages/OauthCallback";
 import NotFound from "./pages/NotFound";
 import IndexPage from "./pages/Index";
 import AuthPage from "./pages/Auth";

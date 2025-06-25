@@ -196,6 +196,7 @@ export interface Database {
           created_by: string
           created_at: string
           updated_at: string
+          sync_direction: 'one-way' | 'two-way'
         }
         Insert: {
           id?: string
@@ -209,6 +210,7 @@ export interface Database {
           created_by: string
           created_at?: string
           updated_at?: string
+          sync_direction?: 'one-way' | 'two-way'
         }
         Update: {
           id?: string
@@ -222,6 +224,7 @@ export interface Database {
           created_by?: string
           created_at?: string
           updated_at?: string
+          sync_direction?: 'one-way' | 'two-way'
         }
       }
       field_mapping: {
@@ -402,54 +405,4 @@ export const Constants = {
 
 export type SyncDirection = 'one-way' | 'two-way';
 export type ConflictResolution = 'source' | 'destination' | 'latest';
-export type SetupStage = 'connect' | 'mapping' | 'authorize' | 'complete';
-
-export interface Sync {
-  id: string;
-  name: string;
-  source_connection_id: string;
-  destination_connection_id: string;
-  entity_type: string;
-  sync_direction: SyncDirection;
-  conflict_resolution: ConflictResolution;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-  setup_stage: SetupStage;
-}
-
-export type TemplateCategory = {
-  id: string;
-  name: string;
-  description: string | null;
-  created_at: string;
-}
-
-export type Template = {
-  id: string;
-  name: string;
-  source_integration_id: string;
-  destination_integration_id: string;
-  sync_direction: SyncDirection;
-  matching_key: string;
-  field_mappings: Json;
-  description: string | null;
-  category_id: string;
-  created_by: string;
-  created_at: string;
-  updated_at: string;
-  source_integration: {
-    id: string;
-    name: string;
-    icon: string | null;
-  };
-  destination_integration: {
-    id: string;
-    name: string;
-    icon: string | null;
-  };
-  category: {
-    id: string;
-    name: string;
-  };
-}
+export type SetupStage = 'connect' | 'mapping' | 'schedule' | 'review';

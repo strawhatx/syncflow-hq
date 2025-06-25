@@ -65,7 +65,8 @@ CREATE TABLE public.syncs (
     destination_id UUID REFERENCES public.connectors(id) ON DELETE CASCADE,
     config JSONB NOT NULL,
     team_id UUID REFERENCES public.teams(id) ON DELETE CASCADE,
-    setup_stage TEXT NOT NULL DEFAULT 'source' CHECK (setup_stage IN ('source', 'destination', 'mapping', 'schedule', 'review')),
+    setup_stage TEXT NOT NULL DEFAULT 'connect' CHECK (setup_stage IN ('connect', 'mapping', 'schedule', 'review')),
+    sync_direction TEXT NOT NULL DEFAULT 'two-way' CHECK (sync_direction IN ('one-way', 'two-way')),
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()

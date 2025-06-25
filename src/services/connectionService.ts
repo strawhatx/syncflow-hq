@@ -51,10 +51,23 @@ export const createConnection = async (team_id: string, connector: Connector, co
   if (insertError) throw insertError;
 };
 
-export const updateConnectionStatus = async (id: string, isActive: boolean): Promise<void> => {
+export const updateConnection = async (id: string, name: string, connector: Connector, config: Record<string, any>): Promise<void> => {
+
+  // Should not be able to update a connection if the connection does not exist
+  const connection = await fetchConnectionById(id);
+  if (!connection) {
+    throw new Error("Connection not found");
+  }
+
+  // Should not be able to update a connection if the connection is invalid
+  const isValid = await validateConnection(connector, config);
+  if (!isValid) {
+    throw new Error("Invalid connection configuration");
+  }
+
   const { error } = await supabase
     .from('connections')
-    .update({ is_active: isActive })
+    .update({ name, config })
     .eq('id', id);
 
   if (error) throw error;

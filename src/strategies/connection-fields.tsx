@@ -3,7 +3,7 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { ConnectorWithConnections } from "@/services/connectorService";
+import { Connector } from "@/types/connectors";
 
 interface ConnectionFieldsStrategy {
     renderFields(config?: Record<string, any>, setConfig?: (config: Record<string, any>) => void): React.ReactNode
@@ -266,7 +266,7 @@ class DefaultFieldsStrategy implements ConnectionFieldsStrategy {
 }
 
 export class ConnectionFieldsStrategyFactory {
-    static getStrategy(connector: ConnectorWithConnections): ConnectionFieldsStrategy {
+    static getStrategy(connector: Connector): ConnectionFieldsStrategy {
         switch (connector.provider) {
             case "postgresql":
                 return new PostgresFieldsStrategy();
@@ -276,9 +276,7 @@ export class ConnectionFieldsStrategyFactory {
                 return new MySQLFieldsStrategy();
             case "aws":
                 return new S3FieldsStrategy();
-            
-            case "connecturl": // not an actual provider just a path for us to just use a connection string
-                return new ConnectionStringStrategy();
+        
             default:
                 return new DefaultFieldsStrategy();
         }

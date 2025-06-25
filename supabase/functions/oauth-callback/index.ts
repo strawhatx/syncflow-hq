@@ -1,7 +1,7 @@
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { handleCORS } from "../utils/cors.ts";
+import { handleCORS, handleReturnCORS } from "../utils/cors.ts";
 
 // Types
 interface OAuthCallbackRequest {
@@ -34,27 +34,17 @@ interface StateData {
   redirectUri: string;
 }
 
-const createErrorResponse = (message: string, status = 400) => {
+const createErrorResponse = (message: string, req: Request, status = 400) => {
   return new Response(
     JSON.stringify({ error: message }),
-    {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status
-    }
+    { headers: handleReturnCORS(req), status }
   );
 };
 
-const createSuccessResponse = (data: unknown) => {
+const createSuccessResponse = (data: unknown, req: Request) => {
   return new Response(
     JSON.stringify(data),
-    {
-      headers: {
-        'Content-Type': 'application/json',
-        'Connection': 'keep-alive',
-        ...corsHeaders
-      },
-      status: 200
-    }
+    { headers: handleReturnCORS(req), status: 200 }
   );
 };
 
@@ -138,32 +128,36 @@ Deno.serve(async (req) => {
 
     const tokenData = await tokenResponse.json() as TokenResponse;
 
-    // Create connection record
+    const connectionConfig = {
+      access_token: tokenData.access_token,
+      refresh_token: tokenData.refresh_token,
+      expires_at: tokenData.expires_in ? Date.now() + tokenData.expires_in * 1000 : null,
+      provider,
+      ...params,
+      timestamp: new Date().toISOString()
+    };
+
+    // Upsert connection record (create if doesn't exist, update if it does)
     const { data, error } = await supabaseClient
       .from('connections')
-      .insert([{
+      .upsert([{
         connector_id: connector.id,
         name: connectionName,
         is_active: true,
         team_id,
-        config: {
-          access_token: tokenData.access_token,
-          refresh_token: tokenData.refresh_token,
-          expires_at: tokenData.expires_in ? Date.now() + tokenData.expires_in * 1000 : null,
-          provider,
-          ...params,
-          timestamp: new Date().toISOString()
-        }
-      }])
+        config: connectionConfig
+      }], {
+        onConflict: 'team_id,connector_id,name'
+      })
       .select();
 
     if (error) {
       throw error;
     }
 
-    return createSuccessResponse(data[0]);
+    return createSuccessResponse(data[0], req);
   } catch (error) {
     console.error('OAuth callback error:', error);
-    return createErrorResponse(error instanceof Error ? error.message : 'Unknown error occurred');
+    return createErrorResponse(error instanceof Error ? error.message : 'Unknown error occurred', req);
   }
 });

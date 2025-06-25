@@ -6,25 +6,13 @@ import type { Database } from "@/integrations/supabase/types";
 
 type Connection = Database['public']['Tables']['connections']['Row'];
 
-interface ConnectionSettings {
-  syncInterval: string;
-  enableWebhooks: boolean;
-}
-
-export const useConnection = (connectionId: string | undefined) => {
+export const useConnection = () => {
   const navigate = useNavigate();
   const [isUpdating, setIsUpdating] = useState(false);
-  const [isSyncing, setIsSyncing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [connection, setConnection] = useState<Connection | null>(null);
-  const [connectionName, setConnectionName] = useState("");
-  const [settings, setSettings] = useState<ConnectionSettings>({
-    syncInterval: "daily",
-    enableWebhooks: true
-  });
 
-  useEffect(() => {
-    const loadConnection = async () => {
+const loadConnection = async (connectionId:string) => {
       if (!connectionId) return;
       
       try {
@@ -54,10 +42,6 @@ export const useConnection = (connectionId: string | undefined) => {
         setIsLoading(false);
       }
     };
-
-    loadConnection();
-  }, [connectionId]);
-
   const handleUpdateSettings = async () => {
     setIsUpdating(true);
     
@@ -76,30 +60,6 @@ export const useConnection = (connectionId: string | undefined) => {
       });
     } finally {
       setIsUpdating(false);
-    }
-  };
-
-  const handleSyncNow = async () => {
-    setIsSyncing(true);
-    
-    try {
-      // TODO: Implement sync functionality
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      toast({
-        title: "Sync complete",
-        description: "Data has been successfully synchronized",
-      });
-    } 
-    catch (error) {
-      toast({
-        title: "Sync failed",
-        description: "Unable to complete synchronization. Please try again.",
-        variant: "destructive",
-      });
-    } 
-    finally {
-      setIsSyncing(false);
     }
   };
 
@@ -123,39 +83,12 @@ export const useConnection = (connectionId: string | undefined) => {
     }
   };
 
-  const handleReconnect = async () => {
-    try {
-      // TODO: Implement reconnect functionality
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast({
-        title: "Reconnection successful",
-        description: `${connection!.name} connection has been reestablished`,
-      });
-      
-      navigate("/integrations");
-    } 
-    catch (error) {
-      toast({
-        title: "Error",
-        description: "Unable to reconnect. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
   return {
     connection,
-    connectionName,
-    setConnectionName,
-    settings,
-    setSettings,
     isUpdating,
-    isSyncing,
     isLoading,
+    loadConnection,
     handleUpdateSettings,
-    handleSyncNow,
-    handleDelete,
-    handleReconnect
+    handleDelete
   };
 }; 

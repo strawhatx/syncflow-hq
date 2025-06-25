@@ -5,6 +5,8 @@ import { SetupStage } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { User } from "@supabase/supabase-js";
 import { useTeam } from "@/contexts/TeamContext";
+import { config } from "process";
+import { ConflictResolution, Schedule, SyncConfig, SyncDirection } from "@/types/sync";
 
 export type Sync = {
   id: string;
@@ -49,13 +51,35 @@ const useSyncs = (search: string) => {
           name: "Untitled Sync",
           created_by: user.id,
           team_id: team?.id,
-          source_connection_id: null,
-          destination_connection_id: null,
-          entity_type: "none",
-          sync_direction: "two-way",
-          conflict_resolution: "latest",
+          source_id: null,
+          destination_id: null,
+          sync_direction: "two-way" as SyncDirection,
+          
+          config: {
+            conflict_resolution: "latest" as ConflictResolution,
+            table_mappings: [],
+            schedule: "every 1 hour" as Schedule,
+            filters:[],
+            batch_size: {
+              size: 100,
+              interval: 1000,
+            },
+            retry_policy: { 
+              max_retries: 3, 
+              backoff: "exponential" 
+            },
+            notifications: {
+              notify: [user?.email || ""],
+              on_success: true,
+              on_failure: true,
+              on_partial_failure: true,
+              on_retry: false,
+              on_timeout: true,
+            },
+          } as SyncConfig,
           is_active: true,
-          setup_stage: "connect" as SetupStage,
+          setup_stage: "source" as SetupStage,
+          
         })
         .select()
         .single();

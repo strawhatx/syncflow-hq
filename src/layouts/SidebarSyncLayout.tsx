@@ -13,7 +13,8 @@ import { Badge } from "@/components/ui/badge";
 const stepsConfig = {
     0: { label: "Connections", path: "connect" },
     1: { label: "Mappings", path: "mapping" },
-    2: { label: "Authorize", path: "authorize" },
+    2: { label: "Schedule", path: "schedule" },
+    3: { label: "Review", path: "review" },
 } as const;
 
 const steps = Object.entries(stepsConfig).map(([step, config]) => ({
