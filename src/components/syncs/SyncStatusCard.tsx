@@ -71,9 +71,9 @@ const SyncStatusCard = ({
 
   const handleCardClick = () => {
     if (is_completed) {
-      navigate(`/syncs/${syncId}`);
-    } else if (setup_stage) {
-      navigate(`/syncs/edit/${setup_stage}/${syncId}`);
+      navigate(`/syncs/view/${syncId}`);
+    } else {
+      navigate(`/syncs/edit/${syncId}`);
     }
   };
 

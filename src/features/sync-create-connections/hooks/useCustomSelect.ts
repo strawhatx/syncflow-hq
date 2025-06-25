@@ -1,4 +1,4 @@
-import { CustomSelect, LoadingState } from '../components/CustomSelect';
+import { CustomSelect, LoadingState } from '../../sync/helpers/CustomSelect';
 
 export const useCustomSelect = () => {
   return {

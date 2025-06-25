@@ -5,6 +5,7 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from "../components/ui/
 import { Separator } from "../components/ui/separator";
 import Sidebar from "../components/layout/Sidebar";
 import { useHeaderContent } from '@/contexts/HeaderContentContext';
+import React from "react";
 
 interface BreadcrumbItemType {
     name: string;
@@ -50,14 +51,16 @@ const SidebarLayout = () => {
                             <Breadcrumb>
                                 <BreadcrumbList>
                                     {breadcrumbs.map((item, index) => (
-                                        <BreadcrumbItem key={item.href} className={index === breadcrumbs.length - 1 ? "font-semibold" : ""}>
-                                            {index === breadcrumbs.length - 1 ? (
-                                                <BreadcrumbPage>{item.name}</BreadcrumbPage>
-                                            ) : (
-                                                <BreadcrumbLink href={item.href}>{item.name}</BreadcrumbLink>
-                                            )}
+                                        <React.Fragment key={item.href}>
+                                            <BreadcrumbItem className={index === breadcrumbs.length - 1 ? "font-semibold" : ""}>
+                                                {index === breadcrumbs.length - 1 ? (
+                                                    <BreadcrumbPage>{item.name}</BreadcrumbPage>
+                                                ) : (
+                                                    <BreadcrumbLink href={item.href}>{item.name}</BreadcrumbLink>
+                                                )}
+                                            </BreadcrumbItem>
                                             {index < breadcrumbs.length - 1 && <BreadcrumbSeparator />}
-                                        </BreadcrumbItem>
+                                        </React.Fragment>
                                     ))}
                                 </BreadcrumbList>
                             </Breadcrumb>

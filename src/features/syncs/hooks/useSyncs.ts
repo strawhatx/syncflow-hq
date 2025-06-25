@@ -88,7 +88,7 @@ const useSyncs = (search: string) => {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["syncs"] });
-      navigate(`/syncs/edit/connect/${data.id}`);
+      navigate(`/syncs/edit/${data.id}`);
     },
   });
 

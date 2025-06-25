@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
-import { SyncConfig } from "@/types/sync";
+import { Sync } from "@/types/sync";
 
-export const saveStepData = async (syncId: string, step: string, data: SyncConfig) => {
+export const saveStepData = async (syncId: string, step: string, data: Sync) => {
     console.log(`Saving step data for sync ${syncId} step ${step} with data ${JSON.stringify(data)}`);
 
     const { data: sync, error } = await supabase

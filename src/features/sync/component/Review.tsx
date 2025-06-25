@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom';
 
-const SyncCreateAuthorize = () => {
+export default function ReviewStep() {
   const { syncId } = useParams();
 
   return (
@@ -13,5 +13,3 @@ const SyncCreateAuthorize = () => {
     </div>
   );
 };
-
-export default SyncCreateAuthorize; 

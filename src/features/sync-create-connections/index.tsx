@@ -1,6 +1,6 @@
 import { useState, forwardRef, useImperativeHandle } from 'react';
 import { useCustomSelect } from './hooks/useCustomSelect';
-import { CustomSelectButton } from './components/CustomSelectButton';
+import { CustomSelectButton } from '../sync/helpers/CustomSelectButton';
 import { syncConfig, useIntegrationConnection } from './hooks/useIntegrationConnection';
 import ConnectorConnectModal from "@/components/connector/ConnectorConnectModal";
 
