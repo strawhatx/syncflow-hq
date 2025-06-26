@@ -1,4 +1,8 @@
 import { SetupStage } from "@/integrations/supabase/types";
+import { User } from "@supabase/supabase-js";
+import { Team } from "./team";
+
+import Sync from "@/features/sync";
 
 export type SyncDirection = "one-way" | "two-way";
 export type ConflictResolution = "latest" | "previous" | "custom";
@@ -58,9 +62,60 @@ export interface Sync {
     name: string
     source_id: string
     destination_id: string
+    created_by: string
     config: SyncConfig
     team_id: string
     setup_stage: SetupStage
     is_active: boolean
     sync_direction: SyncDirection
+}
+
+const defaultData = (user: User): Omit<Sync, "id" | "created_by" | "team_id"> => {
+    return {
+        name: "Untitled Sync",
+        source_id: null,
+        destination_id: null,
+        sync_direction: "two-way" as SyncDirection,
+
+        config: {
+            conflict_resolution: "latest" as ConflictResolution,
+            table_mappings: [],
+            schedule: "every 1 hour" as Schedule,
+            filters: [],
+            batch_size: {
+                size: 100,
+                interval: 1000,
+            },
+            retry_policy: {
+                max_retries: 3,
+                backoff: "exponential"
+            },
+            notifications: {
+                notify: [user?.email || ""],
+                on_success: true,
+                on_failure: true,
+                on_partial_failure: true,
+                on_retry: false,
+                on_timeout: true,
+            },
+        } as SyncConfig,
+        is_active: true,
+        setup_stage: "source" as SetupStage,
+
+    }
+}
+
+export const defaultCreateSync = (user: User, team: Team): Omit<Sync, "id"> => {
+    return {
+        ...defaultData(user),
+        created_by: user.id,
+        team_id: team?.id,
+    }
+}
+
+export const defaultUpdateSync = (sync_id: string, user: User): Omit<Sync, "created_by" | "team_id"> => {
+    return {
+        ...defaultData(user),
+        id: sync_id
+    }
 }

@@ -73,7 +73,7 @@ export const CustomSelectButton: FC<CustomSelectButtonProps> = ({
                     <ChevronsUpDown className="h-3.5 w-3.5 opacity-50" />
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="p-0" side="right" align="start">
+            <PopoverContent className="p-0" side="bottom" align="start">
                 <Command>
                     <CommandInput placeholder="Change status..." />
                     <CommandList>

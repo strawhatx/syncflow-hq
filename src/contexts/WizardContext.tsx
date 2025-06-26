@@ -1,10 +1,16 @@
+import { ConnectorWithConnections } from "@/services/connectorService";
 import { createContext, useState, useContext } from "react";
 
+interface AppData {
+    id: string;
+    connector: ConnectorWithConnections;
+    connector_id: string;
+}
+
+
 interface WizardData {
-    source_app_id: string;
-    destination_app_id: string;
-    source_connection_id: string;
-    destination_connection_id: string;
+    source: AppData;
+    destination: AppData;
 }
 
 interface WizardContextType {
@@ -12,17 +18,25 @@ interface WizardContextType {
     setData: (data: WizardData) => void;
 }
 
+export const defaultWizardData: WizardData = {
+    source: {
+        id: '',
+        connector: {} as ConnectorWithConnections,
+        connector_id: '',
+    },
+    destination: {
+        id: '',
+        connector: {} as ConnectorWithConnections,
+        connector_id: '',
+    },
+};
+
 export const WizardContext = createContext<WizardContextType | null>(null);
 
 export const useWizard = () => useContext(WizardContext);
 
 export const WizardProvider = ({ children }: { children: React.ReactNode }) => {
-    const [data, setData] = useState<WizardData>({
-        source_app_id: '',
-        destination_app_id: '',
-        source_connection_id: '',
-        destination_connection_id: '',
-    });
+    const [data, setData] = useState<WizardData>(defaultWizardData);
 
     return (
         <WizardContext.Provider value={{ data, setData }}>

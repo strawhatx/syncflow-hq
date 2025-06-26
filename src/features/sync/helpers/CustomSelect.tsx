@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { Check, ChevronsUpDown, Plus } from 'lucide-react';
+import { Box, ChevronsUpDown } from 'lucide-react';
 import * as Select from '@radix-ui/react-select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FC } from 'react';
@@ -59,10 +59,15 @@ export const CustomSelect: FC<CustomSelectProps> = ({
             <img
               src={getImagePath(options.find(opt => opt.id === value)?.icon || '')}
               alt={options.find(opt => opt.id === value)?.name || ''}
-              className="h-3.5 w-3.5 object-contain"
+              className="h-6 w-6 object-contain"
             />
           )}
-          <Select.Value placeholder={placeholder}>
+          <Select.Value placeholder={
+            <span className="text-muted-foreground flex items-center gap-2">
+              <Box className="h-6 w-6 text-purple-700" />
+              <span className="text-sm">{placeholder}</span>
+            </span>
+          }>
             {value && options.find(opt => opt.id === value)?.name}
           </Select.Value>
         </div>
@@ -94,7 +99,7 @@ export const CustomSelect: FC<CustomSelectProps> = ({
                 )}
                 <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
                   <Select.ItemIndicator>
-                    <Check className="h-3.5 w-3.5" />
+
                   </Select.ItemIndicator>
                 </span>
                 <Select.ItemText>{option.name}</Select.ItemText>
