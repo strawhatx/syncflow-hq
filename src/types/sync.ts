@@ -19,7 +19,7 @@ export interface SyncFieldMapping {
 export interface SyncTableMapping {
     source_table: string;
     destination_table: string;
-    field_mapping: SyncFieldMapping[];
+    field_mappings: SyncFieldMapping[];
 }
 
 export interface SyncFilter {

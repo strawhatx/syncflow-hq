@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams, useParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
-import { processOAuthCallback } from "@/services/oauthService";
+import { processOAuthCallback } from "@/services/oauth/service";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTeam } from "@/contexts/TeamContext";
 

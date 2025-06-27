@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { TeamMember, Team, TeamRole, TeamMemberStatus } from '@/types/team';
-import { teamService } from '@/services/teamService';
+import { teamService } from '@/services/team/service';
 import { createPermissionStrategy } from '@/strategies/team';
 import { useAuth } from './AuthContext';
 

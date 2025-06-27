@@ -1,5 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Connector } from "@/types/connectors";
+import { generateCodeVerifier, generateCodeChallenge } from "./pkce-utils";
+import { saveOAuthState, getOAuthState, clearOAuthState, savePkceVerifier, getPkceVerifier, clearPkceVerifier } from "./state";
 
 // OAuth configuration for different providers
 interface OAuthProviderConfig {
@@ -10,6 +12,8 @@ interface OAuthProviderConfig {
   requiredParameters?: string[];
   description: string;
   redirectUrl?: string;
+  code_challenge_required?: boolean;
+  code_challenge?: string;
 }
 
 // Combined provider configurations
@@ -27,13 +31,14 @@ const getProviderConfig = async (connector: Connector): Promise<ProviderConfig |
   return {
     type: 'oauth',
     config: {
-      clientId: connector.config.client_id || '',
-      authUrl: connector.config.auth_url || '',
-      tokenUrl: connector.config.token_url || '',
-      scopes: connector.config.scopes || [],
-      requiredParameters: connector.config.required_parameters || [],
-      description: connector.config.description,
-      redirectUrl: connector.config.redirect_url
+      clientId: (connector.config as any).client_id || '',
+      authUrl: (connector.config as any).auth_url || '',
+      tokenUrl: (connector.config as any).token_url || '',
+      scopes: (connector.config as any).scopes || [],
+      requiredParameters: (connector.config as any).required_parameters || [],
+      description: (connector.config as any).description,
+      redirectUrl: (connector.config as any).redirect_url,
+      code_challenge_required: (connector.config as any).code_challenge_required
     }
   };
 };
@@ -63,6 +68,14 @@ export const initiateOAuth = async (
     }
   }
 
+  // Generate code_verifier and code_challenge
+  const code_verifier = generateCodeVerifier();
+  if (providerConfig.code_challenge_required) {
+    const code_challenge = await generateCodeChallenge(code_verifier);
+    providerConfig.code_challenge = code_challenge;
+    savePkceVerifier(code_verifier);
+  }
+
   // Construct auth URL with placeholders replaced
   let authUrl = providerConfig.authUrl;
   for (const [key, value] of Object.entries(params)) {
@@ -83,15 +96,31 @@ export const initiateOAuth = async (
   }));
 
   // Store state in session storage for verification
-  sessionStorage.setItem("oauth_state", state);
+  saveOAuthState(state);
 
   // Construct full auth URL
+  // https://airtable.com/oauth2/v1/authorize?
+  // client_id=YOUR_CLIENT_ID
+  // &redirect_uri=YOUR_REDIRECT_URI
+  // &response_type=code
+  // &scope=YOUR_SCOPES
+  // &state=YOUR_STATE
+  // &code_challenge=GENERATED_CODE_CHALLENGE
+  // &code_challenge_method=S256
   const url = new URL(authUrl);
   url.searchParams.append("client_id", providerConfig.clientId);
   url.searchParams.append("redirect_uri", redirectUri);
   url.searchParams.append("response_type", "code");
   url.searchParams.append("scope", providerConfig.scopes.join(" "));
   url.searchParams.append("state", state);
+
+  // Add code_challenge if required
+  if (providerConfig.code_challenge_required) {
+    url.searchParams.append("code_challenge", providerConfig.code_challenge);
+    url.searchParams.append("code_challenge_method", "S256");
+  }
+
+  // Add access_type and prompt
   url.searchParams.append("access_type", "offline");
   url.searchParams.append("prompt", "consent");
 
@@ -108,11 +137,11 @@ export const processOAuthCallback = async (
 ) => {
   try {
     // Verify state parameter
-    const storedState = sessionStorage.getItem("oauth_state");
+    const storedState = getOAuthState();
     if (!storedState || storedState !== state) {
       throw new Error("Invalid state parameter");
     }
-    sessionStorage.removeItem("oauth_state");
+    clearOAuthState();
 
     // Decode state and verify timestamp
     const stateData = JSON.parse(atob(state));
@@ -125,6 +154,10 @@ export const processOAuthCallback = async (
       throw new Error('User not authenticated');
     }
 
+    // Retrieve code_verifier
+    const code_verifier = getPkceVerifier();
+    clearPkceVerifier();
+
     // Send to backend for processing
     const response = await fetch(`${import.meta.env.VITE_SUPABASE_API}/oauth-callback`, {
       method: 'POST',
@@ -133,6 +166,7 @@ export const processOAuthCallback = async (
         team_id,
         code,
         provider,
+        code_verifier,
         connectionName: stateData.connectionName,
         ...Object.fromEntries(searchParams.entries())
       })

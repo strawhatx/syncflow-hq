@@ -66,7 +66,7 @@ This project is built with:
 supabase functions serve --env-file supabase/.env
 
 **Debug Edge Functions:**
-- supabase functions serve validate-connection --env-file supabase/.env --inspect-mode brk
+- supabase functions serve oauth-callback--env-file supabase/.env --inspect-mode brk
 
 **Migrations**
  - supabase db diff --use-migra -f [migration name]
@@ -78,8 +78,7 @@ supabase functions serve --env-file supabase/.env
 ## Connection String formats
 - MYSQL
 -- mysql://<username>:<password>@<host>:<port>/<database>
--- mysql://user_abc:secret123@containers-us-west-45.railway.app:6582/railway
 
 -MONGODB
 -- if you have a @ in your user name relace with %40
--- mongodb+srv://<username>:<password>@<host>/<database>?retryWrites=true&w=majority&appName=Cluster18426
+-- mongodb+srv://<username>:<password>@<host>/<database>?retryWrites=true&w=majority&appName=<appname>

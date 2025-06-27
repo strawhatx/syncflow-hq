@@ -6,6 +6,7 @@ import { createPool } from "npm:mysql2@3.14.1/promise";
 import { S3Client, ListBucketsCommand } from "npm:@aws-sdk/client-s3@3.832.0";
 import { handleCORS, handleReturnCORS } from "../utils/cors.ts";
 import { validateSupabaseToken } from "../utils/auth.ts";
+import { DataSourceStrategyFactory } from "./strategy/datasource.ts";
 
 // Types
 interface ValidationRequest {
@@ -32,72 +33,11 @@ const createSuccessResponse = (data: ValidationResponse, req: Request) => {
   );
 };
 
-// Connection validation functions
-const validatePostgreSQL = async (config: Record<string, any>): Promise<ValidationResponse> => {
-  try {
-    const client = new Client(config);
-    await client.connect();
-    await client.end();
-    return { valid: true };
-  } catch (error) {
-    return {
-      valid: false,
-      error: error instanceof Error ? error.message : 'Unknown PostgreSQL error'
-    };
-  }
-};
-
-const validateMongoDB = async (config: Record<string, any>): Promise<ValidationResponse> => {
-  try {
-    const client = new MongoClient(config.url);
-    await client.connect();
-    await client.close();
-    return { valid: true };
-  } catch (error) {
-    return {
-      valid: false,
-      error: error instanceof Error ? error.message : 'Unknown MongoDB error'
-    };
-  }
-};
-
-const validateMySQL = async (config: Record<string, any>): Promise<ValidationResponse> => {
-  try {
-    // Convert boolean SSL to proper mysql2 SSL object format
-    const mysqlConfig = { ...config };
-    if (typeof mysqlConfig.ssl === 'boolean') {
-      if (mysqlConfig.ssl) {
-        mysqlConfig.ssl = { rejectUnauthorized: false };
-      } else {
-        delete mysqlConfig.ssl;
-      }
-    }
-    
-    const pool = createPool(mysqlConfig);
-    const connection = await pool.getConnection();
-    connection.release();
-    await pool.end();
-    return { valid: true };
-  } catch (error) {
-    return {
-      valid: false,
-      error: error instanceof Error ? error.message : 'Unknown MySQL error'
-    };
-  }
-};
-
-const validateS3 = async (config: Record<string, any>): Promise<ValidationResponse> => {
-  try {
-    const client = new S3Client(config);
-    await client.send(new ListBucketsCommand({}));
-    return { valid: true };
-  } catch (error) {
-    return {
-      valid: false,
-      error: error instanceof Error ? error.message : 'Unknown S3 error'
-    };
-  }
-};
+const validateConnection = async (provider: string, config: Record<string, any>) => {
+  const strategy = DataSourceStrategyFactory.getStrategy(provider as any);
+  const validationResult = await strategy.connect(config);
+  return validationResult;
+}
 
 // Main handler
 Deno.serve(async (req) => {
@@ -119,27 +59,7 @@ Deno.serve(async (req) => {
       throw new Error('Provider and config are required');
     }
 
-    let validationResult: ValidationResponse;
-
-    switch (provider) {
-      case 'postgresql':
-        validationResult = await validatePostgreSQL(config);
-        break;
-      case 'mongodb':
-        validationResult = await validateMongoDB(config);
-        break;
-      case 'mysql':
-        validationResult = await validateMySQL(config);
-        break;
-      case 'aws':
-        validationResult = await validateS3(config);
-        break;
-      default:
-        validationResult = {
-          valid: false,
-          error: `Unsupported provider: ${provider}`
-        };
-    }
+    const validationResult = await validateConnection(provider, config);
 
     return createSuccessResponse(validationResult, req);
   } catch (error) {

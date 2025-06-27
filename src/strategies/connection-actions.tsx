@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { createConnection, updateConnection } from "@/services/connectionService";
-import { initiateOAuth } from "@/services/oauthService";
+import { initiateOAuth } from "@/services/oauth/service";
 import { Connector } from "@/types/connectors";
 
 interface ConnectionActionsStrategy {

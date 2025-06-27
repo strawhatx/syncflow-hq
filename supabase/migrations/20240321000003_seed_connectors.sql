@@ -13,8 +13,9 @@ VALUES
             "auth_url": "https://api.supabase.com/v1/oauth/authorize",
             "token_url": "https://api.supabase.com/v1/oauth/token",
             "scopes": ["projects.read", "projects.write"],
-            "required_parameters": []
-            "redirect_url": "http://localhost:3000/supabase/callback"
+            "required_parameters": [],
+            "redirect_url": "http://localhost:3000/supabase/callback",
+            "code_challenge_required": false
         }'::jsonb,
         true
     ),
@@ -36,7 +37,8 @@ VALUES
                 "schema.bases:write"
             ],
             "required_parameters": [],
-            "redirect_url": "http://localhost:3000/airtable/callback"
+            "redirect_url": "http://localhost:3000/airtable/callback",
+            "code_challenge_required": true
         }'::jsonb,
         true
     )

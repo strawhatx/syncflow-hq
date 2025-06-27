@@ -1,18 +1,14 @@
 import { supabase } from '@/integrations/supabase/client';
 import { TeamRole, TeamMemberStatus, CreateTeamParams } from '@/types/team';
 import { Database } from '@/integrations/supabase/types';
+import { generateVerificationCode } from './code-utils';
+import { sendInviteEmail } from './email-utils';
+import { TeamError, withTeamErrorHandling } from './error';
 
 type TeamMember = Database['public']['Tables']['team_members']['Row'];
 type Team = Database['public']['Tables']['teams']['Row'];
 
-class TeamError extends Error {
-    constructor(message: string, public code: string) {
-        super(message);
-        this.name = 'TeamError';
-    }
-}
-
-function createTeam(params: CreateTeamParams): Omit<Team, 'id'> {
+const createTeam = (params: CreateTeamParams): Omit<Team, 'id'> => {
     const now = new Date().toISOString();
     return {
         name: params.name,
@@ -22,33 +18,12 @@ function createTeam(params: CreateTeamParams): Omit<Team, 'id'> {
     };
 }
 
-function generateVerificationCode(): string {
-    const array = new Uint8Array(6);
-    crypto.getRandomValues(array);
-    return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('').slice(0, 12);
-
-}
-
-async function sendInviteEmail(email: string, verificationCode: string, teamName: string) {
-    try {
-        await supabase.functions.invoke('send-email', {
-            body: {
-                subject: `Invitation to join ${teamName}`,
-                email,
-                message: `You have been invited to join ${teamName}. Please use the following verification code to join: ${verificationCode}`
-            }
-        });
-    } catch (error) {
-        console.error('Failed to send invite email:', error);
-        throw new TeamError('Failed to send invite email', 'EMAIL_SEND_FAILED');
-    }
-}
-
 export const teamService = {
-    async createTeamWithOwner(userId: string, teamName: string): Promise<Team> {
-        const team = createTeam({ name: teamName, created_by: userId });
+    createTeamWithOwner: withTeamErrorHandling(
+        async (userId: string, teamName: string): Promise<Team> => {
+            const team = createTeam({ name: teamName, created_by: userId });
 
-        try {
+
             const { data: newTeam, error: teamError } = await supabase
                 .from('teams')
                 .insert(team)
@@ -59,14 +34,13 @@ export const teamService = {
             if (!newTeam) throw new TeamError('Failed to create team', 'TEAM_CREATE_FAILED');
 
             return newTeam;
-        } catch (error) {
-            if (error instanceof TeamError) throw error;
-            throw new TeamError('Failed to create team', 'TEAM_CREATE_FAILED');
-        }
-    },
+        },
+        'Failed to create team',
+        'TEAM_CREATE_FAILED'
+    ),
 
-    async getTeamWithMembers(teamId: string) {
-        try {
+    getTeamWithMembers: withTeamErrorHandling(
+        async (teamId: string) => {
             const { data: team, error } = await supabase
                 .from('teams')
                 .select(`
@@ -93,40 +67,39 @@ export const teamService = {
                 ...team,
                 team_members: members
             }
-        } catch (error) {
-            if (error instanceof TeamError) throw error;
-            throw new TeamError('Failed to fetch team', 'TEAM_FETCH_FAILED');
-        }
-    },
+        },
+        'Failed to fetch team',
+        'TEAM_FETCH_FAILED'
+    ),
 
-    async updateMemberRole(memberId: string, newRole: TeamRole) {
-        try {
+    updateMemberRole: withTeamErrorHandling(
+        async (memberId: string, newRole: TeamRole) => {
             const { error } = await supabase
                 .from('team_members')
                 .update({ role: newRole })
                 .eq('id', memberId);
 
             if (error) throw error;
-        } catch (error) {
-            throw new TeamError('Failed to update member role', 'ROLE_UPDATE_FAILED');
-        }
-    },
+        },
+        'Failed to update member role',
+        'ROLE_UPDATE_FAILED'
+    ),
 
-    async removeMember(memberId: string) {
-        try {
+    removeMember: withTeamErrorHandling(
+        async (memberId: string) => {
             const { error } = await supabase
                 .from('team_members')
                 .delete()
                 .eq('id', memberId);
 
             if (error) throw error;
-        } catch (error) {
-            throw new TeamError('Failed to remove member', 'MEMBER_REMOVE_FAILED');
-        }
-    },
+        },
+        'Failed to remove member',
+        'MEMBER_REMOVE_FAILED'
+    ),
 
-    async inviteMember(teamId: string, email: string) {
-        try {
+    inviteMember: withTeamErrorHandling(
+        async (teamId: string, email: string) => {
             // Get team name for email
             const { data: team } = await supabase
                 .from('teams')
@@ -186,88 +159,26 @@ export const teamService = {
             if (inviteError) throw inviteError;
 
             await sendInviteEmail(email, verificationCode, team.name);
-        } catch (error) {
-            if (error instanceof TeamError) throw error;
-            throw new TeamError('Failed to invite member', 'INVITE_FAILED');
-        }
-    },
+        },
+        'Failed to invite member',
+        'INVITE_FAILED'
+    ),
 
-    async updateTeamName(teamId: string, newName: string) {
-        try {
+    updateTeamName: withTeamErrorHandling(
+        async (teamId: string, newName: string) => {
             const { error } = await supabase
                 .from('teams')
                 .update({ name: newName })
                 .eq('id', teamId);
 
             if (error) throw error;
-        } catch (error) {
-            throw new TeamError('Failed to update team name', 'NAME_UPDATE_FAILED');
-        }
-    },
+        },
+        'Failed to update team name',
+        'NAME_UPDATE_FAILED'
+    ),
 
-    async updateMemberStatus(memberId: string, newStatus: TeamMemberStatus) {
-        try {
-            const { error } = await supabase
-                .from('team_members')
-                .update({ status: newStatus })
-                .eq('id', memberId);
-
-            if (error) throw error;
-        } catch (error) {
-            throw new TeamError('Failed to update member status', 'STATUS_UPDATE_FAILED');
-        }
-    },
-
-    async getTeamMember(memberId: string): Promise<TeamMember> {
-        try {
-            const { data: member, error } = await supabase
-                .from('view_team_members')
-                .select('*')
-                .eq('id', memberId)
-                .single();
-
-            if (error) throw error;
-            if (!member) throw new TeamError('Member not found', 'MEMBER_NOT_FOUND');
-            return member;
-        } catch (error) {
-            if (error instanceof TeamError) throw error;
-            throw new TeamError('Failed to fetch team member', 'MEMBER_FETCH_FAILED');
-        }
-    },
-
-    async getTeamMemberByUserId(userId: string): Promise<TeamMember> {
-        try {
-            const { data: member, error } = await supabase
-                .from('view_team_members')
-                .select('*')
-                .eq('user_id', userId)
-                .single();
-
-            if (error) throw error;
-            if (!member) throw new TeamError('Member not found', 'MEMBER_NOT_FOUND');
-            return member;
-        } catch (error) {
-            if (error instanceof TeamError) throw error;
-            throw new TeamError('Failed to fetch team member', 'MEMBER_FETCH_FAILED');
-        }
-    },
-
-    async getTeamMembersByTeam(teamId: string): Promise<TeamMember[]> {
-        try {
-            const { data: members, error } = await supabase
-                .from('view_team_members')
-                .select('*')
-                .eq('team_id', teamId);
-
-            if (error) throw error;
-            return members || [];
-        } catch (error) {
-            throw new TeamError('Failed to fetch team members', 'MEMBERS_FETCH_FAILED');
-        }
-    },
-
-    async getTeamMembersByUser(userId: string): Promise<{ team_members: TeamMember[], team: Team }> {
-        try {
+    getTeamMembersByUser: withTeamErrorHandling(
+        async (userId: string): Promise<{ team_members: TeamMember[], team: Team }> => {
             const { data, error } = await supabase
                 .from('view_team_members')
                 .select('*, teams(*)')
@@ -292,9 +203,8 @@ export const teamService = {
                 team_members,
                 team
             };
-        } catch (error) {
-            if (error instanceof TeamError) throw error;
-            throw new TeamError('Failed to fetch user teams', 'TEAMS_FETCH_FAILED');
-        }
-    }
+        },
+        'Failed to fetch user teams',
+        'TEAMS_FETCH_FAILED'
+    ),
 }; 

@@ -5,6 +5,7 @@ import { Connector, ConnectorProvider } from "@/types/connectors";
 
 type Connection = Database['public']['Tables']['connections']['Row'];
 
+// fetch connection by id via supabase
 export const fetchConnectionById = async (id: string): Promise<Connection | null> => {
   const { data, error } = await supabase
     .from('connections')
@@ -16,6 +17,7 @@ export const fetchConnectionById = async (id: string): Promise<Connection | null
   return data;
 };
 
+// create connection via supabase but must validate connection first
 export const createConnection = async (team_id: string, connector: Connector, connectionName: string, config: Record<string, any>) => {
   // Validate required fields 
   const missingFields = connector.config.required_fields.filter(
@@ -52,7 +54,6 @@ export const createConnection = async (team_id: string, connector: Connector, co
 };
 
 export const updateConnection = async (id: string, name: string, connector: Connector, config: Record<string, any>): Promise<void> => {
-
   // Should not be able to update a connection if the connection does not exist
   const connection = await fetchConnectionById(id);
   if (!connection) {
@@ -73,6 +74,7 @@ export const updateConnection = async (id: string, name: string, connector: Conn
   if (error) throw error;
 };
 
+// delete connection via supabase
 export const deleteConnection = async (id: string): Promise<void> => {
   // TODO: Should not be able to delete a connection if it is in use (syncing, webhooks, etc.)
   const { error } = await supabase
@@ -83,6 +85,7 @@ export const deleteConnection = async (id: string): Promise<void> => {
   if (error) throw error;
 };
 
+// validate connection via endpoint with fields from connector
 export const validateConnection = async (connector: Connector, config: Record<string, any>): Promise<boolean> => {
   const missingFields = connector.config.required_fields.filter(
     field => !config[field]
@@ -95,6 +98,7 @@ export const validateConnection = async (connector: Connector, config: Record<st
   return await validate(connector.provider, config);
 };
 
+// call endpoint to validate connection via  datasource connections
 const validate = async (provider: ConnectorProvider, config: Record<string, any>): Promise<boolean> => {
   try {
     const result = await fetchWithAuth("/validate-connection", {

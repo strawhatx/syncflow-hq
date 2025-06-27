@@ -51,6 +51,7 @@ const createSuccessResponse = (data: unknown, req: Request) => {
 const prepareTokenRequest = (
   integration: Integration,
   code: string,
+  code_verifier: string,
   stateData: StateData
 ): RequestInit => {
   const baseConfig: RequestInit = {
@@ -67,9 +68,10 @@ const prepareTokenRequest = (
       'Authorization': `Basic ${btoa(`${integration.client_id}:${integration.client_secret}`)}`
     },
     body: new URLSearchParams({
-      code,
+      code, // the code you got from the callback
       redirect_uri: stateData.redirectUri,
-      grant_type: 'authorization_code'
+      grant_type: 'authorization_code',
+      code_verifier // <-- this is required!
     }).toString()
   };
 };
@@ -80,7 +82,7 @@ Deno.serve(async (req) => {
     if (corsResponse) return corsResponse;
 
   try {
-    const { team_id, connectionName, provider, ...params } = await req.json() as OAuthCallbackRequest;
+    const { team_id, connectionName, code_verifier, provider, ...params } = await req.json() as OAuthCallbackRequest;
     
     if (!provider) {
       throw new Error('Provider not specified');
@@ -110,7 +112,7 @@ Deno.serve(async (req) => {
     let tokenUrl = connector.token_url;
 
     // Exchange code for tokens
-    const tokenRequestConfig = prepareTokenRequest(connector, params.code, stateData);
+    const tokenRequestConfig = prepareTokenRequest(connector, params.code, code_verifier, stateData);
     const tokenResponse = await fetch(tokenUrl, tokenRequestConfig);
 
     if (!tokenResponse.ok) {
