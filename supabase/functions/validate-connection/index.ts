@@ -1,9 +1,5 @@
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { Client } from "npm:pg@8.16.2";
-import { MongoClient } from "npm:mongodb@6.17.0";
-import { createPool } from "npm:mysql2@3.14.1/promise";
-import { S3Client, ListBucketsCommand } from "npm:@aws-sdk/client-s3@3.832.0";
 import { handleCORS, handleReturnCORS } from "../utils/cors.ts";
 import { validateSupabaseToken } from "../utils/auth.ts";
 import { DataSourceStrategyFactory } from "./strategy/datasource.ts";

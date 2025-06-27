@@ -2,6 +2,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { handleCORS, handleReturnCORS } from "../utils/cors.ts";
+import { validateSupabaseToken } from "../utils/auth.ts";
 
 // Types
 interface OAuthCallbackRequest {
@@ -79,20 +80,28 @@ const prepareTokenRequest = (
 // Main handler
 Deno.serve(async (req) => {
   const corsResponse = handleCORS(req);
-    if (corsResponse) return corsResponse;
+  if (corsResponse) return corsResponse;
+
+  // Validate the JWT token
+  const authHeader = req.headers.get("Authorization");
+  await validateSupabaseToken(authHeader);
+
+  // if the request is not a POST request, return a 405 Method Not Allowed
+  if (req.method !== 'POST') {
+    return new Response('Method Not Allowed', { status: 405 });
+  }
 
   try {
     const { team_id, connectionName, code_verifier, provider, ...params } = await req.json() as OAuthCallbackRequest;
-    
+
     if (!provider) {
       throw new Error('Provider not specified');
     }
 
     // Initialize Supabase client
-    const supabaseClient = createClient(
-      Deno.env.get('EF_SUPABASE_URL') ?? '',
-      Deno.env.get('EF_SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    const supabaseUrl = Deno.env.get('EF_SUPABASE_URL') ?? '';
+    const supabaseServiceRoleKey = Deno.env.get('EF_SUPABASE_SERVICE_ROLE_KEY') ?? '';
+    const supabaseClient = createClient(supabaseUrl, supabaseServiceRoleKey);
 
     // Fetch integration configuration
     const { data: connector, error: integrationError } = await supabaseClient
@@ -107,7 +116,7 @@ Deno.serve(async (req) => {
 
     // Process state and get user ID
     const stateData = JSON.parse(atob(params.state)) as StateData;
-  
+
     // Process token URL for provider-specific templates
     let tokenUrl = connector.token_url;
 

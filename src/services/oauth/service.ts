@@ -2,6 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Connector } from "@/types/connectors";
 import { generateCodeVerifier, generateCodeChallenge } from "./pkce-utils";
 import { saveOAuthState, getOAuthState, clearOAuthState, savePkceVerifier, getPkceVerifier, clearPkceVerifier } from "./state";
+import { fetchWithAuth } from "@/lib/api";
 
 // OAuth configuration for different providers
 interface OAuthProviderConfig {
@@ -159,9 +160,8 @@ export const processOAuthCallback = async (
     clearPkceVerifier();
 
     // Send to backend for processing
-    const response = await fetch(`${import.meta.env.VITE_SUPABASE_API}/oauth-callback`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const result = await fetchWithAuth("/oauth-callback", {
+      method: "POST",
       body: JSON.stringify({
         team_id,
         code,
@@ -172,12 +172,7 @@ export const processOAuthCallback = async (
       })
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || `Failed to process ${provider} callback`);
-    }
-
-    return response.json();
+    return result;
   } catch (error) {
     console.error("Error processing OAuth callback:", error);
     throw error;
