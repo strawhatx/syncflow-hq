@@ -70,7 +70,6 @@ serve(async (req) => {
     //  ... other params <= pulled from the connection config in the db
     // } 
     // s3: {} <= pulled from the connection config in the db
-
     const { provider, action, config } = await req.json();
     const strategy = DataSourceStrategyFactory.getStrategy(provider);
 
