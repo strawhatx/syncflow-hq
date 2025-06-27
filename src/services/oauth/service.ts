@@ -4,6 +4,35 @@ import { generateCodeVerifier, generateCodeChallenge } from "./pkce-utils";
 import { saveOAuthState, getOAuthState, clearOAuthState, savePkceVerifier, getPkceVerifier, clearPkceVerifier } from "./state";
 import { fetchWithAuth } from "@/lib/api";
 
+/**
+ * Dynamic OAuth Service
+ * 
+ * This service provides a flexible, configuration-driven approach to OAuth URL building.
+ * It supports different OAuth providers with their specific parameters without hardcoding.
+ * 
+ * Key Features:
+ * - Dynamic parameter building based on provider configuration
+ * - Support for PKCE (Proof Key for Code Exchange)
+ * - Provider-specific parameter overrides
+ * - Conditional parameter inclusion
+ * - Easy extension for new OAuth providers
+ * 
+ * How to add a new OAuth provider:
+ * 1. Add the provider to the ConnectorProvider type in types/connectors.ts
+ * 2. Add provider-specific parameters to getProviderSpecificParameters()
+ * 3. Configure the connector in the database with the required OAuth settings
+ * 
+ * Example usage:
+ * ```typescript
+ * const oauthUrl = await initiateOAuth(
+ *   "My Connection",
+ *   "google",
+ *   connectorConfig,
+ *   { team_id: "123" }
+ * );
+ * ```
+ */
+
 // OAuth configuration for different providers
 interface OAuthProviderConfig {
   clientId: string;
@@ -21,6 +50,15 @@ interface OAuthProviderConfig {
 interface ProviderConfig {
   type: "oauth";
   config: OAuthProviderConfig;
+}
+
+// Dynamic OAuth parameter configuration
+interface OAuthParameterConfig {
+  [key: string]: {
+    value: string | (() => string);
+    required?: boolean;
+    conditional?: (config: OAuthProviderConfig) => boolean;
+  };
 }
 
 // Get provider configuration from database
@@ -42,6 +80,106 @@ const getProviderConfig = async (connector: Connector): Promise<ProviderConfig |
       code_challenge_required: (connector.config as any).code_challenge_required
     }
   };
+};
+
+// Dynamic OAuth parameter builder
+const buildOAuthParameters = (
+  providerConfig: OAuthProviderConfig,
+  redirectUri: string,
+  state: string,
+  params: Record<string, string>,
+  provider: string
+): Record<string, string> => {
+  const oauthParams: OAuthParameterConfig = {
+    // Standard OAuth 2.0 parameters
+    client_id: {
+      value: providerConfig.clientId,
+      required: true
+    },
+    redirect_uri: {
+      value: redirectUri,
+      required: true
+    },
+    response_type: {
+      value: 'code',
+      required: true
+    },
+    scope: {
+      value: () => providerConfig.scopes.join(' '),
+      required: true
+    },
+    state: {
+      value: state,
+      required: true
+    },
+    
+    // PKCE parameters (conditional)
+    code_challenge: {
+      value: () => providerConfig.code_challenge || '',
+      conditional: (config) => config.code_challenge_required === true
+    },
+    code_challenge_method: {
+      value: 'S256',
+      conditional: (config) => config.code_challenge_required === true
+    }
+  };
+
+  // Build the final parameters object
+  const finalParams: Record<string, string> = {};
+
+  // Add standard OAuth parameters
+  for (const [key, config] of Object.entries(oauthParams)) {
+    // Check if parameter should be included based on conditional
+    if (config.conditional && !config.conditional(providerConfig)) {
+      continue;
+    }
+
+    // Get the value (either static string or function result)
+    const value = typeof config.value === 'function' ? config.value() : config.value;
+    
+    // Only add if value is not empty
+    if (value && value.trim() !== '') {
+      finalParams[key] = value;
+    }
+  }
+
+  // Add provider-specific parameters
+  const providerSpecificParams = getProviderSpecificParameters(provider);
+  Object.assign(finalParams, providerSpecificParams);
+
+  // Add any additional parameters from the params object (these override defaults)
+  Object.assign(finalParams, params);
+
+  return finalParams;
+};
+
+// Build OAuth URL dynamically
+const buildOAuthUrl = (
+  authUrl: string,
+  parameters: Record<string, string>
+): string => {
+  const url = new URL(authUrl);
+  
+  // Add all parameters to the URL
+  for (const [key, value] of Object.entries(parameters)) {
+    if (value && value.trim() !== '') {
+      url.searchParams.append(key, value);
+    }
+  }
+  
+  return url.toString();
+};
+
+// Helper function to get provider-specific parameters
+const getProviderSpecificParameters = (provider: string): Record<string, string> => {
+  const providerParams: Record<string, Record<string, string>> = {
+    'airtable': {
+      access_type: 'offline',
+      prompt: 'consent'
+    }
+  };
+
+  return providerParams[provider] || {};
 };
 
 // Initiate OAuth flow
@@ -99,33 +237,19 @@ export const initiateOAuth = async (
   // Store state in session storage for verification
   saveOAuthState(state);
 
-  // Construct full auth URL
-  // https://airtable.com/oauth2/v1/authorize?
-  // client_id=YOUR_CLIENT_ID
-  // &redirect_uri=YOUR_REDIRECT_URI
-  // &response_type=code
-  // &scope=YOUR_SCOPES
-  // &state=YOUR_STATE
-  // &code_challenge=GENERATED_CODE_CHALLENGE
-  // &code_challenge_method=S256
-  const url = new URL(authUrl);
-  url.searchParams.append("client_id", providerConfig.clientId);
-  url.searchParams.append("redirect_uri", redirectUri);
-  url.searchParams.append("response_type", "code");
-  url.searchParams.append("scope", providerConfig.scopes.join(" "));
-  url.searchParams.append("state", state);
+  // Build OAuth parameters dynamically
+  const oauthParameters = buildOAuthParameters(
+    providerConfig,
+    redirectUri,
+    state,
+    params,
+    provider
+  );
 
-  // Add code_challenge if required
-  if (providerConfig.code_challenge_required) {
-    url.searchParams.append("code_challenge", providerConfig.code_challenge);
-    url.searchParams.append("code_challenge_method", "S256");
-  }
+  // Build the final OAuth URL
+  const finalUrl = buildOAuthUrl(authUrl, oauthParameters);
 
-  // Add access_type and prompt
-  url.searchParams.append("access_type", "offline");
-  url.searchParams.append("prompt", "consent");
-
-  return url.toString();
+  return finalUrl;
 };
 
 // Process OAuth callback

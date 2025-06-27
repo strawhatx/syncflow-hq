@@ -1,5 +1,6 @@
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { handleCORS, handleReturnCORS } from "../utils/cors.ts";
 import { validateSupabaseToken } from "../utils/auth.ts";
@@ -34,6 +35,10 @@ interface StateData {
   user_id: string;
   redirectUri: string;
 }
+
+// ✅ Load Environment Variables
+const supabase = createClient(Deno.env.get("SUPABASE_URL"), Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"));
+
 
 const createErrorResponse = (message: string, req: Request, status = 400) => {
   return new Response(
@@ -78,7 +83,7 @@ const prepareTokenRequest = (
 };
 
 // Main handler
-Deno.serve(async (req) => {
+serve(async (req) => {
   const corsResponse = handleCORS(req);
   if (corsResponse) return corsResponse;
 
@@ -97,14 +102,8 @@ Deno.serve(async (req) => {
     if (!provider) {
       throw new Error('Provider not specified');
     }
-
-    // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('EF_SUPABASE_URL') ?? '';
-    const supabaseServiceRoleKey = Deno.env.get('EF_SUPABASE_SERVICE_ROLE_KEY') ?? '';
-    const supabaseClient = createClient(supabaseUrl, supabaseServiceRoleKey);
-
     // Fetch integration configuration
-    const { data: connector, error: integrationError } = await supabaseClient
+    const { data: connector, error: integrationError } = await supabase
       .from('connector_oauth_configs_public')
       .select('*')
       .ilike('name', provider)
@@ -149,7 +148,7 @@ Deno.serve(async (req) => {
     };
 
     // Upsert connection record (create if doesn't exist, update if it does)
-    const { data, error } = await supabaseClient
+    const { data, error } = await supabase
       .from('connections')
       .upsert([{
         connector_id: connector.id,
