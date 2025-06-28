@@ -30,7 +30,7 @@ A modern data synchronization platform that enables seamless integration between
 Before you begin, ensure you have the following installed:
 - [Node.js](https://nodejs.org/) (v18 or higher)
 - [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
-- [Docker] (https://www.docker.com)
+- [Docker](https://www.docker.com)
 - [Supabase CLI](https://supabase.com/docs/guides/cli)
 
 ## 🚀 Getting Started

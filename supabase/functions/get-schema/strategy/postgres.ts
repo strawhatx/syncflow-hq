@@ -38,10 +38,15 @@ export class PostgresStrategy implements DataSourceStrategy {
             throw new Error("Failed to connect to PostgreSQL");
         }
 
+        // must have a database
+        if (!config.database) {
+            throw new Error("Database is required");
+        }
+
         // get all tables
         const tables = await client.query(`
             SELECT table_name FROM information_schema.tables
-            WHERE table_schema='public' AND table_type='BASE TABLE';
+            WHERE table_schema='${config.database}' AND table_type='BASE TABLE';
         `);
 
         // release the connection

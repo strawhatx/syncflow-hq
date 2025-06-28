@@ -57,6 +57,14 @@ serve(async (req) => {
     //   project_ref: string <= required for getting tables
     //   access_token: string <= is pulled from the connection config in the db
     // }
+    // google_sheets: {
+    //   spreadsheetId: string <= required for getting tables
+    //   access_token: string <= is pulled from the connection config in the db
+    // }
+    // notion: {
+    //   databaseId: string <= required for getting tables
+    //   access_token: string <= is pulled from the connection config in the db
+    // }
     // postgres: {
     //   database: string <= required for getting tables
     //  ... other params <= pulled from the connection config in the db
@@ -69,6 +77,10 @@ serve(async (req) => {
     //   database: string <= required for getting tables
     //  ... other params <= pulled from the connection config in the db
     // } 
+    // sqlserver: {
+    //   database: string <= required for getting tables
+    //  ... other params <= pulled from the connection config in the db
+    // }
     // s3: {} <= pulled from the connection config in the db
     const { provider, action, config } = await req.json();
     const strategy = DataSourceStrategyFactory.getStrategy(provider);

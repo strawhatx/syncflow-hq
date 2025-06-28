@@ -5,14 +5,14 @@ import { ConnectorWithConnections, fetchConnectors } from '@/services/connectorS
 import { Link } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { CustomSelectButton } from '../helpers/CustomSelectButton';
+import { CustomSelectButton } from '../../../components/ui_custom/CustomSelectButton';
 import ConnectorConnectModal from '@/components/connector/ConnectorConnectModal';
 import { useState } from 'react';
 import { Connector } from '@/types/connectors';
 import { toast } from '@/hooks/use-toast';
 import useSync from '../hooks/useSync';
 
-export default function ConnectStep({ next }) {
+export default function AccountsStep({ next }) {
   const [connector, setConnector] = useState<Connector | null>(null);
   const [result, setResult] = useState<any>(null);
   const { data, setData } = useWizard();

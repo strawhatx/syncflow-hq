@@ -3,7 +3,7 @@
 import { useWizard } from '@/contexts/WizardContext';
 import { ConnectorWithConnections, fetchConnectors } from '@/services/connectorService';
 import { useQuery } from '@tanstack/react-query';
-import { CustomSelect } from '../helpers/CustomSelect';
+import { CustomSelect } from '../../../components/ui_custom/CustomSelect';
 import { Link } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 

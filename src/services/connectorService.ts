@@ -10,7 +10,7 @@ export interface ConnectorWithConnections extends Connector {
 
 export const fetchConnectors = async (): Promise<ConnectorWithConnections[]> => {
   const { data: connectors, error } = await supabase
-    .from('connectors')
+    .from('connectors_public')
     .select(`
       *,
       connections:connections(*)

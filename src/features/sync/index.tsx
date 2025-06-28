@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import AppStep from "./component/Apps";
-import ConnectStep from "./component/Connect";
+import AccountsStep from "./component/Accounts";
+import DataSourcesStep from "./component/DataSources";
 import MappingStep from "./component/Mapping";
 import ReviewStep from "./component/Review";
 import ScheduleStep from "./component/Schedule";
@@ -29,10 +30,16 @@ const steps = [
         component: AppStep,
     },
     {
-        id: "connections",
-        label: "choose your connections or create a new one",
-        description: "Select the connections you want to sync",
-        component: ConnectStep,
+        id: "accounts",
+        label: "choose your connected accounts or create a new one",
+        description: "Select the accounts you want to sync",
+        component: AccountsStep,
+    },
+    {
+        id: "data-sources",
+        label: "choose your data sources",
+        description: "Select the data sources you want to sync",
+        component: DataSourcesStep,
     },
     {
         id: "mappings",

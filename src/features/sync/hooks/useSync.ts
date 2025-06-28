@@ -31,11 +31,11 @@ const fetchSync = async (sync_id: string): Promise<SyncData> => {
       *, 
       source:source_id(
         *, 
-        connectors(*, connections(*))
+        connectors_public(*, connections(*))
       ), 
       destination:destination_id(
         *, 
-        connectors(*, connections(*))
+        connectors_public(*, connections(*))
       )
     `)
     .eq("id", sync_id);

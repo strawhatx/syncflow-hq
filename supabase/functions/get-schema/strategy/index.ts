@@ -4,6 +4,7 @@ import { MongoStrategy } from "./mongo";
 import { MySQLStrategy } from "./my-sql";
 import { PostgresStrategy } from "./postgres";
 import { S3Strategy } from "./s3";
+import { GoogleSheetsStrategy } from "./google-sheets";
 
 export interface DataSourceStrategy {
     getSources(config: Record<string, any>): Promise<string[]>;
@@ -13,7 +14,7 @@ export interface DataSourceStrategy {
 export class DataSourceStrategyFactory {
     static getStrategy(provider: string): DataSourceStrategy {
         switch (provider) {
-            case "postgres":
+            case "postgresql":
                 return new PostgresStrategy();
             case "mysql":
                 return new MySQLStrategy();
@@ -25,6 +26,8 @@ export class DataSourceStrategyFactory {
                 return new SupabaseStrategy();
             case "airtable":
                 return new AirtableStrategy();
+            case "google_sheets":
+                return new GoogleSheetsStrategy();
             default:
                 throw new Error(`Unsupported provider: ${provider}`);
         }

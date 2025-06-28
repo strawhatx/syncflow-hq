@@ -41,7 +41,49 @@ VALUES
             "code_challenge_required": true
         }'::jsonb,
         true
-    )
+    ),
+    (
+        'Google Sheets',
+        'oauth',
+        'google_sheets',
+        '{
+            "description": "Connect and sync with your Google Sheets data",
+            "icon": "google_sheets-icon",
+            "client_id": "your-google-client-id",
+            "client_secret": "your-google-client-secret",
+            "auth_url": "https://accounts.google.com/o/oauth2/v2/auth",
+            "token_url": "https://oauth2.googleapis.com/token",
+            "scopes": [
+                "https://www.googleapis.com/auth/spreadsheets.readonly",
+                "https://www.googleapis.com/auth/drive.readonly"
+            ],
+            "required_parameters": [],
+            "redirect_url": "http://localhost:3000/google_sheets/callback",
+            "code_challenge_required": true
+        }'::jsonb,
+        true
+    ),
+    (
+        'Notion',
+        'oauth',
+        'notion',
+        '{
+            "description": "Connect to your Notion workspace and sync databases",
+            "icon": "notion-icon",
+            "client_id": "your-notion-client-id",
+            "client_secret": "your-notion-client-secret",
+            "auth_url": "https://api.notion.com/v1/oauth/authorize",
+            "token_url": "https://api.notion.com/v1/oauth/token",
+            "scopes": [
+                "database.read",
+                "database.write"
+            ],
+            "required_parameters": [],
+            "redirect_url": "http://localhost:3000/notion/callback",
+            "code_challenge_required": false
+        }'::jsonb,
+        true
+    ),
     (
         'PostgreSQL',
         'api_key',
@@ -87,6 +129,19 @@ VALUES
             "optional_fields": ["prefix", "endpoint"],
             "description": "Connect to your S3 bucket",
             "icon": "amazon-s3-icon"
+        }'::jsonb,
+        false
+    ),
+    
+    (
+        'SQL Server',
+        'api_key',
+        'sqlserver',
+        '{
+            "required_fields": ["host", "port", "database", "username", "password"],
+            "optional_fields": ["schema", "encrypt"],
+            "description": "Connect to your Microsoft SQL Server database",
+            "icon": "sqlserver-icon"
         }'::jsonb,
         true
     ); 
