@@ -50,16 +50,16 @@ export class GoogleSheetsStrategy implements DataSourceStrategy {
         }
     }
 
-    async getSources(config: Record<string, any>): Promise<string[]> {
+    async getSources(config: Record<string, any>): Promise<Record<string, any>[]> {
         const { valid, result } = await this.connect("sources", config);
         if (!valid) {
             throw new Error("Failed to connect to Google Sheets");
         }
 
-        return result.files.map((file: any) => file.name);
+        return result.files;
     }
 
-    async getTables(config: Record<string, any>): Promise<string[]> {
+    async getTables(config: Record<string, any>): Promise<Record<string, any>[]> {
         // must have a spreadsheetId
         if (!config.spreadsheetId) {
             throw new Error("Spreadsheet ID is required");
@@ -71,6 +71,6 @@ export class GoogleSheetsStrategy implements DataSourceStrategy {
             throw new Error("Failed to connect to Google Sheets");
         }
 
-        return result.sheets.map((sheet: any) => sheet.properties.title);
+        return result.sheets;
     }
 }

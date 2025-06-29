@@ -20,7 +20,7 @@ export const fetchConnectionById = async (id: string): Promise<Connection | null
 // create connection via supabase but must validate connection first
 export const createConnection = async (team_id: string, connector: Connector, connectionName: string, config: Record<string, any>) => {
   // Validate required fields 
-  const missingFields = connector.config.required_fields.filter(
+  const missingFields = connector.required_fields.filter(
     field => !config[field]
   );
 
@@ -87,7 +87,7 @@ export const deleteConnection = async (id: string): Promise<void> => {
 
 // validate connection via endpoint with fields from connector
 export const validateConnection = async (connector: Connector, config: Record<string, any>): Promise<boolean> => {
-  const missingFields = connector.config.required_fields.filter(
+  const missingFields = connector.required_fields.filter(
     field => !config[field]
   );
 

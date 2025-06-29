@@ -60,16 +60,16 @@ export class AirtableStrategy implements DataSourceStrategy {
         }
     }
 
-    async getSources(config: Record<string, any>): Promise<string[]> {
+    async getSources(config: Record<string, any>): Promise<Record<string, any>[]> {
         const { valid, result } = await this.connect("sources", config);
         if (!valid) {
             throw new Error("Failed to connect to Airtable");
         }
 
-        return result.bases.map((base: any) => base.name);
+        return result.bases;
     }
 
-    async getTables(config: Record<string, any>): Promise<string[]> {
+    async getTables(config: Record<string, any>): Promise<Record<string, any>[]> {
         // must have a baseId
         if (!config.baseId) {
             throw new Error("Base ID is required");
@@ -81,6 +81,6 @@ export class AirtableStrategy implements DataSourceStrategy {
             throw new Error("Failed to connect to Airtable");
         }
 
-        return result.tables.map((table: any) => table.name);
+        return result.tables;
     }
 }

@@ -7,8 +7,8 @@ import { S3Strategy } from "./s3";
 import { GoogleSheetsStrategy } from "./google-sheets";
 
 export interface DataSourceStrategy {
-    getSources(config: Record<string, any>): Promise<string[]>;
-    getTables(config: Record<string, any>): Promise<string[]>;
+    getSources(config: Record<string, any>): Promise<Record<string, any>[]>;
+    getTables(config: Record<string, any>): Promise<Record<string, any>[]>;
 }
 
 export class DataSourceStrategyFactory {

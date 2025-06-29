@@ -58,8 +58,8 @@ const Connectors = () => {
               <ConnectorCard
                 key={connector.id}
                 name={connector.name}
-                icon={(connector.config as any).icon}
-                description={(connector.config as any).description}
+                icon={connector.icon}
+                description={connector.description}
                 isConnected={true}
                 connections={connector.connections}
                 onConnect={() => handleConnect(connector)}
@@ -77,8 +77,8 @@ const Connectors = () => {
             <ConnectorCard
               key={connector.id}
               name={connector.name}
-              icon={(connector.config as any).icon}
-              description={(connector.config as any).description}
+              icon={connector.icon}
+              description={connector.description}
               isConnected={false}
               connections={[]}
               onConnect={() => handleConnect(connector)}

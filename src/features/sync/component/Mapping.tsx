@@ -1,9 +1,5 @@
-// steps/NameStep.tsx
 
 import { useWizard } from '@/contexts/WizardContext';
-import { ConnectorWithConnections, fetchConnectors } from '@/services/connectorService';
-import { useQuery } from '@tanstack/react-query';
-import { CustomSelect } from '../../../components/ui_custom/CustomSelect';
 import { Link } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -15,58 +11,18 @@ export default function TableMappingStep({ next }) {
     next(); // move to next step
   };
 
-  const findConnector = (id: string) => {
-    return connectors?.find(connector => connector.id === id) as ConnectorWithConnections;
-  }
-
   return (
     <div>
       <div className="grid items-center grid-cols-1 md:grid-cols-5 gap-4">
         <div className='col-span-2'>
-          <CustomSelect
-            value={data.source.connector_id}
-            onValueChange={(value) => setData({
-              ...data,
-              source: {
-                ...data.source,
-                connector_id: value,
-                connector: findConnector(value) || {} as ConnectorWithConnections,
-              }
-            })}
-            options={connectors?.map(connector => ({
-              id: connector.id,
-              name: connector.name,
-              icon: (connector.config as any).icon
-            })) || []}
-            placeholder={`Select source app`}
-            disabled={false}
-            isLoading={isLoading}
-          />
+          source tables
         </div>
 
         <div className='flex items-center justify-center col-span-1'>
           <Link className='w-4 h-4' />
         </div>
         <div className='col-span-2'>
-          <CustomSelect
-            value={data.destination.connector_id}
-            onValueChange={(value) => setData({
-              ...data,
-              destination: {
-                ...data.destination,
-                connector_id: value,
-                connector: findConnector(value) || {} as ConnectorWithConnections,
-              }
-            })}
-            options={connectors?.map(connector => ({
-              id: connector.id,
-              name: connector.name,
-              icon: (connector.config as any).icon
-            })) || []}
-            placeholder={`Select destination app`}
-            disabled={false}
-            isLoading={isLoading}
-          />
+          destination tables
         </div>
       </div>
       <div className="mt-4">

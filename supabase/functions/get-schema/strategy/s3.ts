@@ -18,11 +18,11 @@ export class S3Strategy implements DataSourceStrategy {
         }
     }
 
-    getSources(config: Record<string, any>): Promise<string[]> {
+    getSources(config: Record<string, any>): Promise<Record<string, any>[]> {
         throw new Error("Method not implemented.");
     }
 
-    async getTables(config: Record<string, any>): Promise<string[]> {
+    async getTables(config: Record<string, any>): Promise<Record<string, any>[]> {
         // first validate the connection
         const { valid, client } = await this.connect(config);
         if (!valid) {
@@ -36,6 +36,6 @@ export class S3Strategy implements DataSourceStrategy {
         await client.destroy();
 
         // return the tables
-        return tables.Buckets.map((bucket: any) => bucket.Name);
+        return tables.Buckets;
     }
 }

@@ -13,7 +13,7 @@ export class PostgresStrategy implements DataSourceStrategy {
         }
     }
 
-    async getSources(config: Record<string, any>): Promise<string[]> {
+    async getSources(config: Record<string, any>): Promise<Record<string, any>[]> {
         // first validate the connection
         const { client, valid } = await this.connect(config);
         if (!valid) {
@@ -28,10 +28,10 @@ export class PostgresStrategy implements DataSourceStrategy {
         // release the connection
         await client.end();
 
-        return databases.rows.map((row: any) => row.datname);
+        return databases.rows;
     }
 
-    async getTables(config: Record<string, any>): Promise<string[]> {
+    async getTables(config: Record<string, any>): Promise<Record<string, any>[]> {
         // first validate the connection
         const { client, valid } = await this.connect(config);
         if (!valid) {
@@ -52,6 +52,6 @@ export class PostgresStrategy implements DataSourceStrategy {
         // release the connection
         await client.end();
 
-        return tables.rows.map((row: any) => row.table_name);
+        return tables.rows;
     }
 }

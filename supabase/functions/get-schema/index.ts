@@ -90,7 +90,7 @@ serve(async (req) => {
     const mergedConfig = { ...config, ...connectionConfig };
 
     // check if the action is getTables or getSources
-    let data: string[] = [];
+    let data: Record<string, any>[] = [];
 
     switch (action) {
       case "tables":

@@ -16,7 +16,7 @@ export class MySQLStrategy implements DataSourceStrategy {
         return mysqlConfig;
     }
 
-private async connect(config: Record<string, any>): Promise<{ valid: boolean, pool: any, connection: any }> {
+    private async connect(config: Record<string, any>): Promise<{ valid: boolean, pool: any, connection: any }> {
         try {
             // Convert boolean SSL to proper mysql2 SSL object format
             const mysqlConfig = this.config(config);
@@ -31,7 +31,7 @@ private async connect(config: Record<string, any>): Promise<{ valid: boolean, po
         }
     }
 
-    async getSources(config: Record<string, any>): Promise<string[]> {
+    async getSources(config: Record<string, any>): Promise<Record<string, any>[]> {
         // first validate the connection
         const { valid, pool, connection } = await this.connect(config);
         if (!valid) {
@@ -46,10 +46,10 @@ private async connect(config: Record<string, any>): Promise<{ valid: boolean, po
         await pool.end();
 
         // return the databases
-        return databases.rows.map((row: any) => row.Database);
+        return databases.rows;
     }
 
-    async getTables(config: Record<string, any>): Promise<string[]> {
+    async getTables(config: Record<string, any>): Promise<Record<string, any>[]> {
         // first validate the connection
         const { valid, pool, connection } = await this.connect(config);
         if (!valid) {
@@ -72,6 +72,6 @@ private async connect(config: Record<string, any>): Promise<{ valid: boolean, po
         await pool.end();
 
         // return the tables
-        return tables.rows.map((row: any) => row.table_name);
+        return tables.rows;
     }
 }

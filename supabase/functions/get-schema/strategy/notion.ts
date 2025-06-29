@@ -56,7 +56,7 @@ export class NotionStrategy implements DataSourceStrategy {
         }
     }
 
-    async getTables(config: Record<string, any>): Promise<string[]> {
+    async getTables(config: Record<string, any>): Promise<Record<string, any>[]> {
         // must have a databaseId
         if (!config.databaseId) {
             throw new Error("Database ID is required");
@@ -68,15 +68,15 @@ export class NotionStrategy implements DataSourceStrategy {
             throw new Error("Failed to connect to Notion");
         }
 
-        return result.results.map((result: any) => result.name);
+        return result.results;
     }
 
-    async getSources(config: Record<string, any>): Promise<string[]> {
+    async getSources(config: Record<string, any>): Promise<Record<string, any>[]> {
         const { valid, result } = await this.connect("sources", config);
         if (!valid) {
             throw new Error("Failed to connect to Notion");
         }
 
-        return result.results.map((result: any) => result.title[0]?.text?.content || "(Untitled)");
+        return result.results;
     }
 }

@@ -12,7 +12,7 @@ export class MongoStrategy implements DataSourceStrategy {
         }
     }
 
-    async getSources(config: Record<string, any>): Promise<string[]> {
+    async getSources(config: Record<string, any>): Promise<Record<string, any>[]> {
         // first validate the connection
         const { valid, client } = await this.connect(config);
         if (!valid) {
@@ -26,10 +26,10 @@ export class MongoStrategy implements DataSourceStrategy {
         await client.close();
 
         // return the databases
-        return databases.databases.map((database: any) => database.name);
+        return databases.databases;
     }
 
-    async getTables(config: Record<string, any>): Promise<string[]> {
+    async getTables(config: Record<string, any>): Promise<Record<string, any>[]> {
         // first validate the connection
         const { valid, client } = await this.connect(config);
         if (!valid) {
@@ -48,6 +48,6 @@ export class MongoStrategy implements DataSourceStrategy {
         await client.close();
 
         // return the tables
-        return tables.map((table: any) => table.name);
+        return tables;
     }
 }

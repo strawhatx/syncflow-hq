@@ -70,14 +70,14 @@ const getProviderConfig = async (connector: Connector): Promise<ProviderConfig |
   return {
     type: 'oauth',
     config: {
-      clientId: (connector.config as any).client_id || '',
-      authUrl: (connector.config as any).auth_url || '',
-      tokenUrl: (connector.config as any).token_url || '',
-      scopes: (connector.config as any).scopes || [],
-      requiredParameters: (connector.config as any).required_parameters || [],
-      description: (connector.config as any).description,
-      redirectUrl: (connector.config as any).redirect_url,
-      code_challenge_required: (connector.config as any).code_challenge_required
+      clientId: connector.client_id || '',
+      authUrl: connector.auth_url || '',
+      tokenUrl: connector.token_url || '',
+      scopes: connector.scopes || [],
+      requiredParameters: connector.required_parameters || [],
+      description: connector.description,
+      redirectUrl: connector.redirect_url,
+      code_challenge_required: connector.code_challenge_required
     }
   };
 };
@@ -185,7 +185,7 @@ const getProviderSpecificParameters = (provider: string): Record<string, string>
 // Initiate OAuth flow
 export const initiateOAuth = async (
   connectionName: string,
-  provider: "supabase" | "airtable",
+  provider: "supabase" | "airtable"| "google_sheets" |  "notion",
   config: Connector,
   params: Record<string, string>,
 ) => {

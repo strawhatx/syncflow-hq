@@ -30,7 +30,7 @@ class OauthActionsStrategy implements ConnectionActionsStrategy {
         setError: (error: string | null) => void
     ): Promise<void> {
         try {
-            if (connector.provider !== "supabase" && connector.provider !== "airtable") {
+            if (connector.type !== "oauth") {
                 throw new Error("Unsupported provider");
             }
 

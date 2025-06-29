@@ -14,7 +14,6 @@ import useSync from '../hooks/useSync';
 
 export default function AccountsStep({ next }) {
   const [connector, setConnector] = useState<Connector | null>(null);
-  const [result, setResult] = useState<any>(null);
   const { data, setData } = useWizard();
   const { id } = useParams();
   const { createSyncMutation } = useSync(id);
@@ -31,7 +30,6 @@ export default function AccountsStep({ next }) {
     try {
       // save to database
       const result = await createSyncMutation.mutate({ step: 'connect', data: dataToSave as any });
-      setResult(result);
 
       next(); // move to next step
     }
@@ -41,7 +39,6 @@ export default function AccountsStep({ next }) {
         description: error.message,
         variant: 'destructive',
       });
-      setResult(undefined);
     }
   };
 

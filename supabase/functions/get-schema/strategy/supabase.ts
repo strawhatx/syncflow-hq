@@ -48,16 +48,16 @@ export class SupabaseStrategy implements DataSourceStrategy {
         }
     }
 
-    async getSources(config: Record<string, any>): Promise<string[]> {
+    async getSources(config: Record<string, any>): Promise<Record<string, any>[]> {
         const { valid, result } = await this.connect("projects", config);
         if (!valid) {
             throw new Error("Failed to connect to Supabase");
         }
 
-        return result.projects.map((project: any) => project.name);
+        return result.projects;
     }
 
-    async getTables(config: Record<string, any>): Promise<string[]> {
+    async getTables(config: Record<string, any>): Promise<Record<string, any>[]> {
         // must have a project_ref
         if (!config.project_ref) {
             throw new Error("Project reference is required");
@@ -69,6 +69,6 @@ export class SupabaseStrategy implements DataSourceStrategy {
             throw new Error("Failed to connect to Airtable");
         }
 
-        return result.tables.map((table: any) => table.name);
+        return result.tables;
     }
 }

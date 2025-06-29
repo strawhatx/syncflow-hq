@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
+import { Connector } from "@/types/connectors";
 
-type Connector = Database['public']['Tables']['connectors']['Row'];
 type Connection = Database['public']['Tables']['connections']['Row'];
 
 export interface ConnectorWithConnections extends Connector { 

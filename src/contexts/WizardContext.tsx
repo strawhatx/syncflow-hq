@@ -5,6 +5,7 @@ interface AppData {
     id: string;
     connector: ConnectorWithConnections;
     connector_id: string;
+    database: any;
 }
 
 
@@ -23,11 +24,13 @@ export const defaultWizardData: WizardData = {
         id: '',
         connector: {} as ConnectorWithConnections,
         connector_id: '',
+        database: null,
     },
     destination: {
         id: '',
         connector: {} as ConnectorWithConnections,
         connector_id: '',
+        database: null,
     },
 };
 

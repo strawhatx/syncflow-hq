@@ -72,7 +72,7 @@ export default function ConnectorConnectModal({ isOpen, onClose, connector, conn
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <div className="flex items-center justify-center gap-4 mb-4">
-            <img src={`/svg/${connector.config.icon}.svg`} alt={connector.name} className="h-14 w-14" />
+            <img src={`/svg/${connector.icon}.svg`} alt={connector.name} className="h-14 w-14" />
             <span className="text-3xl font-bold">+</span>
             <div className="flex aspect-square size-14 items-center justify-center rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white transition-all duration-200">
               <Zap className="size-7" />

@@ -40,7 +40,7 @@ export default function AppStep({ next }) {
             options={connectors?.map(connector => ({
               id: connector.id,
               name: connector.name,
-              icon: (connector.config as any).icon
+              icon: connector.icon
             })) || []}
             placeholder={`Select source app`}
             disabled={false}
@@ -65,7 +65,7 @@ export default function AppStep({ next }) {
             options={connectors?.map(connector => ({
               id: connector.id,
               name: connector.name,
-              icon: (connector.config as any).icon
+              icon: connector.icon
             })) || []}
             placeholder={`Select destination app`}
             disabled={false}
