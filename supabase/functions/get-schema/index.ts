@@ -3,24 +3,22 @@
 // This enables autocomplete, go to definition, etc.
 
 // Setup type definitions for built-in Supabase Runtime APIs
-import "jsr:@supabase/functions-js/edge-runtime.d.ts"
-import { serve } from "jsr:@supabase/functions-js/server";
-import { validateSupabaseToken } from "../utils/auth";
-import { handleCORS, handleReturnCORS } from "../utils/cors";
-import { DataSourceStrategyFactory } from "./strategy";
-import { createClient } from "jsr:@supabase/supabase-js";
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { createClient } from "npm:@supabase/supabase-js@2";
+import { handleCORS, handleReturnCORS } from "../utils/cors.ts";
+import { validateSupabaseToken } from "../utils/auth.ts";
+import { DataSourceStrategyFactory } from "./strategy/index.ts";
 
 // ✅ Load Environment Variables
 const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
-type Provider = "airtable" | "supabase" | "postgres" | "mysql" | "mongo" | "s3";
-
 // ✅ Get the connection config from the database
-const getConnectionConfig = async (provider: Provider) => {
+const getConnectionConfig = async (connection_id: string) => {
   const { data, error } = await supabase
     .from('connections')
     .select('config')
-    .eq('provider', provider)
+    .eq('id', connection_id)
     .single();
 
   if (error) {
@@ -77,16 +75,16 @@ serve(async (req) => {
     //   database: string <= required for getting tables
     //  ... other params <= pulled from the connection config in the db
     // } 
-    // sqlserver: {
-    //   database: string <= required for getting tables
-    //  ... other params <= pulled from the connection config in the db
-    // }
     // s3: {} <= pulled from the connection config in the db
-    const { provider, action, config } = await req.json();
+    const { connection_id, provider, action, config } = await req.json();
+    if (!connection_id || !provider || !action || !config) {
+      throw new Error("Invalid request");
+    }
+
     const strategy = DataSourceStrategyFactory.getStrategy(provider);
 
     // merge the configs with the connection config in the db
-    const connectionConfig = await getConnectionConfig(provider);
+    const connectionConfig = await getConnectionConfig(connection_id);
     const mergedConfig = { ...config, ...connectionConfig };
 
     // check if the action is getTables or getSources

@@ -211,7 +211,7 @@ supabase functions deploy
 - **Method:** POST
 - **Purpose:** Handle OAuth callback and create connections
 
-#### Get Tables
+#### Get Schema
 - **Endpoint:** `/functions/v1/get-schema`
 - **Method:** POST
 - **Purpose:** Fetch available data sources/tables for a provider
@@ -230,9 +230,23 @@ supabase functions deploy
 
 ## 🚧 Limitations
 
+### General Limitations
 - **Internet Accessibility** - Data sources must be accessible on the internet
 - **Provider Support** - Limited to currently supported OAuth providers
 - **Data Size** - Large datasets may require optimization
+
+### Platform-Specific Limitations
+
+#### SQL Server Support
+Supabase Edge Functions are based on Deno Deploy, which does not support Node.js modules (e.g., `mssql`) or native drivers. As a result, direct SQL Server connections are not supported in this environment. If you need SQL Server access, you must use:
+- A separate Node.js service that exposes SQL Server queries over HTTP
+- Or move SQL Server integration to your backend infrastructure
+
+#### SQLite Support
+While SQLite can be used in Deno locally (for read-only or in-memory use), Supabase Edge Functions do not support persistent file storage. Any writes to SQLite will be ephemeral and lost when the function restarts. For this reason, persistent SQLite is not recommended in production Edge Functions.
+
+#### File System Limitations
+Edge Functions run in a sandboxed environment with limited, read-only filesystem access. Do not rely on writing files to disk for persistent storage.
 
 ## 🤝 Contributing
 

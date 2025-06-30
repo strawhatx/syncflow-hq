@@ -51,7 +51,7 @@ const SidebarLayout = () => {
                             <Breadcrumb>
                                 <BreadcrumbList>
                                     {breadcrumbs.map((item, index) => (
-                                        <React.Fragment key={item.href}>
+                                        <div key={item.href} className="flex items-center">
                                             <BreadcrumbItem className={index === breadcrumbs.length - 1 ? "font-semibold" : ""}>
                                                 {index === breadcrumbs.length - 1 ? (
                                                     <BreadcrumbPage>{item.name}</BreadcrumbPage>
@@ -60,7 +60,7 @@ const SidebarLayout = () => {
                                                 )}
                                             </BreadcrumbItem>
                                             {index < breadcrumbs.length - 1 && <BreadcrumbSeparator />}
-                                        </React.Fragment>
+                                        </div>
                                     ))}
                                 </BreadcrumbList>
                             </Breadcrumb>

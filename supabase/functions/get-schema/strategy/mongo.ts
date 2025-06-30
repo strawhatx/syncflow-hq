@@ -1,4 +1,4 @@
-import { DataSourceStrategy } from ".";
+import { DataSourceStrategy } from "./index.ts";
 import { MongoClient } from "npm:mongodb@6.17.0";
 
 export class MongoStrategy implements DataSourceStrategy {

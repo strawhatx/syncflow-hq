@@ -1,4 +1,4 @@
-import { DataSourceStrategy } from ".";
+import { DataSourceStrategy } from "./index.ts";
 import { createPool } from "npm:mysql2@3.14.1/promise";
 
 export class MySQLStrategy implements DataSourceStrategy {

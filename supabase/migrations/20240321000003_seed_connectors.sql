@@ -54,7 +54,7 @@ VALUES
             "auth_url": "https://accounts.google.com/o/oauth2/v2/auth",
             "token_url": "https://oauth2.googleapis.com/token",
             "scopes": [
-                "https://www.googleapis.com/auth/spreadsheets.readonly",
+                "https://www.googleapis.com/auth/spreadsheets",
                 "https://www.googleapis.com/auth/drive.readonly"
             ],
             "required_parameters": [],
@@ -131,17 +131,4 @@ VALUES
             "icon": "amazon-s3-icon"
         }'::jsonb,
         false
-    ),
-    
-    (
-        'SQL Server',
-        'api_key',
-        'sqlserver',
-        '{
-            "required_fields": ["host", "port", "database", "username", "password"],
-            "optional_fields": ["schema", "encrypt"],
-            "description": "Connect to your Microsoft SQL Server database",
-            "icon": "sqlserver-icon"
-        }'::jsonb,
-        true
-    ); 
+    );

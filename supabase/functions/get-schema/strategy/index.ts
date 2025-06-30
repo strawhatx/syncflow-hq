@@ -1,10 +1,12 @@
-import { AirtableStrategy } from "./airtable";
-import { SupabaseStrategy } from "./supabase";
-import { MongoStrategy } from "./mongo";
-import { MySQLStrategy } from "./my-sql";
-import { PostgresStrategy } from "./postgres";
-import { S3Strategy } from "./s3";
-import { GoogleSheetsStrategy } from "./google-sheets";
+import { AirtableStrategy } from "./airtable.ts";
+import { SupabaseStrategy } from "./supabase.ts";
+import { MongoStrategy } from "./mongo.ts";
+import { MySQLStrategy } from "./my-sql.ts";
+import { PostgresStrategy } from "./postgres.ts";
+import { S3Strategy } from "./s3.ts";
+import { GoogleSheetsStrategy } from "./google-sheets.ts";
+import { NotionStrategy } from "./notion.ts";
+import { providerMap } from "../../utils/utils.ts";
 
 export interface DataSourceStrategy {
     getSources(config: Record<string, any>): Promise<Record<string, any>[]>;
@@ -14,20 +16,22 @@ export interface DataSourceStrategy {
 export class DataSourceStrategyFactory {
     static getStrategy(provider: string): DataSourceStrategy {
         switch (provider) {
-            case "postgresql":
+            case providerMap.postgresql:
                 return new PostgresStrategy();
-            case "mysql":
+            case providerMap.mysql:
                 return new MySQLStrategy();
-            case "mongo":
+            case providerMap.mongodb:
                 return new MongoStrategy();
-            case "s3":
+            case providerMap.s3:
                 return new S3Strategy();
-            case "supabase":
+            case providerMap.supabase:
                 return new SupabaseStrategy();
-            case "airtable":
+            case providerMap.airtable:
                 return new AirtableStrategy();
-            case "google_sheets":
+            case providerMap.google_sheets:
                 return new GoogleSheetsStrategy();
+            case providerMap.notion:
+                return new NotionStrategy();
             default:
                 throw new Error(`Unsupported provider: ${provider}`);
         }

@@ -1,4 +1,4 @@
-import { DataSourceStrategy } from ".";
+import { DataSourceStrategy } from "./index.ts";
 import { S3Client, ListBucketsCommand } from "npm:@aws-sdk/client-s3@3.832.0";
 
 export class S3Strategy implements DataSourceStrategy {

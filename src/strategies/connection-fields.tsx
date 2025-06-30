@@ -174,63 +174,6 @@ class MySQLFieldsStrategy implements ConnectionFieldsStrategy {
     }
 }
 
-class SQLServerFieldsStrategy implements ConnectionFieldsStrategy {
-
-    renderFields(config: Record<string, any>, setConfig: (config: Record<string, any>) => void): React.ReactNode {
-        return (
-            <>
-                <div className="space-y-2">
-                    <Label htmlFor="host">Host</Label>
-                    <Input
-                        id="host"
-                        placeholder="localhost"
-                        value={config.host || ""}
-                        onChange={(e) => setConfig({ ...config, host: e.target.value })}
-                    />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="port">Port</Label>
-                    <Input
-                        id="port"
-                        type="number"
-                        placeholder="1433"
-                        value={config.port || ""}
-                        onChange={(e) => setConfig({ ...config, port: parseInt(e.target.value) })}
-                    />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="database">Database</Label>
-                    <Input
-                        id="database"
-                        placeholder="mydb"
-                        value={config.database || ""}
-                        onChange={(e) => setConfig({ ...config, database: e.target.value })}
-                    />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="username">Username</Label>
-                    <Input
-                        id="username"
-                        placeholder="sa"
-                        value={config.username || ""}
-                        onChange={(e) => setConfig({ ...config, username: e.target.value })}
-                    />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
-                    <Input
-                        id="password"
-                        type="password"
-                        placeholder="••••••••"
-                        value={config.password || ""}
-                        onChange={(e) => setConfig({ ...config, password: e.target.value })}
-                    />
-                </div>
-            </>
-        );
-    }
-}
-
 class S3FieldsStrategy implements ConnectionFieldsStrategy {
     renderFields(config: Record<string, any>, setConfig: (config: Record<string, any>) => void): React.ReactNode {
         return (
@@ -312,8 +255,6 @@ export class ConnectionFieldsStrategyFactory {
                 return new MongoFieldsStrategy();
             case "mysql":
                 return new MySQLFieldsStrategy();
-            case "sqlserver":
-                return new SQLServerFieldsStrategy();
             case "aws":
                 return new S3FieldsStrategy();
         

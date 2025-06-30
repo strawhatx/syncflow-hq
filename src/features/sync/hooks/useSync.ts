@@ -12,10 +12,12 @@ export type SyncData = {
   source?: {
     id: string;
     connector: ConnectorWithConnections;
+    database: any;
   };
   destination?: {
     id: string;
     connector: ConnectorWithConnections;
+    database: any;
   };
   config?: SyncConfig;
   entityCount?: number;

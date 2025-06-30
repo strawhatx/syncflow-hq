@@ -4,7 +4,6 @@ import { useWizard } from '@/contexts/WizardContext';
 import { Link } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
 import { Connector, ConnectorConfig, ConnectorProvider } from '@/types/connectors';
 import { toast } from '@/hooks/use-toast';
 import useSync from '../hooks/useSync';
@@ -17,10 +16,12 @@ export default function DataSourcesStep({ next }) {
   const { createSyncMutation } = useSync(id);
 
   const { data: sourceOptions = [], isLoading: isSourceLoading } = useDataSources(
+    data.source?.id,
     data.source?.connector?.provider as ConnectorProvider
   );
 
   const { data: destinationOptions = [], isLoading: isDestinationLoading } = useDataSources(
+    data.destination?.id,
     data.destination?.connector?.provider as ConnectorProvider
   );
 

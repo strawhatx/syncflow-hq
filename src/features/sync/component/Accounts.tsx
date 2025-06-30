@@ -64,7 +64,7 @@ export default function AccountsStep({ next }) {
               name: conn.name,
             }))}
             placeholder={`Select source connection`}
-            isLoading={data.source?.connector?.connections.length === 0}
+            isLoading={false}
             onCreateNew={() => handleConnect(data.source?.connector)}
           />
         </div>
@@ -88,7 +88,7 @@ export default function AccountsStep({ next }) {
             }))}
             placeholder={`Select destination connection`}
             disabled={false}
-            isLoading={data.destination?.connector?.connections.length === 0}
+            isLoading={false}
             onCreateNew={() => handleConnect(data.destination?.connector)}
           />
         </div>

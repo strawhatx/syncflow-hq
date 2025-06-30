@@ -1,4 +1,4 @@
-import { DataSourceStrategy } from ".";
+import { DataSourceStrategy } from "./index.ts";
 
 export class SupabaseStrategy implements DataSourceStrategy {
     private config = {

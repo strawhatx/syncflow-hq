@@ -135,13 +135,13 @@ export default function Sync() {
             setData({
                 source: {
                     ...sync.source,
-                    connector: (sync.source as any).connectors,
-                    connector_id: (sync.source as any).connectors.id
+                    connector: (sync.source as any)?.connectors_public,
+                    connector_id: (sync.source as any)?.connector_id
                 },
                 destination: {
                     ...sync.destination,
-                    connector: (sync.destination as any).connectors,
-                    connector_id: (sync.destination as any).connectors.id
+                    connector: (sync.destination as any)?.connectors_public,
+                    connector_id: (sync.destination as any)?.connector_id
                 }
             });
 

@@ -1,4 +1,4 @@
-import { DataSourceStrategy } from ".";
+import { DataSourceStrategy } from "./index.ts";
 import { Client } from "npm:pg@8.16.2";
 
 export class PostgresStrategy implements DataSourceStrategy {

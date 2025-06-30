@@ -22,13 +22,15 @@ interface TokenResponse {
   error_description?: string;
 }
 
-interface Integration {
+interface Connector {
   id: string;
   name: string;
+  provider: string;
   client_id: string;
   client_secret: string;
   token_url: string;
   auth_url: string;
+  code_challenge_required: boolean;
 }
 
 interface StateData {
@@ -55,7 +57,7 @@ const createSuccessResponse = (data: unknown, req: Request) => {
 };
 
 const prepareTokenRequest = (
-  integration: Integration,
+  connector: Connector,
   code: string,
   code_verifier: string,
   stateData: StateData
@@ -67,18 +69,23 @@ const prepareTokenRequest = (
     }
   };
 
+  const bodyConfig = {
+    code,
+    redirect_uri: stateData.redirectUri,
+    grant_type: 'authorization_code',
+  }
+
+  if (connector.code_challenge_required && code_verifier) {
+    bodyConfig['code_verifier'] = code_verifier;
+  }
+
   return {
     ...baseConfig,
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
-      'Authorization': `Basic ${btoa(`${integration.client_id}:${integration.client_secret}`)}`
+      'Authorization': `Basic ${btoa(`${connector.client_id}:${connector.client_secret}`)}`
     },
-    body: new URLSearchParams({
-      code, // the code you got from the callback
-      redirect_uri: stateData.redirectUri,
-      grant_type: 'authorization_code',
-      code_verifier // <-- this is required!
-    }).toString()
+    body: new URLSearchParams(bodyConfig).toString()
   };
 };
 
@@ -102,15 +109,28 @@ serve(async (req) => {
     if (!provider) {
       throw new Error('Provider not specified');
     }
+    
     // Fetch integration configuration
-    const { data: connector, error: integrationError } = await supabase
-      .from('connector_oauth_configs_public')
+    const { data: connectorData, error: integrationError } = await supabase
+      .from('connectors')
       .select('*')
-      .ilike('name', provider)
+      .eq('provider', provider)
       .single();
 
-    if (integrationError || !connector) {
+    if (integrationError || !connectorData) {
       throw new Error('Integration not found');
+    }
+
+    //process the data properly to the connector type
+    const connector: Connector = {
+      id: connectorData.id,
+      name: connectorData.name,
+      provider: connectorData.provider,
+      client_id: connectorData.config?.client_id,
+      client_secret: connectorData.config?.client_secret,
+      token_url: connectorData.config?.token_url,
+      auth_url: connectorData.config?.auth_url,
+      code_challenge_required: connectorData.config?.code_challenge_required,
     }
 
     // Process state and get user ID

@@ -1,4 +1,4 @@
-import { DataSourceStrategy } from ".";
+import { DataSourceStrategy } from "./index.ts";
 
 // Airtable is not a standard datasource so we need to call
 // the airtable api to get the tables

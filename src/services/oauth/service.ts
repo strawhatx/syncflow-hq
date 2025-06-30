@@ -208,8 +208,9 @@ export const initiateOAuth = async (
   }
 
   // Generate code_verifier and code_challenge
-  const code_verifier = generateCodeVerifier();
+  let code_verifier = null
   if (providerConfig.code_challenge_required) {
+    code_verifier = generateCodeVerifier();
     const code_challenge = await generateCodeChallenge(code_verifier);
     providerConfig.code_challenge = code_challenge;
     savePkceVerifier(code_verifier);
