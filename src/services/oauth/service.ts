@@ -121,7 +121,7 @@ const buildOAuthParameters = (
     code_challenge_method: {
       value: 'S256',
       conditional: (config) => config.code_challenge_required === true
-    }
+    },
   };
 
   // Build the final parameters object
@@ -174,6 +174,10 @@ const buildOAuthUrl = (
 const getProviderSpecificParameters = (provider: string): Record<string, string> => {
   const providerParams: Record<string, Record<string, string>> = {
     'airtable': {
+      access_type: 'offline',
+      prompt: 'consent'
+    },
+    'google_sheets': {
       access_type: 'offline',
       prompt: 'consent'
     }

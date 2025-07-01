@@ -14,7 +14,8 @@ export class S3Strategy implements DataSourceStrategy {
             });
             return { valid: true, client };
         } catch (error) {
-            return { valid: false, client: null };
+            console.error(error);
+            throw new Error(error.message || "Failed to connect to S3");
         }
     }
 

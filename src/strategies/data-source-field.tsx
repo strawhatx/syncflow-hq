@@ -15,7 +15,11 @@ class DropdownFieldStrategy implements DatasourceFieldStrategy {
                 <CustomSelect
                     value={value}
                     onValueChange={(value) => setValue(value)}
-                    options={source || []}
+                    options={source.map((item: any) => ({
+                        // since were pulling datasources its not guaranteed to have ids
+                        id: item.id || item.name,
+                        name: item.name
+                    })) || []}
                     placeholder={`Select ${type} project`}
                     disabled={false}
                     isLoading={false}
@@ -30,7 +34,14 @@ class FileFieldStrategy implements DatasourceFieldStrategy {
         return (
             <>
                 <CloudFilePicker
-                    files={source || []}
+                    files={source.map((item: any) => ({
+                        // since were pulling datasources its not guaranteed to have ids
+                        id: item.id || item.name,
+                        name: item.name,
+                        type: item.type,
+                        size: item.size || 0,
+                        last_modified: item.modifiedTime
+                    })) || []}
                     onClose={(file) => setValue(file)}
                 />
             </>

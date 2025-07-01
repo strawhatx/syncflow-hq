@@ -11,17 +11,54 @@ export type SyncData = {
   lastSync?: string;
   source?: {
     id: string;
+    connector_id: string;
     connector: ConnectorWithConnections;
     database: any;
   };
   destination?: {
     id: string;
+    connector_id: string;
     connector: ConnectorWithConnections;
     database: any;
   };
   config?: SyncConfig;
   entityCount?: number;
   setup_stage?: SetupStage;
+};
+
+const defaultSyncData: SyncData = {
+  id: "",
+  name: "",
+  is_active: false,
+  source: {
+    id: "",
+    connector_id: "",
+    connector: undefined,
+    database: "",
+  },
+  destination: {
+    id: "",
+    connector_id: "",
+    connector: undefined,
+    database: "",
+  },
+};
+
+const mapSyncData = (data: any[]): SyncData => {
+
+  var result = data.map((item: any) => ({
+    ...item,
+    source: {
+      ...item.source,
+      connector: item.source.connectors_public
+    },
+    destination: {
+      ...item.destination,
+      connector: item.destination.connectors_public
+    }
+  }));
+
+  return result[0] || defaultSyncData as SyncData;
 };
 
 const fetchSync = async (sync_id: string): Promise<SyncData> => {
@@ -43,7 +80,8 @@ const fetchSync = async (sync_id: string): Promise<SyncData> => {
     .eq("id", sync_id);
 
   if (error) throw error;
-  return data[0] as SyncData;
+
+  return mapSyncData(data);
 };
 
 export const saveStepData = async (syncId: string, step: string, data: Record<string, any>) => {
@@ -67,7 +105,7 @@ export const saveStepData = async (syncId: string, step: string, data: Record<st
 const useSync = (sync_id: string) => {
   const queryClient = useQueryClient();
 
-  const { data: sync = {} as SyncData, isLoading } = useQuery({
+  const { data: sync = defaultSyncData, isLoading } = useQuery({
     queryKey: ["sync"],
     queryFn: () => fetchSync(sync_id),
   });

@@ -27,7 +27,8 @@ export class MySQLStrategy implements DataSourceStrategy {
 
             return { valid: true, pool, connection };
         } catch (error) {
-            return { valid: false, pool: null, connection: null };
+            console.error(error);
+            throw new Error(error.message || "Failed to connect to MySQL");
         }
     }
 

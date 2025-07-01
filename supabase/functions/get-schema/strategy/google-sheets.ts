@@ -8,7 +8,7 @@ export class GoogleSheetsStrategy implements DataSourceStrategy {
             url: `https://sheets.googleapis.com/v4/spreadsheets/{spreadsheetId}`
         },
         sources: {
-            url: `https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.spreadsheet'&fields=files(id,name,dqq)`
+            url: `https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.spreadsheet'&fields=files(id,name,createdTime,modifiedTime)`
         }
     }
 
@@ -40,13 +40,14 @@ export class GoogleSheetsStrategy implements DataSourceStrategy {
             });
 
             if (!response.ok) {
-                return { valid: false, result: null };
+                throw new Error(response.statusText || "Failed to connect to Google Sheets");
             }
 
             const result = await response.json();
             return { valid: true, result };
         } catch (error) {
-            return { valid: false, result: null };
+            console.error(error);
+            throw new Error(error.message || "Failed to connect to Google Sheets");
         }
     }
 

@@ -50,7 +50,7 @@ export class AirtableStrategy implements DataSourceStrategy {
             });
 
             if (!response.ok) {
-                return { valid: false, result: null };
+                throw new Error(response.statusText || "Failed to connect to Google Sheets");
             }
 
             const result = await response.json();

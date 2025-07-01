@@ -46,13 +46,14 @@ export class NotionStrategy implements DataSourceStrategy {
             });
 
             if (!response.ok) {
-                return { valid: false, result: null };
+                throw new Error(response.statusText || "Failed to connect to Google Sheets");
             }
 
             const result = await response.json();
             return { valid: true, result };
         } catch (error) {
-            return { valid: false, result: null };
+            console.error(error);
+            throw new Error(error.message || "Failed to connect to Notion");
         }
     }
 

@@ -8,7 +8,8 @@ export class MongoStrategy implements DataSourceStrategy {
             await client.connect();
             return { valid: true, client };
         } catch (error) {
-            return { valid: false, client: null };
+            console.error(error);
+            throw new Error(error.message || "Failed to connect to MongoDB");
         }
     }
 

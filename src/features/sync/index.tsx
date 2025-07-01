@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import AppStep from "./component/Apps";
 import AccountsStep from "./component/Accounts";
 import DataSourcesStep from "./component/DataSources";
 import MappingStep from "./component/Mapping";
@@ -10,10 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { defaultUpdateSync } from "@/types/sync";
 import { useParams } from "react-router-dom";
-import { defaultWizardData, useWizard } from "@/contexts/WizardContext";
 import { useAuth } from "@/contexts/AuthContext";
-import useSync from "./hooks/useSync";
-import { ConnectorWithConnections } from "@/services/connectorService";
+import useSync, { SyncData } from "./hooks/useSync";
 
 // Step state enum for cleaner logic
 enum StepState {
@@ -23,12 +20,6 @@ enum StepState {
 }
 
 const steps = [
-    {
-        id: "apps",
-        label: "Lets select your Apps",
-        description: "Select the apps you want to sync",
-        component: AppStep,
-    },
     {
         id: "accounts",
         label: "choose your connected accounts or create a new one",
@@ -106,12 +97,12 @@ const getStepLabel = (step: typeof steps[0], state: StepState, onClick?: () => v
     );
 };
 
-const getStepContent = (step: typeof steps[0], state: StepState, onNext?: () => void) => {
+const getStepContent = (step: typeof steps[0], state: StepState, sync: SyncData, onNext?: () => void) => {
     if (state === StepState.CURRENT) {
         const StepComponent = step.component;
         return (
             <div className="flex-1 ml-[10px] px-6 py-8 border-l-2 border-gray-200">
-                <StepComponent next={onNext} />
+                <StepComponent next={onNext} sync={sync} />
             </div>
         );
     }
@@ -124,27 +115,13 @@ const getStepContent = (step: typeof steps[0], state: StepState, onNext?: () => 
 
 export default function Sync() {
     const { id } = useParams();
-    const { setData } = useWizard();
     const { sync, isLoading, createSyncMutation } = useSync(id);
     const { user } = useAuth();
     const [stepIndex, setStepIndex] = useState(0);
     const [syncName, setSyncName] = useState("Untitled Sync");
 
     useEffect(() => {
-        if (sync && !isLoading) {
-            setData({
-                source: {
-                    ...sync.source,
-                    connector: (sync.source as any)?.connectors_public,
-                    connector_id: (sync.source as any)?.connector_id
-                },
-                destination: {
-                    ...sync.destination,
-                    connector: (sync.destination as any)?.connectors_public,
-                    connector_id: (sync.destination as any)?.connector_id
-                }
-            });
-
+        if (sync) {
             // set the sync name(dont forget)
             setSyncName(sync.name);
         }
@@ -166,11 +143,10 @@ export default function Sync() {
                 <div className="flex gap-2">
                     <Button
                         variant="outline"
-                        className="rounded-md py-0 px-4"
+                        className="rounded-md py-2 px-4 h-8"
                         onClick={async () => {
                             // reset the wizard data and all sync data
                             setStepIndex(0);
-                            setData(defaultWizardData);
                             createSyncMutation.mutate({ step: 'apps', data: defaultUpdateSync(id, user) as any });
                         }}
                     >
@@ -201,7 +177,7 @@ export default function Sync() {
                             </div>
 
                             {/* Step Content */}
-                            {getStepContent(step, state, () => setStepIndex(i => i + 1))}
+                            {getStepContent(step, state, sync, () => setStepIndex(i => i + 1))}
                         </div>
                     );
                 })}

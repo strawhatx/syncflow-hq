@@ -9,6 +9,8 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { handleCORS, handleReturnCORS } from "../utils/cors.ts";
 import { validateSupabaseToken } from "../utils/auth.ts";
 import { DataSourceStrategyFactory } from "./strategy/index.ts";
+import { getValidAccessToken } from "../utils/access.ts";
+import { oauthProviders } from "../utils/utils.ts";
 
 // ✅ Load Environment Variables
 const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
@@ -37,7 +39,9 @@ serve(async (req) => {
 
   // if the request is not a POST request, return a 405 Method Not Allowed
   if (req.method !== 'POST') {
-    return new Response('Method Not Allowed', { status: 405 });
+    return new Response(
+      'Method Not Allowed', { headers: handleReturnCORS(req), status: 200 },
+    )
   }
 
   try {
@@ -81,15 +85,26 @@ serve(async (req) => {
       throw new Error("Invalid request");
     }
 
+
+
+    // get the strategy for the provider
     const strategy = DataSourceStrategyFactory.getStrategy(provider);
 
     // merge the configs with the connection config in the db
     const connectionConfig = await getConnectionConfig(connection_id);
-    const mergedConfig = { ...config, ...connectionConfig };
+    const mergedConfig = { ...config, ...connectionConfig};
+
+    // get the access token from the connection config in the db 
+    // or refresh the token if it's expired
+    if (oauthProviders.includes(provider)) {
+      const accessToken = await getValidAccessToken(connection_id);
+      mergedConfig.access_token = accessToken;
+    }
 
     // check if the action is getTables or getSources
     let data: Record<string, any>[] = [];
 
+    // route the request to the correct strategy
     switch (action) {
       case "tables":
         data = await strategy.getTables(mergedConfig);
@@ -106,7 +121,10 @@ serve(async (req) => {
     )
   } catch (error) {
     console.error(error);
-    return new Response(JSON.stringify({ error: "Internal Server Error" }), { status: 500 });
+    return new Response(
+      JSON.stringify({ error: "Internal Server Error" }),
+      { headers: handleReturnCORS(req), status: 500 },
+    )
   }
 })
 

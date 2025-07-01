@@ -10,3 +10,10 @@ export const providerMap: Record<Provider, string> = {
     mongodb: "mongodb",
     s3: "s3",
 }
+
+export const oauthProviders = [
+    "google_sheets",
+    "notion",
+    "airtable",
+    "supabase",
+]

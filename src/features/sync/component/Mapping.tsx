@@ -1,10 +1,9 @@
 
-import { useWizard } from '@/contexts/WizardContext';
 import { Link } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { SyncData } from '../hooks/useSync';
 
-export default function TableMappingStep({ next }) {
-  const { data, setData } = useWizard();
+export default function TableMappingStep({ next, sync }: { next: () => void, sync: SyncData }) {
 
   const handleNext = async () => {
     // nothing to save until we we get to the connection step
@@ -28,7 +27,7 @@ export default function TableMappingStep({ next }) {
       <div className="mt-4">
         <Button
           onClick={handleNext}
-          disabled={!data.source.connector_id || !data.destination.connector_id}
+          disabled={!sync.source.connector_id || !sync.destination.connector_id}
           className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-1 rounded-lg font-medium transition-all duration-200 flex items-center gap-2"
         >
           Next

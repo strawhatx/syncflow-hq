@@ -15,7 +15,7 @@ import AuthPage from "./pages/Auth";
 import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { AuthProvider } from "./contexts/AuthContext";
-import { SidebarLayout, SidebarSyncLayout } from "./layouts/Index";
+import { SidebarLayout } from "./layouts/Index";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { HeaderContentProvider } from '@/contexts/HeaderContentContext';
 import TeamsPage from "./pages/Teams";

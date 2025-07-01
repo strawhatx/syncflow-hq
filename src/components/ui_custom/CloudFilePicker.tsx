@@ -2,8 +2,10 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTrigger } from
 import { Table, TableBody, TableHead, TableHeader, TableRow, TableCell } from "../ui/table";
 import { useState } from "react";
 import { Input } from "../ui/input";
-import { User } from "lucide-react";
+import { ArrowBigLeft, Cloud, User } from "lucide-react";
 import { Button } from "../ui/button";
+import React from "react";
+import { format } from "path";
 
 interface CloudFilePickerProps {
   files: any[];
@@ -16,16 +18,12 @@ const tableColumns = [
     accessorKey: "name"
   },
   {
-    name: "Type",
-    accessorKey: "type"
-  },
-  {
     name: "Size",
     accessorKey: "size"
   },
   {
     name: "Last Modified",
-    accessorKey: "lastModified"
+    accessorKey: "last_modified"
   }
 ]
 
@@ -33,36 +31,34 @@ const ToolbarComponent = ({ setSearch }: { setSearch: (search: string) => void }
   return (
     <div className="flex justify-between">
       <h3 className="text-md font-semibold">Cloud File Picker</h3>
-      <Input placeholder="Search" className="w-full" onChange={(e) => setSearch(e.target.value)} />
+      <Input placeholder="Search" className="w-1/2 h-8" onChange={(e) => setSearch(e.target.value)} />
     </div>
   )
 }
 
-const TriggerComponent = () => {
+const TriggerComponent = React.forwardRef<HTMLDivElement, React.HTMLProps<HTMLDivElement>>((props, ref) => {
   return (
-    <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10">
-      <div className="text-center">
-        <User aria-hidden="true" className="mx-auto size-6 text-gray-300" />
-        <div className="mt-4 flex text-sm/6 text-gray-600">
-          <label
-            htmlFor="file-upload"
-            className="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 focus-within:outline-hidden hover:text-indigo-500"
-          >
-            <span>Upload a file</span>
-            <input id="file-upload" name="file-upload" type="file" className="sr-only" />
-          </label>
-          <p className="pl-1">or drag and drop</p>
+    <>
+      <div ref={ref}
+        {...props} className="flex h-9 w-full justify-between border rounded-md px-2.5 py-1.5 text-sm ring-offset-background placeholder:text-muted-foreground items-center cursor-pointer">
+        <div className="flex items-center gap-2">
+          <Cloud className="h-6 w-6 text-purple-700" />
+          <span>Upload a file</span>
         </div>
-        <p className="text-xs/5 text-gray-600">PNG, JPG, GIF up to 10MB</p>
+
+        <ArrowBigLeft className="h-4 w-4 text-gray-300" />
+
       </div>
-    </div>
-  )
-}
+
+      <p className="text-xs/5 text-gray-600">PNG, JPG, GIF up to 10MB</p>
+    </>
+  );
+});
 
 const TableComponent = ({ files, selectedFile, setSelectedFile }: { files: any[], selectedFile: any, setSelectedFile: (file: any) => void }) => {
   return (
-    <div className="rounded-md border overflow-x-auto">
-      <Table className="w-full">
+    <div className="rounded-md border">
+      <Table className="w-full overflow-y-auto">
         <TableHeader>
           <TableRow>
             {tableColumns.map((header) => (
@@ -79,7 +75,21 @@ const TableComponent = ({ files, selectedFile, setSelectedFile }: { files: any[]
                 onClick={() => setSelectedFile(row)}
               >
                 {tableColumns.map((column) => (
-                  <TableCell key={column.name}> {row[column.accessorKey]} </TableCell>
+                  <TableCell key={column.name}>
+                    <div className="flex items-center gap-2">
+                      {column.accessorKey === "name" && (
+                        <img
+                          src="/svg/google_sheets-icon.svg"
+                          alt={row.name}
+                          className="w-4 h-4 rounded-md" />
+                      )}
+                      {column.accessorKey === "last_modified" && (
+                        <p className="text-xs">{format(row[column.accessorKey], "MM/dd/yyyy")}</p>
+                      )}
+
+                      <p className="text-xs">{row[column.accessorKey]}</p>
+                    </div>
+                  </TableCell>
                 ))}
 
               </TableRow>
@@ -113,21 +123,22 @@ export default function CloudFilePicker({ onClose, files }: CloudFilePickerProps
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
+      <DialogTrigger asChild className="w-full">
         <TriggerComponent />
       </DialogTrigger >
+      <DialogContent className="max-h-[80vh] max-w-full md:max-w-xl lg:max-w-3xl">
+        <DialogHeader>
+          <ToolbarComponent setSearch={setSearch} />
+        </DialogHeader>
 
-      <DialogHeader>
-        <ToolbarComponent setSearch={setSearch} />
-      </DialogHeader>
-
-      <DialogContent className="sm:max-w-[425px]">
         <TableComponent files={filtered} selectedFile={selectedFile} setSelectedFile={setSelectedFile} />
+
+        <DialogFooter>
+          <Button onClick={() => handleSelect()}>Select</Button>
+          <Button onClick={() => setIsOpen(false)}>Cancel</Button>
+        </DialogFooter>
       </DialogContent>
-      <DialogFooter>
-        <Button onClick={() => handleSelect()}>Select</Button>
-        <Button onClick={() => setIsOpen(false)}>Cancel</Button>
-      </DialogFooter>
+
     </Dialog >
   );
 } 
