@@ -24,7 +24,6 @@ export class MySQLStrategy implements DataSourceStrategy {
             const pool = createPool(mysqlConfig);
             const connection = await pool.getConnection();
 
-
             return { valid: true, pool, connection };
         } catch (error) {
             console.error(error);
@@ -40,14 +39,23 @@ export class MySQLStrategy implements DataSourceStrategy {
         }
 
         // get all databases
-        const databases = await connection.query(`SHOW DATABASES`);
-
+        const [rows] = await connection.query(`SHOW DATABASES`);
+        
         // release the connection
         connection.release();
         await pool.end();
 
+        // filter out system databases
+        const userDatabases = rows.filter(
+            (db: any) =>
+                !["information_schema", "mysql", "performance_schema", "sys"].includes(db.Database)
+        ).map((db: any) => ({
+            id: db.Database,
+            name: db.Database
+        }));
+        
         // return the databases
-        return databases.rows;
+        return userDatabases;
     }
 
     async getTables(config: Record<string, any>): Promise<Record<string, any>[]> {
@@ -63,16 +71,19 @@ export class MySQLStrategy implements DataSourceStrategy {
         }
 
         // get all tables from the selected database
-        const tables = await connection.query(`
+        const [rows] = await connection.query(
+            `
             SELECT table_name FROM information_schema.tables
-            WHERE table_schema='${config.database}' AND table_type='BASE TABLE';
-        `);
+            WHERE table_schema = ? AND table_type = 'BASE TABLE';
+            `,
+            [config.database]
+        );
 
         // release the connection
         connection.release();
         await pool.end();
 
         // return the tables
-        return tables.rows;
+        return rows;
     }
 }

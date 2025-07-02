@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { Box, ChevronsUpDown } from 'lucide-react';
+import { Box, ChevronsUpDown, Loader2 } from 'lucide-react';
 import * as Select from '@radix-ui/react-select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FC } from 'react';
@@ -40,8 +40,6 @@ export const CustomSelect: FC<CustomSelectProps> = ({
     return `/svg/${icon_name}.svg`;
   };
 
-  if (isLoading) return <LoadingState />;
-
   const handleValueChange = (newValue: string) => {
     onValueChange(newValue);
   };
@@ -62,17 +60,25 @@ export const CustomSelect: FC<CustomSelectProps> = ({
               className="h-6 w-6 object-contain"
             />
           )}
-          <Select.Value placeholder={
-            <span className="text-muted-foreground flex items-center gap-2">
-              <Box className="h-6 w-6 text-purple-700" />
-              <span className="text-sm">{placeholder}</span>
-            </span>
-          }>
-            {value && options.find(opt => opt.id === value)?.name}
+          <Select.Value>
+            {isLoading || !value ? (
+              <span className="text-muted-foreground flex items-center gap-2">
+                <Box className="h-6 w-6 text-purple-700" />
+                <span className="text-sm">{placeholder}</span>
+              </span>
+            ) : (
+              <span className="text-muted-foreground flex items-center gap-2">
+                {options.find(opt => opt.id === value)?.name}
+              </span>
+            )}
           </Select.Value>
         </div>
         <Select.Icon>
-          <ChevronsUpDown className="h-3.5 w-3.5 opacity-50" />
+          {isLoading ? (
+            <Loader2 className="h-3.5 w-3.5 opacity-50 animate-spin" />
+          ) : (
+            <ChevronsUpDown className="h-3.5 w-3.5 opacity-50" />
+          )}
         </Select.Icon>
       </Select.Trigger>
 

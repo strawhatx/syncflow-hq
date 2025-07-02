@@ -81,7 +81,7 @@ class ApiKeyActionsStrategy implements ConnectionActionsStrategy {
         config?: Record<string, any>,
         onClose?: () => void
     ): Promise<void> {
-        const action = connection_id ? "create" : "update";
+        const action = !connection_id ? "create" : "update";
         e.preventDefault();
         setIsLoading(true);
         setError(null);

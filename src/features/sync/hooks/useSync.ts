@@ -55,6 +55,9 @@ const mapSyncData = (data: any[]): SyncData => {
     destination: {
       ...item.destination,
       connector: item.destination.connectors_public
+    },
+    config: {
+      ...item.config
     }
   }));
 

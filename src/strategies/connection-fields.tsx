@@ -69,7 +69,7 @@ class PostgresFieldsStrategy implements ConnectionFieldsStrategy {
                         onChange={(e) => setConfig({ ...config, schema: e.target.value })}
                     />
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-y-2 space-x-2">
                     <Switch
                         id="ssl"
                         checked={config.ssl || false}
@@ -161,7 +161,7 @@ class MySQLFieldsStrategy implements ConnectionFieldsStrategy {
                         onChange={(e) => setConfig({ ...config, password: e.target.value })}
                     />
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-y-2 space-x-2">
                     <Switch
                         id="ssl"
                         checked={config.ssl || false}

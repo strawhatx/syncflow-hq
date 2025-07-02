@@ -2,9 +2,11 @@ import { DataSourceStrategy } from "./index.ts";
 
 export class SupabaseStrategy implements DataSourceStrategy {
     private config = {
+        // List all Supabase projects
         projects: {
             url: `https://api.supabase.com/v1/projects`
         },
+        // List all tables in a given project
         tables: {
             url: `https://api.supabase.com/v1/projects/{project_ref}/tables`
         }
@@ -21,15 +23,15 @@ export class SupabaseStrategy implements DataSourceStrategy {
     }
 
     private async connect(type: "projects" | "tables", config: Record<string, any>): Promise<{ valid: boolean, result: any }> {
-        // airtable is not a a standard datasource so we need to call
-        // the airtable api to get the tables
+        // Supabase is not a standard datasource so we need to call
+        // the Supabase Management API to get projects or tables
         try {
             const { access_token } = config;
 
             if (!access_token) {
+                // missing token
                 return { valid: false, result: null };
             }
-
             // get all tables via api 
             const response = await fetch(this.getUrl(type, config), {
                 headers: {
@@ -38,7 +40,7 @@ export class SupabaseStrategy implements DataSourceStrategy {
             });
 
             if (!response.ok) {
-                throw new Error(response.statusText || "Failed to connect to Google Sheets");
+                throw new Error(response.statusText || "Failed to connect to Supabase");
             }
 
             const result = await response.json();
@@ -55,6 +57,7 @@ export class SupabaseStrategy implements DataSourceStrategy {
             throw new Error("Failed to connect to Supabase");
         }
 
+        // return the array of projects
         return result.projects;
     }
 
@@ -67,9 +70,10 @@ export class SupabaseStrategy implements DataSourceStrategy {
         // first validate the connection
         const { valid, result } = await this.connect("tables", config);
         if (!valid) {
-            throw new Error("Failed to connect to Airtable");
+            throw new Error("Failed to connect to Supabase");
         }
 
+        // return the array of tables
         return result.tables;
     }
 }

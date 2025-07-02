@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Connector, ConnectorConfig, ConnectorProvider } from '@/types/connectors';
+import { Connector, ConnectorProvider } from '@/types/connectors';
 import { toast } from '@/hooks/use-toast';
 import useSync, { SyncData } from '../hooks/useSync';;
 import { DatasourceFieldsStrategyFactory } from '@/strategies/data-source-field';
@@ -14,47 +14,54 @@ export default function DataSourcesStep({ next, sync }: { next: () => void, sync
   const [destinationDatabase, setDestinationDatabase] = useState("");
 
   const { id } = useParams();
-  //const { createSyncMutation } = useSync(id);
-  
-  const { data: sourceOptions = [] } = useSourceData(
+  const { createSyncMutation } = useSync(id);
+
+  const { data: sourceOptions = [], isLoading: isSourceLoading } = useSourceData(
     sync.source?.id,
     sync.source?.connector?.provider as ConnectorProvider
   );
 
-  const { data: destinationOptions = [] } = useDestinationData(
+  const { data: destinationOptions = [], isLoading: isDestinationLoading } = useDestinationData(
     sync.destination?.id,
     sync.destination?.connector?.provider as ConnectorProvider
   );
 
-   // set the source and destination ids
-   useEffect(() => {
-    setSourceDatabase(sync.source?.database);
-    setDestinationDatabase(sync.destination?.database);
+  // set the source and destination ids
+  useEffect(() => {
+    setSourceDatabase(sync.config?.schema?.source_database);
+    setDestinationDatabase(sync.config?.schema?.destination_database);
   }, [sync]);
 
   // render source field
   const renderSourceField = () => {
     return DatasourceFieldsStrategyFactory.getStrategy(sync.source?.connector as unknown as Connector)
-      .renderFields(sourceOptions, setSourceDatabase, "source", sourceDatabase);
+      .renderFields(sourceOptions, isSourceLoading, setSourceDatabase, "source", sourceDatabase);
   }
 
   // render destination field
   const renderDestinationField = () => {
     return DatasourceFieldsStrategyFactory.getStrategy(sync.destination?.connector as unknown as Connector)
-      .renderFields(destinationOptions, setDestinationDatabase, "destination", destinationDatabase);
+      .renderFields(destinationOptions, isDestinationLoading, setDestinationDatabase, "destination", destinationDatabase);
   }
 
   const handleNext = async () => {
-    // now well save the data to the database
+    // now well save the data to the database 
+    // we need to make sure we arent overriding the config data
     const dataToSave = {
       id,
-      source_db: sourceDatabase,
-      destination_db: destinationDatabase
+      config: {
+        ...sync.config,
+        schema: {
+          ...sync.config.schema,
+          source_database: sourceDatabase,
+          destination_database: destinationDatabase,
+        }
+      }
     }
 
     try {
       // save to database
-      //const result = await createSyncMutation.mutate({ step: 'connect', data: dataToSave as any });
+      const result = await createSyncMutation.mutate({ step: 'connect', data: dataToSave as any });
 
       next(); // move to next step
     }

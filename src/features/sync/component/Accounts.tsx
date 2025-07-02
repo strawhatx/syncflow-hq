@@ -35,7 +35,7 @@ const renderSection = (
           name: conn.name,
           icon: conn.icon
         })) || []}
-        placeholder={`Select source app`}
+        placeholder={`Select app`}
         disabled={false}
         isLoading={false}
       />
@@ -49,7 +49,7 @@ const renderSection = (
           id: conn.id,
           name: conn.name,
         })) || []}
-        placeholder={`Select source connection`}
+        placeholder={`Select account`}
         isLoading={false}
         onCreateNew={onCreateNew}
       />

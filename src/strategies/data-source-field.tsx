@@ -5,11 +5,11 @@ import { CustomSelect } from "@/components/ui_custom/CustomSelect";
 import { Connector } from "@/types/connectors";
 
 interface DatasourceFieldStrategy {
-    renderFields(source: any[], setValue: (value: any) => void, type?: "source" | "destination", value?: any): React.ReactNode
+    renderFields(source: any[], isLoading: boolean, setValue: (value: any) => void, type?: "source" | "destination", value?: any): React.ReactNode
 }
 
 class DropdownFieldStrategy implements DatasourceFieldStrategy {
-    renderFields(source: any[], setValue: (value: any) => void, type?: "source" | "destination", value?: any): React.ReactNode {
+    renderFields(source: any[], isLoading: boolean, setValue: (value: any) => void, type?: "source" | "destination", value?: any): React.ReactNode {
         return (
             <>
                 <CustomSelect
@@ -20,9 +20,9 @@ class DropdownFieldStrategy implements DatasourceFieldStrategy {
                         id: item.id || item.name,
                         name: item.name
                     })) || []}
-                    placeholder={`Select ${type} project`}
-                    disabled={false}
-                    isLoading={false}
+                    placeholder={`Select datasource`}
+                    disabled={isLoading}
+                    isLoading={isLoading}
                 />
             </>
         );
@@ -30,10 +30,11 @@ class DropdownFieldStrategy implements DatasourceFieldStrategy {
 }
 
 class FileFieldStrategy implements DatasourceFieldStrategy {
-    renderFields(source: any[], setValue: (value: any) => void): React.ReactNode {
+    renderFields(source: any[], isLoading: boolean, setValue: (value: any) => void, type?: "source" | "destination", value?: any): React.ReactNode {
         return (
             <>
                 <CloudFilePicker
+                    value={value}
                     files={source.map((item: any) => ({
                         // since were pulling datasources its not guaranteed to have ids
                         id: item.id || item.name,
@@ -43,6 +44,8 @@ class FileFieldStrategy implements DatasourceFieldStrategy {
                         last_modified: item.modifiedTime
                     })) || []}
                     onClose={(file) => setValue(file)}
+                    disabled={isLoading}
+                    isLoading={isLoading}
                 />
             </>
         );

@@ -22,6 +22,12 @@ export interface SyncTableMapping {
     field_mappings: SyncFieldMapping[];
 }
 
+export interface SyncSchema {
+    source_database: string;
+    destination_database: string;
+    table_mappings: SyncTableMapping[];
+}
+
 export interface SyncFilter {
     source_field: string;
     operator: "eq" | "neq" | "gt" | "gte" | "lt" | "lte" | "in" | "nin" | "like" | "nlike" | "ilike" | "nilike" | "is" | "is_not" | "is_null" | "is_not_null";
@@ -49,7 +55,7 @@ export interface SyncNotifications {
 
 export interface SyncConfig {
     conflict_resolution: ConflictResolution;
-    table_mappings: SyncTableMapping[];
+    schema: SyncSchema;
     schedule: Schedule;
     filters: SyncFilter[];
     batch_size: SyncBatchSize;
@@ -79,7 +85,11 @@ const defaultData = (user: User): Omit<Sync, "id" | "created_by" | "team_id"> =>
 
         config: {
             conflict_resolution: "latest" as ConflictResolution,
-            table_mappings: [],
+            schema: {
+                source_database: null,
+                destination_database: null,
+                table_mappings: [],
+            },
             schedule: "every 1 hour" as Schedule,
             filters: [],
             batch_size: {

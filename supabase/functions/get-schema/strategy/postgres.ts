@@ -7,7 +7,6 @@ export class PostgresStrategy implements DataSourceStrategy {
             const client = new Client(config);
             await client.connect();
             return { valid: true, client };
-
         } catch (error) {
             console.error(error);
             throw new Error(error.message || "Failed to connect to PostgreSQL");
@@ -16,43 +15,55 @@ export class PostgresStrategy implements DataSourceStrategy {
 
     async getSources(config: Record<string, any>): Promise<Record<string, any>[]> {
         // first validate the connection
-        const { client, valid } = await this.connect(config);
+        const { valid, client } = await this.connect(config);
         if (!valid) {
             throw new Error("Failed to connect to PostgreSQL");
         }
 
-        // get all databases
-        const databases = await client.query(`
-            SELECT datname FROM pg_database;
+        // get all databases, excluding templates
+        const result = await client.query(`
+            SELECT datname FROM pg_database
+            WHERE datistemplate = false;
         `);
 
         // release the connection
         await client.end();
 
-        return databases.rows;
+        // return the databases
+        return result.rows;
     }
 
     async getTables(config: Record<string, any>): Promise<Record<string, any>[]> {
-        // first validate the connection
-        const { client, valid } = await this.connect(config);
-        if (!valid) {
-            throw new Error("Failed to connect to PostgreSQL");
-        }
-
         // must have a database
         if (!config.database) {
             throw new Error("Database is required");
         }
 
-        // get all tables
-        const tables = await client.query(`
+        // first validate the connection to the selected database
+        const { valid, client } = await this.connect({
+            ...config,
+            database: config.database
+        });
+        if (!valid) {
+            throw new Error("Failed to connect to PostgreSQL");
+        }
+
+        // default schema to public if not provided
+        const schema = config.schema || "public";
+
+        // get all tables from the selected schema
+        const result = await client.query(
+            `
             SELECT table_name FROM information_schema.tables
-            WHERE table_schema='${config.database}' AND table_type='BASE TABLE';
-        `);
+            WHERE table_schema = $1 AND table_type = 'BASE TABLE';
+            `,
+            [schema]
+        );
 
         // release the connection
         await client.end();
 
-        return tables.rows;
+        // return the tables
+        return result.rows;
     }
 }

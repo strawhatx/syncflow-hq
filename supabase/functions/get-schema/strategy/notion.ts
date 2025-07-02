@@ -3,50 +3,54 @@ import { DataSourceStrategy } from "./index.ts";
 export class NotionStrategy implements DataSourceStrategy {
     private config = {
         tables: {
-            url: `https://api.notion.com/v1/databases/{database_id}`
+            // Query a database to get rows
+            url: `https://api.notion.com/v1/databases/{databaseId}/query`,
+            method: "POST"
+        },
+        databaseMeta: {
+            // Retrieve database schema
+            url: `https://api.notion.com/v1/databases/{databaseId}`,
+            method: "GET"
         },
         sources: {
-            url: "https://api.notion.com/v1/search"
+            // Search all objects
+            url: "https://api.notion.com/v1/search",
+            method: "POST"
         }
     }
 
-    private getUrl(type: "tables" | "sources", urlConfig: Record<string, any>): string {
+    private getUrl(type: keyof typeof this.config, urlConfig: Record<string, any>): string {
         const { url } = this.config[type];
-
-        // Replace all {param} in the url with the value from urlConfig
         return url.replace(/{(\w+)}/g, (_, key) => {
-            // If the param is missing, replace with an empty string or throw an error if you prefer
             return urlConfig[key] !== undefined ? urlConfig[key] : "";
         });
     }
 
-    private async connect(type: "tables" | "sources", config: Record<string, any>): Promise<{ valid: boolean, result: any }> {
-        // google sheets is not a standard datasource so we need to call
-        // the google sheets api to get the tables
+    private async connect(
+        type: keyof typeof this.config,
+        config: Record<string, any>,
+        body?: any
+    ): Promise<{ valid: boolean, result: any }> {
         try {
             const { access_token } = config;
-
             if (!access_token) {
                 return { valid: false, result: null };
             }
 
-            // get all tables via api 
+            const { method } = this.config[type];
+
             const response = await fetch(this.getUrl(type, config), {
+                method,
                 headers: {
                     "Authorization": `Bearer ${access_token}`,
                     "Notion-Version": "2022-06-28",
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({
-                    filter: {
-                        value: "database",
-                        property: "object"
-                    }
-                })
+                body: method === "POST" ? JSON.stringify(body) : undefined
             });
 
             if (!response.ok) {
-                throw new Error(response.statusText || "Failed to connect to Google Sheets");
+                throw new Error(response.statusText || "Failed to connect to Notion");
             }
 
             const result = await response.json();
@@ -57,27 +61,40 @@ export class NotionStrategy implements DataSourceStrategy {
         }
     }
 
+    async getSources(config: Record<string, any>): Promise<Record<string, any>[]> {
+        const { valid, result } = await this.connect("sources", config, {
+            filter: {
+                value: "database",
+                property: "object"
+            }
+        });
+        if (!valid) {
+            throw new Error("Failed to connect to Notion");
+        }
+        return result.results;
+    }
+
     async getTables(config: Record<string, any>): Promise<Record<string, any>[]> {
-        // must have a databaseId
         if (!config.databaseId) {
             throw new Error("Database ID is required");
         }
 
-        // first validate the connection
         const { valid, result } = await this.connect("tables", config);
         if (!valid) {
-            throw new Error("Failed to connect to Notion");
+            throw new Error("Failed to query Notion database");
         }
-
         return result.results;
     }
 
-    async getSources(config: Record<string, any>): Promise<Record<string, any>[]> {
-        const { valid, result } = await this.connect("sources", config);
-        if (!valid) {
-            throw new Error("Failed to connect to Notion");
+    async getDatabaseMeta(config: Record<string, any>): Promise<Record<string, any>> {
+        if (!config.databaseId) {
+            throw new Error("Database ID is required");
         }
 
-        return result.results;
+        const { valid, result } = await this.connect("databaseMeta", config);
+        if (!valid) {
+            throw new Error("Failed to retrieve Notion database metadata");
+        }
+        return result;
     }
 }

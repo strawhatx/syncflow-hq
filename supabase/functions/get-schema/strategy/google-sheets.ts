@@ -1,30 +1,35 @@
 import { DataSourceStrategy } from "./index.ts";
 
-// Airtable is not a standard datasource so we need to call
-// the airtable api to get the tables
+// Google Sheets is not a standard datasource so we need to call
+// the Google Sheets API to get the tables
 export class GoogleSheetsStrategy implements DataSourceStrategy {
     private config = {
+        // Get spreadsheet metadata (including sheets)
         tables: {
             url: `https://sheets.googleapis.com/v4/spreadsheets/{spreadsheetId}`
         },
+        // List all spreadsheet files in the user's Drive
         sources: {
             url: `https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.spreadsheet'&fields=files(id,name,createdTime,modifiedTime)`
         }
-    }
+    };
 
     private getUrl(type: "tables" | "sources", urlConfig: Record<string, any>): string {
         const { url } = this.config[type];
 
-        // Replace all {param} in the url with the value from urlConfig
+        // Replace all {param} in the URL with the value from urlConfig
         return url.replace(/{(\w+)}/g, (_, key) => {
             // If the param is missing, replace with an empty string or throw an error if you prefer
             return urlConfig[key] !== undefined ? urlConfig[key] : "";
         });
     }
 
-    private async connect(type: "tables" | "sources", config: Record<string, any>): Promise<{ valid: boolean, result: any }> {
-        // google sheets is not a standard datasource so we need to call
-        // the google sheets api to get the tables
+    private async connect(
+        type: "tables" | "sources",
+        config: Record<string, any>
+    ): Promise<{ valid: boolean; result: any }> {
+        // Google Sheets is not a standard datasource so we need to call
+        // the Google Sheets API to get the tables
         try {
             const { access_token } = config;
 
@@ -32,7 +37,7 @@ export class GoogleSheetsStrategy implements DataSourceStrategy {
                 return { valid: false, result: null };
             }
 
-            // get all tables via api 
+            // Get all tables via API
             const response = await fetch(this.getUrl(type, config), {
                 headers: {
                     Authorization: `Bearer ${access_token}`
@@ -52,11 +57,13 @@ export class GoogleSheetsStrategy implements DataSourceStrategy {
     }
 
     async getSources(config: Record<string, any>): Promise<Record<string, any>[]> {
+        // first validate the connection
         const { valid, result } = await this.connect("sources", config);
         if (!valid) {
             throw new Error("Failed to connect to Google Sheets");
         }
 
+        // return the list of spreadsheet files
         return result.files;
     }
 
@@ -72,6 +79,7 @@ export class GoogleSheetsStrategy implements DataSourceStrategy {
             throw new Error("Failed to connect to Google Sheets");
         }
 
+        // return the list of sheets
         return result.sheets;
     }
 }

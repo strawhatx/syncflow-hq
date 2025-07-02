@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -47,19 +47,19 @@ export default function ConnectorConnectModal({ isOpen, onClose, connector, conn
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-      await ConnectionActionsStrategyFactory.getStrategy(connector.type).handleSubmitAction(
-        connector,
-        connectionName,
-        e,
-        setIsLoading,
-        setError,
-        team.id,
-        // If the connection is being created, create a new connection to do that 
-        // we need to set the connection_id to undefined
-        isOpen && connection_id ? connection_id : undefined,
-        config,
-        onClose
-      );
+    await ConnectionActionsStrategyFactory.getStrategy(connector.type).handleSubmitAction(
+      connector,
+      connectionName,
+      e,
+      setIsLoading,
+      setError,
+      team.id,
+      // If the connection is being created, create a new connection to do that 
+      // we need to set the connection_id to undefined
+      isOpen && connection_id ? connection_id : undefined,
+      config,
+      onClose
+    );
   }
 
   const renderConfigFields = () => {
@@ -69,7 +69,7 @@ export default function ConnectorConnectModal({ isOpen, onClose, connector, conn
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="max-h-fit max-w-full md:max-w-xl lg:max-w-3xl">
         <DialogHeader>
           <div className="flex items-center justify-center gap-4 mb-4">
             <img src={`/svg/${connector.icon}.svg`} alt={connector.name} className="h-14 w-14" />
@@ -83,27 +83,30 @@ export default function ConnectorConnectModal({ isOpen, onClose, connector, conn
             To make a connection between {connector.name} and syncflow.io you need to fill in the form below.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Connection Name</Label>
-            <Input
-              id="name"
-              placeholder="My Connection"
-              value={connectionName}
-              onChange={(e) => setConnectionName(e.target.value)}
-              required
-            />
+        <form onSubmit={handleSubmit} className="space-y-4 py-3">
+          <div className="max-h-[300px] px-2 overflow-x-scroll">
+            <div className="space-y-2">
+              <Label htmlFor="name">Connection Name</Label>
+              <Input
+                id="name"
+                placeholder="My Connection"
+                value={connectionName}
+                onChange={(e) => setConnectionName(e.target.value)}
+                required
+              />
+            </div>
+
+            {renderConfigFields()}
+
+
+            {error && (
+              <div className="text-sm text-red-500">
+                {error}
+              </div>
+            )}
           </div>
 
-          {renderConfigFields()}
-
-          {error && (
-            <div className="text-sm text-red-500">
-              {error}
-            </div>
-          )}
-
-          <div className="flex justify-end space-x-2">
+          <DialogFooter className="flex px-2 md:justify-end space-x-2">
             <Button
               type="button"
               variant="outline"
@@ -114,7 +117,7 @@ export default function ConnectorConnectModal({ isOpen, onClose, connector, conn
             </Button>
 
             {renderActions()}
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

@@ -68,7 +68,7 @@ export const updateConnection = async (id: string, name: string, connector: Conn
 
   const { error } = await supabase
     .from('connections')
-    .update({ name, config })
+    .update({ config, updated_at: new Date().toISOString() })
     .eq('id', id);
 
   if (error) throw error;

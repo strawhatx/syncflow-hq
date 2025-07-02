@@ -19,24 +19,30 @@ const fetchSources = async (connection_id: string, provider?: ConnectorProvider)
 
 export function useSourceData(connection_id: string, provider?: ConnectorProvider) {
   const [data, setData] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (!connection_id || !provider) return;
 
-    fetchSources(connection_id, provider).then(setData);
+    setIsLoading(true);
+
+    fetchSources(connection_id, provider).then(setData).finally(() => setIsLoading(false));
   }, [connection_id, provider]);
 
-  return { data };
+  return { data, isLoading };
 }
 
 export function useDestinationData(connection_id: string, provider?: ConnectorProvider) {
   const [data, setData] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (!connection_id || !provider) return;
 
-    fetchSources(connection_id, provider).then(setData);
+    setIsLoading(true);
+
+    fetchSources(connection_id, provider).then(setData).finally(() => setIsLoading(false));
   }, [connection_id, provider]);
 
-  return { data };
+  return { data, isLoading };
 }

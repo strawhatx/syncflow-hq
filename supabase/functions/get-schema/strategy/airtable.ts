@@ -1,7 +1,7 @@
 import { DataSourceStrategy } from "./index.ts";
 
 // Airtable is not a standard datasource so we need to call
-// the airtable api to get the tables
+// the Airtable API to get the tables
 export class AirtableStrategy implements DataSourceStrategy {
     private config = {
         tables: {
@@ -22,19 +22,20 @@ export class AirtableStrategy implements DataSourceStrategy {
         });
     }
 
-    // get all bases via api 
-    // format:{
-    // "bases": [
+    // get all bases via API 
+    // format:
+    // {
+    //   "bases": [
     //     {
-    //         "id": "app1234567890",
-    //         "name": "My Base"
+    //       "id": "app1234567890",
+    //       "name": "My Base"
     //     },
     //     ...
-    // ]
+    //   ]
     // }
     private async connect(type: "tables" | "sources", config: Record<string, any>): Promise<{ valid: boolean, result: any }> {
-        // airtable is not a a standard datasource so we need to call
-        // the airtable api to get the tables
+        // Airtable is not a standard datasource so we need to call
+        // the Airtable API to get the tables
         try {
             const { access_token } = config;
 
@@ -42,7 +43,7 @@ export class AirtableStrategy implements DataSourceStrategy {
                 return { valid: false, result: null };
             }
 
-            // get all tables via api 
+            // get all tables via API 
             const response = await fetch(this.getUrl(type, config), {
                 headers: {
                     Authorization: `Bearer ${access_token}`
@@ -50,7 +51,7 @@ export class AirtableStrategy implements DataSourceStrategy {
             });
 
             if (!response.ok) {
-                throw new Error(response.statusText || "Failed to connect to Google Sheets");
+                throw new Error(response.statusText || "Failed to connect to Airtable");
             }
 
             const result = await response.json();
