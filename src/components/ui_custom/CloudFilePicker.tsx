@@ -135,6 +135,14 @@ export default function CloudFilePicker({ onClose, files, value, isLoading, disa
     setIsOpen(false);
   }
 
+  // validate the file
+  const validateFile = (file: any) => {
+    if (!file) {
+      return false;
+    }
+    return true;
+  }
+
   useEffect(() => {
     if (value) {
       setSelectedFile(value);

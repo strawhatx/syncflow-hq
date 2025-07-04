@@ -1,7 +1,7 @@
 // Strategy pattern for rendering connection fields
 
 import CloudFilePicker from "@/components/ui_custom/CloudFilePicker";
-import { CustomSelect } from "@/components/ui_custom/CustomSelect";
+import { CustomSelectButton } from "@/components/ui_custom/CustomSelectButton";
 import { Connector } from "@/types/connectors";
 
 interface DatasourceFieldStrategy {
@@ -10,9 +10,10 @@ interface DatasourceFieldStrategy {
 
 class DropdownFieldStrategy implements DatasourceFieldStrategy {
     renderFields(source: any[], isLoading: boolean, setValue: (value: any) => void, type?: "source" | "destination", value?: any): React.ReactNode {
+    
         return (
             <>
-                <CustomSelect
+                <CustomSelectButton
                     value={value}
                     onValueChange={(value) => setValue(value)}
                     options={source.map((item: any) => ({

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import AccountsStep from "./component/Accounts";
 import DataSourcesStep from "./component/DataSources";
-import MappingStep from "./component/Mapping";
+import { TableMappingStep } from "./component/TableMapping";
 import ReviewStep from "./component/Review";
 import ScheduleStep from "./component/Schedule";
 import { Check, X, RefreshCcw } from "lucide-react";
@@ -33,10 +33,16 @@ const steps = [
         component: DataSourcesStep,
     },
     {
-        id: "mappings",
-        label: "Mappings",
-        description: "Map the fields you want to sync",
-        component: MappingStep,
+        id: "table-mappings",
+        label: "Map your tables",
+        description: "Map the tables you want to sync",
+        component: TableMappingStep,
+    },
+    {
+        id: "table-mappings",
+        label: "Map your tables",
+        description: "Map the tables you want to sync",
+        component: TableMappingStep,
     },
     {
         id: "schedule",

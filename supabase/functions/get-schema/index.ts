@@ -61,6 +61,7 @@ serve(async (req) => {
     // }
     // google_sheets: {
     //   spreadsheetId: string <= required for getting tables
+    //   sheetName: string <= required for validating the sheet
     //   access_token: string <= is pulled from the connection config in the db
     // }
     // notion: {

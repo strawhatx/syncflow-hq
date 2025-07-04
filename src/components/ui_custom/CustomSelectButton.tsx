@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { Check, ChevronsUpDown, Plus } from 'lucide-react';
+import { Box, Check, ChevronsUpDown, Loader2, Plus } from 'lucide-react';
 import {
     Popover,
     PopoverContent,
@@ -23,6 +23,7 @@ interface CustomSelectButtonProps {
     placeholder: string;
     disabled?: boolean;
     isLoading: boolean;
+    mergeClasses?: string;
     onCreateNew?: () => void;
 }
 
@@ -40,6 +41,7 @@ export const CustomSelectButton: FC<CustomSelectButtonProps> = ({
     placeholder,
     disabled,
     isLoading,
+    mergeClasses,
     onCreateNew,
 }) => {
     const [open, setOpen] = useState(false);
@@ -49,17 +51,18 @@ export const CustomSelectButton: FC<CustomSelectButtonProps> = ({
         return `/svg/${icon_name}.svg`;
     };
 
-    if (isLoading) return <LoadingState />;
-
     const selectedOption = options.find(opt => opt.id === value);
+
+    const buttonClass = cn(
+        "flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-2.5 py-1.5 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50",
+        !value && "text-muted-foreground",
+        mergeClasses
+    )
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button variant="outline" className={cn(
-                    "flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-2.5 py-1.5 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50",
-                    !value && "text-muted-foreground"
-                )}>
+                <Button variant="outline" className={buttonClass}>
                     <div className="flex items-center gap-2">
                         {selectedOption?.icon && (
                             <img
@@ -68,14 +71,27 @@ export const CustomSelectButton: FC<CustomSelectButtonProps> = ({
                                 className="h-3.5 w-3.5 object-contain"
                             />
                         )}
-                        <span>{selectedOption?.name || placeholder}</span>
+                        <span>
+                            {selectedOption?.name || (
+                                <span className="text-muted-foreground flex items-center gap-2">
+                                    <Box className="h-6 w-6 text-purple-700" />
+                                    <span className="text-sm">{placeholder}</span>
+                                </span>
+                            )}
+                        </span>
                     </div>
-                    <ChevronsUpDown className="h-3.5 w-3.5 opacity-50" />
+                    {isLoading ? (
+                        <div className="flex items-end gap-2">
+                            <Loader2 className="h-3.5 w-3.5 opacity-50 animate-spin" />
+                        </div>
+                    ) : (
+                        <ChevronsUpDown className="h-3.5 w-3.5 opacity-50" />
+                    )}
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="p-0" side="bottom" align="start">
                 <Command>
-                    <CommandInput placeholder="Change status..." />
+                    <CommandInput placeholder="Search..." />
                     <CommandList>
                         <CommandEmpty>No results found.</CommandEmpty>
                         <CommandGroup>
@@ -102,7 +118,7 @@ export const CustomSelectButton: FC<CustomSelectButtonProps> = ({
                                 </CommandItem>
                             ))}
                             <CommandSeparator className="my-3" />
-                            
+
                             {onCreateNew && (
                                 <button
                                     type="button"

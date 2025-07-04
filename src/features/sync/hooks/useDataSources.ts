@@ -1,17 +1,7 @@
 import { ConnectorProvider } from "@/types/connectors";
 import { fetchWithAuth } from "@/lib/api";
 import { useEffect, useState } from "react";
-
-//map provider to config to get config properties
-const configMap = {
-  airtable: "baseId",
-  supabase: "project_ref",
-  google_sheets: "spreadsheetId",
-  notion: "databaseId",
-  postgres: "database",
-  mysql: "database",
-  mongo: "database",
-};
+import { CreateConfigFactory } from "@/patterns/factories/config";
 
 const fetchSources = async (connection_id: string, action: "sources" | "tables", provider?: ConnectorProvider, config?: Record<string, string>) => {
   if (!provider) return [];
@@ -67,10 +57,10 @@ export function useSourceTable(connection_id: string, source_db: string, provide
     setIsLoading(true);
 
     //get config property from configMap and set the database
-    const config = { [configMap[provider]]: source_db };
+    const config = CreateConfigFactory.create(provider, source_db);
 
     fetchSources(connection_id, "tables", provider, config).then(setData).finally(() => setIsLoading(false));
-  }, [connection_id, provider]);
+  }, [connection_id, source_db, provider]);
 
   return { data, isLoading };
 }
@@ -80,15 +70,15 @@ export function useDestinationTable(connection_id: string, destination_db: strin
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (!connection_id || !provider) return;
+    if (!destination_db || !provider) return;
 
     setIsLoading(true);
 
     //get config property from configMap and set the database
-    const config = { [configMap[provider]]: destination_db };
+    const config = CreateConfigFactory.create(provider, destination_db);
 
     fetchSources(connection_id, "tables", provider, config).then(setData).finally(() => setIsLoading(false));
-  }, [connection_id, provider]);
+  }, [connection_id, destination_db, provider]);
 
   return { data, isLoading };
 }

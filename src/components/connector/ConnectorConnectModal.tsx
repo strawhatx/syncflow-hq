@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useTeam } from "@/contexts/TeamContext";
-import { ConnectionFieldsStrategyFactory } from "@/strategies/connection-fields";
+import { ConnectionFieldsStrategyFactory } from "@/patterns/strategies/connection-fields";
 import { Zap } from "lucide-react";
-import { ConnectionActionsStrategyFactory } from "@/strategies/connection-actions";
+import { ConnectionActionsStrategyFactory } from "@/patterns/strategies/connection-actions";
 import { Connector } from "@/types/connectors";
 import { fetchConnectionById } from "@/services/connectionService";
 

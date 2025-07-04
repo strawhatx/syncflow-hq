@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Connector, ConnectorProvider } from '@/types/connectors';
 import { toast } from '@/hooks/use-toast';
 import useSync, { SyncData } from '../hooks/useSync';;
-import { DatasourceFieldsStrategyFactory } from '@/strategies/data-source-field';
+import { DatasourceFieldsStrategyFactory } from '@/patterns/strategies/data-source-field';
 import { useDestinationData, useSourceData } from '../hooks/useDataSources';
 
 export default function DataSourcesStep({ next, sync }: { next: () => void, sync: SyncData }) {
