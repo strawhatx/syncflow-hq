@@ -12,7 +12,6 @@ import { useDestinationData, useSourceData } from '../hooks/useDataSources';
 export default function DataSourcesStep({ next, sync }: { next: () => void, sync: SyncData }) {
   const [sourceDatabase, setSourceDatabase] = useState("");
   const [destinationDatabase, setDestinationDatabase] = useState("");
-
   const { id } = useParams();
   const { createSyncMutation } = useSync(id);
 
