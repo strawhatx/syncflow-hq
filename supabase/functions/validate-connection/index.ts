@@ -3,6 +3,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { handleCORS, handleReturnCORS } from "../utils/cors.ts";
 import { validateSupabaseToken } from "../utils/auth.ts";
 import { DataSourceStrategyFactory } from "./strategy/datasource.ts";
+import { applyRateLimit } from "../utils/rate-limiter.ts";
 
 // Types
 interface ValidationRequest {
@@ -37,6 +38,10 @@ const validateConnection = async (provider: string, config: Record<string, any>)
 
 // Main handler
 Deno.serve(async (req) => {
+  // Apply rate limiting first
+  const rateLimitResponse = await applyRateLimit(req, 'validate-connection');
+  if (rateLimitResponse) return rateLimitResponse;
+
   const corsResponse = handleCORS(req);
   if (corsResponse) return corsResponse;
   

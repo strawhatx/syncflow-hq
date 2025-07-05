@@ -11,6 +11,7 @@ import { validateSupabaseToken } from "../utils/auth.ts";
 import { DataSourceStrategyFactory } from "./strategy/index.ts";
 import { getValidAccessToken } from "../utils/access.ts";
 import { oauthProviders } from "../utils/utils.ts";
+import { applyRateLimit } from "../utils/rate-limiter.ts";
 
 // ✅ Load Environment Variables
 const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
@@ -30,6 +31,10 @@ const getConnectionConfig = async (connection_id: string) => {
 }
 
 serve(async (req) => {
+  // Apply rate limiting first
+  const rateLimitResponse = await applyRateLimit(req, 'get-schema');
+  if (rateLimitResponse) return rateLimitResponse;
+
   const corsResponse = handleCORS(req);
   if (corsResponse) return corsResponse;
 
@@ -40,7 +45,7 @@ serve(async (req) => {
   // if the request is not a POST request, return a 405 Method Not Allowed
   if (req.method !== 'POST') {
     return new Response(
-      'Method Not Allowed', { headers: handleReturnCORS(req), status: 200 },
+      'Method Not Allowed', { headers: handleReturnCORS(req), status: 405 },
     )
   }
 

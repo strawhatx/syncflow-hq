@@ -4,6 +4,7 @@ import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { handleCORS, handleReturnCORS } from "../utils/cors.ts";
 import { validateSupabaseToken } from "../utils/auth.ts";
+import { applyRateLimit } from "../utils/rate-limiter.ts";
 
 // Types
 interface OAuthCallbackRequest {
@@ -91,6 +92,10 @@ const prepareTokenRequest = (
 
 // Main handler
 serve(async (req) => {
+  // Apply rate limiting first
+  const rateLimitResponse = await applyRateLimit(req, 'oauth-callback');
+  if (rateLimitResponse) return rateLimitResponse;
+
   const corsResponse = handleCORS(req);
   if (corsResponse) return corsResponse;
 
