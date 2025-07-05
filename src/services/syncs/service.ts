@@ -3,7 +3,7 @@ import { SetupStage } from "@/integrations/supabase/types";
 import { defaultCreateSync, Sync, SyncConfig } from "@/types/sync";
 import { Team } from "@/types/team";
 import { User } from "@supabase/supabase-js";
-import { ConnectorWithConnections } from "../connector/service";
+import { ConnectorWithConnections } from "../connectors/service";
 
 // fetch syncs by team id
 export const fetchSyncsByTeamId = async (teamId: string): Promise<Sync[]> => {

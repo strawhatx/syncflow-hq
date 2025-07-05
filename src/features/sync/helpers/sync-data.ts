@@ -1,5 +1,5 @@
 import { SetupStage } from "@/integrations/supabase/types";
-import { ConnectorWithConnections } from "@/services/connector/service";
+import { ConnectorWithConnections } from "@/services/connectors/service";
 import { SyncConfig } from "@/types/sync";
 
 export type SyncData = {

@@ -1,6 +1,6 @@
 // steps/NameStep.tsx
 
-import { ConnectorWithConnections, fetchConnectors } from '@/services/connectorService';
+import { ConnectorWithConnections, fetchConnectors } from '@/services/connectors/service';
 import { Link } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -9,9 +9,10 @@ import ConnectorConnectModal from '@/components/connector/ConnectorConnectModal'
 import { useEffect, useState } from 'react';
 import { Connection, Connector } from '@/types/connectors';
 import { toast } from '@/hooks/use-toast';
-import useSync, { SyncData } from '../hooks/useSync';
+import useSync from '../hooks/useSync';
 import { useQuery } from '@tanstack/react-query';
 import { CustomSelect } from '@/components/ui_custom/CustomSelect';
+import { SyncData } from '../helpers/sync-data';
 
 const renderSection = (
   appId: string,

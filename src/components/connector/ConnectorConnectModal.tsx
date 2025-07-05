@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useTeam } from "@/contexts/TeamContext";
-import { ConnectionFieldsStrategyFactory } from "@/patterns/strategies/connection-fields";
+import { ConnectionFieldsStrategyFactory } from "@/patterns/strategies/connection-feilds";
 import { Zap } from "lucide-react";
 import { ConnectionActionsStrategyFactory } from "@/patterns/strategies/connection-actions";
 import { Connector } from "@/types/connectors";
@@ -23,6 +23,7 @@ export default function ConnectorConnectModal({ isOpen, onClose, connector, conn
   const [config, setConfig] = useState<Record<string, any>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   // if editing get data
   useEffect(() => {
@@ -47,6 +48,12 @@ export default function ConnectorConnectModal({ isOpen, onClose, connector, conn
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    try {
+    // validate the config
+    const schema = ConnectionFieldsStrategyFactory.getStrategy(connector).getSchema();
+    await schema.validate(config, { abortEarly: false });
+
+    //continue with the action
     await ConnectionActionsStrategyFactory.getStrategy(connector.type).handleSubmitAction(
       connector,
       connectionName,
@@ -57,14 +64,22 @@ export default function ConnectorConnectModal({ isOpen, onClose, connector, conn
       // If the connection is being created, create a new connection to do that 
       // we need to set the connection_id to undefined
       isOpen && connection_id ? connection_id : undefined,
-      config,
-      onClose
-    );
+        config,
+        onClose
+      );
+    } catch (errors: any) {
+      const formattedErrors = errors.inner.reduce((acc: { [x: string]: any; }, error: { path: string | number; message: any; }) => {
+        acc[error.path] = error.message;
+        return acc;
+      }, {});
+      
+      setValidationErrors(formattedErrors);
+    }
   }
 
   const renderConfigFields = () => {
     const strategy = ConnectionFieldsStrategyFactory.getStrategy(connector);
-    return strategy.renderFields(config, setConfig);
+    return strategy.renderFields(config, setConfig, validationErrors);
   }
 
   return (
@@ -94,6 +109,11 @@ export default function ConnectorConnectModal({ isOpen, onClose, connector, conn
                 onChange={(e) => setConnectionName(e.target.value)}
                 required
               />
+              {validationErrors.name && (
+                <div className="text-sm text-red-500">
+                  {validationErrors.name}
+                </div>
+              )}
             </div>
 
             {renderConfigFields()}
