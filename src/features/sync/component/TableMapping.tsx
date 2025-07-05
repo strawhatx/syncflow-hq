@@ -68,7 +68,7 @@ export const TableMappingStep = ({ next, sync }: { next: () => void, sync: SyncD
     );
   };
 
-  const validateRow = (row: SyncTableMapping) => 
+  const validateRow = (row: SyncTableMapping) =>
     row.source_table && row.destination_table && row.field_mappings.length > 0;
 
 
@@ -110,54 +110,56 @@ export const TableMappingStep = ({ next, sync }: { next: () => void, sync: SyncD
 
   return (
     <div className="space-y-4">
-      {mappings?.map((mapping, index) => (
-        <div key={index} className="border p-1 rounded">
-          <div className="flex  text-black gap-2">
-            <div className="flex w-full justify-between gap-2 items-center">
-              <CustomSelectButton
-                value={mapping?.source_table}
-                onValueChange={(value: string) => updateTable(index, "source_table", value)}
-                options={MappingStrategyFactory.getStrategy(sync.source?.connector?.provider as ConnectorProvider).map(sourceTableOptions, sync.source?.connector?.provider as ConnectorProvider)}
-                mergeClasses="border-none ring-offset-background-transparent focus:outline-none focus:ring-0 focus:ring-offset-0"
-                placeholder={`Select table`}
-                disabled={isSourceTableLoading}
-                isLoading={isSourceTableLoading}
-              />
+      <div className="border p-1 rounded">
+        {mappings?.map((mapping, index) => (
+          <div key={index} className="flex flex-col gap-2">
+            <div className="flex  text-black gap-2 items-center">
+              <div className="flex w-full justify-between gap-2 items-center">
+                <CustomSelectButton
+                  value={mapping?.source_table}
+                  onValueChange={(value: string) => updateTable(index, "source_table", value)}
+                  options={MappingStrategyFactory.getStrategy(sync.source?.connector?.provider as ConnectorProvider).map(sourceTableOptions, sync.source?.connector?.provider as ConnectorProvider)}
+                  mergeClasses="border-none ring-offset-background-transparent focus:outline-none focus:ring-0 focus:ring-offset-0"
+                  placeholder={`Select table`}
+                  disabled={isSourceTableLoading}
+                  isLoading={isSourceTableLoading}
+                />
 
-              <ArrowLeftRight className="w-8 h-8 text-gray-500" />
+                <ArrowLeftRight className="w-8 h-8 text-gray-500" />
 
-              <CustomSelectButton
-                value={mapping?.destination_table}
-                onValueChange={(value: string) => updateTable(index, "destination_table", value)}
-                options={MappingStrategyFactory.getStrategy(sync.destination?.connector?.provider as ConnectorProvider).map(destinationTableOptions, sync.destination?.connector?.provider as ConnectorProvider)}
-                mergeClasses="border-none ring-offset-background-transparent focus:outline-none focus:ring-0 focus:ring-offset-0"
-                placeholder={`Select table`}
-                disabled={isDestinationTableLoading}
-                isLoading={isDestinationTableLoading}
-              />
+                <CustomSelectButton
+                  value={mapping?.destination_table}
+                  onValueChange={(value: string) => updateTable(index, "destination_table", value)}
+                  options={MappingStrategyFactory.getStrategy(sync.destination?.connector?.provider as ConnectorProvider).map(destinationTableOptions, sync.destination?.connector?.provider as ConnectorProvider)}
+                  mergeClasses="border-none ring-offset-background-transparent focus:outline-none focus:ring-0 focus:ring-offset-0"
+                  placeholder={`Select table`}
+                  disabled={isDestinationTableLoading}
+                  isLoading={isDestinationTableLoading}
+                />
+              </div>
+
+              <Button
+                variant="link"
+                className="text-red-500 py-1 h-6 text-xs"
+                onClick={() => removeTable(index)}
+              >
+                <XIcon className="w-4 h-4" />
+              </Button>
+
             </div>
-
-            <Button
-              variant="link"
-              className="text-red-500 py-1 h-6 text-xs"
-              onClick={() => removeTable(index)}
-            >
-              <XIcon className="w-4 h-4" />
-            </Button>
+            {index !== mappings.length - 1 && <hr className="my-2 border-gray-200" />}
           </div>
+        ))}<hr className="my-2 border-gray-200" />
+        <Button
+          variant="link"
+          className="py-1 h-6 text-xs text-purple-500"
+          onClick={addTable}
+        >
+          + Add Table
+        </Button>
+      </div>
 
-          <hr className="my-2 border-gray-200" />
-          <Button
-            variant="link"
-            className="py-1 h-6 text-xs text-purple-500"
-            onClick={addTable}
-          >
-            + Add Table
-          </Button>
-        </div>
-      ))}
-
-       <div className="mt-4">
+      <div className="mt-4">
         <Button
           onClick={handleNext}
           disabled={mappings.some(validateRow)}
