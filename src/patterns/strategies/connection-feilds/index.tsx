@@ -1,6 +1,6 @@
 // Strategy pattern for rendering connection fields
 
-import * as yup from "yup";
+import { z } from "zod";
 import { Connector } from "@/types/connectors";
 import { PostgresFieldsStrategy } from "./postgres";
 import { MongoFieldsStrategy } from "./mongo";
@@ -9,7 +9,7 @@ import { S3FieldsStrategy } from "./aws";
 
 export interface ConnectionFieldsStrategy {
     getDefaults(): Record<string, any>;
-    getSchema(): yup.ObjectSchema<any>;
+    getSchema(): z.ZodObject<any>;
     renderFields(config?: Record<string, any>, setConfig?: (config: Record<string, any>) => void, errors?: Record<string, string>): React.ReactNode
 }
 
@@ -19,9 +19,9 @@ class DefaultFieldsStrategy implements ConnectionFieldsStrategy {
             name: ""
         }
     }
-    getSchema(): yup.ObjectSchema<any> {
-        return yup.object().shape({
-            name: yup.string().required(),
+    getSchema(): z.ZodObject<any> {
+        return z.object({
+            name: z.string().min(1, "Name is required"),
         })
     }
     renderFields(): React.ReactNode {

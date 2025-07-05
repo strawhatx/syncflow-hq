@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +10,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
+import { sanitizeField } from "@/lib/sanitize";
 
 interface Profile {
   username: string;
@@ -138,6 +138,7 @@ const UserProfile = () => {
                       placeholder="Your username"
                       disabled={updating}
                       {...field}
+                      onChange={(e) => field.onChange(sanitizeField(e.target.value, "text", { maxLength: 50 }))}
                     />
                   </FormControl>
                   <FormMessage />

@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { sanitizeField } from "@/lib/sanitize";
 
 interface HeaderActionsProps {
   search: string;
@@ -17,7 +18,7 @@ const HeaderActions = memo(({ search, setSearch, onCreate, isCreating }: HeaderA
         className="w-full pl-6 pr-2 py-1 text-sm rounded border border-border bg-background"
         placeholder="Search syncs..."
         value={search}
-        onChange={e => setSearch(e.target.value)}
+        onChange={e => setSearch(sanitizeField(e.target.value, "text", { maxLength: 100 }))}
       />
       <Search className="absolute left-1.5 top-1.5 text-muted-foreground" size={14} />
     </div>

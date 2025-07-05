@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
+import { sanitizeField } from '@/lib/sanitize';
 
 // Define validation schema
 const inviteCodeSchema = z.object({
@@ -39,7 +40,8 @@ export default function JoinTeam() {
     };
 
     const handleInviteCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newCode = e.target.value;
+        // Sanitize the invite code first
+        const newCode = sanitizeField(e.target.value, "text", { maxLength: 50 });
         setInviteCode(newCode);
         
         // Clear error when user starts typing

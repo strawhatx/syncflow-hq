@@ -7,6 +7,7 @@ import { useTeam } from "@/contexts/TeamContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
 import { z } from 'zod';
+import { sanitizeField } from '@/lib/sanitize';
 
 // Define validation schema
 const teamNameSchema = z.object({
@@ -38,18 +39,16 @@ export const NoTeamFound = () => {
     };
 
     const handleTeamNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newName = e.target.value;
+        // Sanitize the team name first
+        const newName = sanitizeField(e.target.value, "text", { maxLength: 50 });
         setTeamName(newName);
         
         // Clear error when user starts typing
-        if (error) {
-            setError(null);
-        }
+        if (error) setError(null);
         
         // Validate when name is longer than 1 character
-        if (newName.length > 1) {
+        if (newName.length > 1)
             validateTeamName(newName);
-        }
     };
 
     const handleCreateTeam = async () => {

@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Search, UserPlus } from "lucide-react";
+import { sanitizeField } from "@/lib/sanitize";
 
 // Component for team header
 export const TeamHeader = ({ searchTerm, onSearchChange, canInviteMembers, onInviteClick }) => (
@@ -11,7 +12,7 @@ export const TeamHeader = ({ searchTerm, onSearchChange, canInviteMembers, onInv
                     type="text"
                     placeholder="Search members..."
                     value={searchTerm}
-                    onChange={(e) => onSearchChange(e.target.value)}
+                    onChange={(e) => onSearchChange(sanitizeField(e.target.value, "text", { maxLength: 100 }))}
                     className="pl-10 pr-4 py-1 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
                 />
             </div>

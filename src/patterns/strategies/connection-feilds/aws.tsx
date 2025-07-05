@@ -2,8 +2,9 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import * as yup from "yup";
+import { z } from "zod";
 import { ConnectionFieldsStrategy } from "./index";
+import { sanitizeField } from "@/lib/sanitize";
 
 export class S3FieldsStrategy implements ConnectionFieldsStrategy {
     getDefaults(): Record<string, any> {
@@ -14,15 +15,15 @@ export class S3FieldsStrategy implements ConnectionFieldsStrategy {
             secret_access_key: ""
         }
     }
-    getSchema(): yup.ObjectSchema<any> {
-        return yup.object().shape({
-            name: yup.string().required(),
-            bucket: yup.string().required(),
-            region: yup.string().required(),
-            access_key_id: yup.string().required(),
-            secret_access_key: yup.string().required(),
-            prefix: yup.string().optional(),
-            endpoint: yup.string().optional()
+    getSchema(): z.ZodObject<any> {
+        return z.object({
+            name: z.string().min(1, "Name is required"),
+            bucket: z.string().min(1, "Bucket name is required"),
+            region: z.string().min(1, "Region is required"),
+            access_key_id: z.string().min(1, "Access Key ID is required"),
+            secret_access_key: z.string().min(1, "Secret Access Key is required"),
+            prefix: z.string().optional(),
+            endpoint: z.string().optional()
         })
     }
     renderFields(config: Record<string, any>, setConfig: (config: Record<string, any>) => void, errors?: Record<string, string>): React.ReactNode {
@@ -34,9 +35,9 @@ export class S3FieldsStrategy implements ConnectionFieldsStrategy {
                         id="bucket"
                         placeholder="my-bucket"
                         value={config.bucket || ""}
-                        onChange={(e) => setConfig({ ...config, bucket: e.target.value })}
+                        onChange={(e) => setConfig({ ...config, bucket: sanitizeField(e.target.value, "text") })}
                     />
-                    {errors.bucket && (
+                    {errors?.bucket && (
                         <div className="text-sm text-red-500">
                             {errors.bucket}
                         </div>
@@ -48,9 +49,9 @@ export class S3FieldsStrategy implements ConnectionFieldsStrategy {
                         id="region"
                         placeholder="us-east-1"
                         value={config.region || ""}
-                        onChange={(e) => setConfig({ ...config, region: e.target.value })}
+                        onChange={(e) => setConfig({ ...config, region: sanitizeField(e.target.value, "awsRegion") })}
                     />
-                    {errors.region && (
+                    {errors?.region && (
                         <div className="text-sm text-red-500">
                             {errors.region}
                         </div>
@@ -62,9 +63,9 @@ export class S3FieldsStrategy implements ConnectionFieldsStrategy {
                         id="access_key_id"
                         placeholder="AKIA..."
                         value={config.access_key_id || ""}
-                        onChange={(e) => setConfig({ ...config, access_key_id: e.target.value })}
+                        onChange={(e) => setConfig({ ...config, access_key_id: sanitizeField(e.target.value, "awsAccessKey") })}
                     />
-                    {errors.access_key_id && (
+                    {errors?.access_key_id && (
                         <div className="text-sm text-red-500">
                             {errors.access_key_id}
                         </div>
@@ -77,9 +78,9 @@ export class S3FieldsStrategy implements ConnectionFieldsStrategy {
                         type="password"
                         placeholder="••••••••"
                         value={config.secret_access_key || ""}
-                        onChange={(e) => setConfig({ ...config, secret_access_key: e.target.value })}
+                        onChange={(e) => setConfig({ ...config, secret_access_key: sanitizeField(e.target.value, "text") })}
                     />
-                    {errors.secret_access_key && (
+                    {errors?.secret_access_key && (
                         <div className="text-sm text-red-500">
                             {errors.secret_access_key}
                         </div>
@@ -91,9 +92,9 @@ export class S3FieldsStrategy implements ConnectionFieldsStrategy {
                         id="prefix"
                         placeholder="folder/"
                         value={config.prefix || ""}
-                        onChange={(e) => setConfig({ ...config, prefix: e.target.value })}
+                        onChange={(e) => setConfig({ ...config, prefix: sanitizeField(e.target.value, "filePath") })}
                     />
-                    {errors.prefix && (
+                    {errors?.prefix && (
                         <div className="text-sm text-red-500">
                             {errors.prefix}
                         </div>
@@ -105,9 +106,9 @@ export class S3FieldsStrategy implements ConnectionFieldsStrategy {
                         id="endpoint"
                         placeholder="https://custom-endpoint.com"
                         value={config.endpoint || ""}
-                        onChange={(e) => setConfig({ ...config, endpoint: e.target.value })}
+                        onChange={(e) => setConfig({ ...config, endpoint: sanitizeField(e.target.value, "url") })}
                     />
-                    {errors.endpoint && (
+                    {errors?.endpoint && (
                         <div className="text-sm text-red-500">
                             {errors.endpoint}
                         </div>

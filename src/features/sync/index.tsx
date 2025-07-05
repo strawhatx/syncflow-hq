@@ -13,6 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import useSync from "./hooks/useSync";
 import { FieldMappingStep } from "./component/FeildMapping";
 import { SyncData } from "./helpers/sync-data";
+import { sanitizeField } from "@/lib/sanitize";
 
 // Step state enum for cleaner logic
 enum StepState {
@@ -146,7 +147,7 @@ export default function Sync() {
                         if (syncName.length === 0) return;
                         createSyncMutation.mutate({ step: 'apps', data: { id, name: syncName } as any });
                     }}
-                    onChange={(e) => setSyncName(e.target.value)}
+                    onChange={(e) => setSyncName(sanitizeField(e.target.value, "text", { maxLength: 100 }))}
                     required
                 />
 

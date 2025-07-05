@@ -9,6 +9,8 @@ import { Zap } from "lucide-react";
 import { ConnectionActionsStrategyFactory } from "@/patterns/strategies/connection-actions";
 import { Connector } from "@/types/connectors";
 import { fetchConnectionById } from "@/services/connections/service";
+import { z } from "zod";
+import { sanitizeField } from "@/lib/sanitize";
 
 interface ConnectorConnectModalProps {
   isOpen: boolean;
@@ -46,9 +48,10 @@ export default function ConnectorConnectModal({ isOpen, onClose, connector, conn
     e.preventDefault();
 
     try {
-      // validate the config
+      // validate the config using Zod
       const schema = ConnectionFieldsStrategyFactory.getStrategy(connector).getSchema();
-      await schema.validate(config, { abortEarly: false });
+      schema.parse(config);
+      setValidationErrors({}); // Clear validation errors on success
 
       //continue with the action
       await ConnectionActionsStrategyFactory.getStrategy(connector.type).handleSubmitAction(
@@ -63,13 +66,17 @@ export default function ConnectorConnectModal({ isOpen, onClose, connector, conn
         isOpen && connection_id ? connection_id : undefined,
         onClose
       );
-    } catch (errors: any) {
-      const formattedErrors = errors.inner.reduce((acc: { [x: string]: any; }, error: { path: string | number; message: any; }) => {
-        acc[error.path] = error.message;
-        return acc;
-      }, {});
-
-      setValidationErrors(formattedErrors);
+    } catch (validationError) {
+      if (validationError instanceof z.ZodError) {
+        const formattedErrors = validationError.errors.reduce((acc: Record<string, string>, error) => {
+          acc[error.path[0]] = error.message;
+          return acc;
+        }, {});
+        setValidationErrors(formattedErrors);
+      } else {
+        // Handle other types of errors
+        setError(validationError instanceof Error ? validationError.message : 'An error occurred');
+      }
     }
   }
 
@@ -102,7 +109,7 @@ export default function ConnectorConnectModal({ isOpen, onClose, connector, conn
                 id="name"
                 placeholder="My Connection"
                 value={config.name || ""}
-                onChange={(e) => setConfig({ ...config, name: e.target.value })}
+                onChange={(e) => setConfig({ ...config, name: sanitizeField(e.target.value, "text") })}
               />
               {validationErrors.name && (
                 <div className="text-sm text-red-500">

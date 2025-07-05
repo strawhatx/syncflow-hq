@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useTeam } from '@/contexts/TeamContext';
 import { z } from 'zod';
+import { sanitizeField } from '@/lib/sanitize';
 
 interface InviteModalProps {
     isOpen: boolean;
@@ -40,7 +41,8 @@ export const InviteModal: React.FC<InviteModalProps> = ({ isOpen, onClose }) => 
     };
 
     const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newEmail = e.target.value;
+        // sanitize the email first
+        const newEmail = sanitizeField(e.target.value, "email", { maxLength: 255 });
         setEmail(newEmail);
         
         // Clear error when user starts typing

@@ -4,6 +4,7 @@ import { Input } from "../ui/input";
 import { ArrowUpFromLine, Cloud, Loader2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { format } from "date-fns";
+import { sanitizeField } from '@/lib/sanitize';
 
 interface CloudFilePickerProps {
   files: any[];
@@ -29,10 +30,16 @@ const tableColumns = [
 ]
 
 const ToolbarComponent = ({ setSearch }: { setSearch: (search: string) => void }) => {
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Sanitize the search input
+    const sanitizedSearch = sanitizeField(e.target.value, "text", { maxLength: 100 });
+    setSearch(sanitizedSearch);
+  };
+
   return (
     <div className="flex justify-between mt-4 items-center">
       <DialogTitle className="text-md font-semibold">Cloud File Picker</DialogTitle>
-      <Input placeholder="Search" className="w-1/2 h-8" onChange={(e) => setSearch(e.target.value)} />
+      <Input placeholder="Search" className="w-1/2 h-8" onChange={handleSearchChange} />
     </div>
   )
 }

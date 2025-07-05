@@ -4,7 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ConnectionFieldsStrategy } from "./index";
-import * as yup from "yup";
+import { z } from "zod";
+import { sanitizeField } from "@/lib/sanitize";
 
 export class PostgresFieldsStrategy implements ConnectionFieldsStrategy {
     getDefaults(): Record<string, any> {
@@ -18,16 +19,16 @@ export class PostgresFieldsStrategy implements ConnectionFieldsStrategy {
             ssl: false
         }
     }
-    getSchema(): yup.ObjectSchema<any> {
-        return yup.object().shape({
-            name: yup.string().required(),
-            host: yup.string().required(),
-            port: yup.number().required(),
-            database: yup.string().required(),
-            username: yup.string().required(),
-            password: yup.string().required(),
-            schema: yup.string().optional(),
-            ssl: yup.boolean().optional(),
+    getSchema(): z.ZodObject<any> {
+        return z.object({
+            name: z.string().min(1, "Name is required"),
+            host: z.string().min(1, "Host is required"),
+            port: z.number().min(1, "Port must be greater than 0"),
+            database: z.string().min(1, "Database is required"),
+            username: z.string().min(1, "Username is required"),
+            password: z.string().min(1, "Password is required"),
+            schema: z.string().optional(),
+            ssl: z.boolean().optional(),
         })
     }
     renderFields(config: Record<string, any>, setConfig: (config: Record<string, any>) => void, errors?: Record<string, string>): React.ReactNode {
@@ -39,9 +40,9 @@ export class PostgresFieldsStrategy implements ConnectionFieldsStrategy {
                         id="host"
                         placeholder="localhost"
                         value={config.host || ""}
-                        onChange={(e) => setConfig({ ...config, host: e.target.value })}
+                        onChange={(e) => setConfig({ ...config, host: sanitizeField(e.target.value, "hostname") })}
                     />
-                    {errors.host && (
+                    {errors?.host && (
                         <div className="text-sm text-red-500">
                             {errors.host}
                         </div>
@@ -54,9 +55,9 @@ export class PostgresFieldsStrategy implements ConnectionFieldsStrategy {
                         type="number"
                         placeholder="5432"
                         value={config.port || ""}
-                        onChange={(e) => setConfig({ ...config, port: parseInt(e.target.value) })}
+                        onChange={(e) => setConfig({ ...config, port: parseInt(sanitizeField(e.target.value, "port")) || "" })}
                     />
-                    {errors.port && (
+                    {errors?.port && (
                         <div className="text-sm text-red-500">
                             {errors.port}
                         </div>
@@ -68,9 +69,9 @@ export class PostgresFieldsStrategy implements ConnectionFieldsStrategy {
                         id="database"
                         placeholder="mydb"
                         value={config.database || ""}
-                        onChange={(e) => setConfig({ ...config, database: e.target.value })}
+                        onChange={(e) => setConfig({ ...config, database: sanitizeField(e.target.value, "databaseName") })}
                     />
-                    {errors.database && (
+                    {errors?.database && (
                         <div className="text-sm text-red-500">
                             {errors.database}
                         </div>
@@ -82,9 +83,9 @@ export class PostgresFieldsStrategy implements ConnectionFieldsStrategy {
                         id="username"
                         placeholder="postgres"
                         value={config.username || ""}
-                        onChange={(e) => setConfig({ ...config, username: e.target.value })}
+                        onChange={(e) => setConfig({ ...config, username: sanitizeField(e.target.value, "text") })}
                     />
-                    {errors.username && (
+                    {errors?.username && (
                         <div className="text-sm text-red-500">
                             {errors.username}
                         </div>
@@ -97,9 +98,9 @@ export class PostgresFieldsStrategy implements ConnectionFieldsStrategy {
                         type="password"
                         placeholder="••••••••"
                         value={config.password || ""}
-                        onChange={(e) => setConfig({ ...config, password: e.target.value })}
+                        onChange={(e) => setConfig({ ...config, password: sanitizeField(e.target.value, "text") })}
                     />
-                    {errors.password && (
+                    {errors?.password && (
                         <div className="text-sm text-red-500">
                             {errors.password}
                         </div>
@@ -111,9 +112,9 @@ export class PostgresFieldsStrategy implements ConnectionFieldsStrategy {
                         id="schema"
                         placeholder="public"
                         value={config.schema || ""}
-                        onChange={(e) => setConfig({ ...config, schema: e.target.value })}
+                        onChange={(e) => setConfig({ ...config, schema: sanitizeField(e.target.value, "databaseName") })}
                     />
-                    {errors.schema && (
+                    {errors?.schema && (
                         <div className="text-sm text-red-500">
                             {errors.schema}
                         </div>
@@ -126,7 +127,7 @@ export class PostgresFieldsStrategy implements ConnectionFieldsStrategy {
                         onCheckedChange={(checked) => setConfig({ ...config, ssl: checked })}
                     />
                     <Label htmlFor="ssl">Use SSL</Label>
-                    {errors.ssl && (
+                    {errors?.ssl && (
                         <div className="text-sm text-red-500">
                             {errors.ssl}
                         </div>

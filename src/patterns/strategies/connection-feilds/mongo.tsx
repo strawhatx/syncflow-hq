@@ -3,7 +3,8 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ConnectionFieldsStrategy } from "./index";
-import * as yup from "yup";
+import { z } from "zod";
+import { sanitizeField } from "@/lib/sanitize";
 
 export class MongoFieldsStrategy implements ConnectionFieldsStrategy {
     getDefaults(): Record<string, any> {
@@ -12,11 +13,11 @@ export class MongoFieldsStrategy implements ConnectionFieldsStrategy {
             database: ""
         }
     }
-    getSchema(): yup.ObjectSchema<any> {
-        return yup.object().shape({
-            name: yup.string().required(),
-            url: yup.string().required(),
-            database: yup.string().required()
+    getSchema(): z.ZodObject<any> {
+        return z.object({
+            name: z.string().min(1, "Name is required"),
+            url: z.string().min(1, "Connection URL is required"),
+            database: z.string().min(1, "Database is required")
         })
     }
     renderFields(config: Record<string, any>, setConfig: (config: Record<string, any>) => void, errors?: Record<string, string>): React.ReactNode {
@@ -29,9 +30,9 @@ export class MongoFieldsStrategy implements ConnectionFieldsStrategy {
                         type="password"
                         placeholder="mongodb://username:password@host:port"
                         value={config.url || ""}
-                        onChange={(e) => setConfig({ ...config, url: e.target.value })}
+                        onChange={(e) => setConfig({ ...config, url: sanitizeField(e.target.value, "url") })}
                     />
-                    {errors.url && (
+                    {errors?.url && (
                         <div className="text-sm text-red-500">
                             {errors.url}
                         </div>
@@ -43,9 +44,9 @@ export class MongoFieldsStrategy implements ConnectionFieldsStrategy {
                         id="database"
                         placeholder="mydb"
                         value={config.database || ""}
-                        onChange={(e) => setConfig({ ...config, database: e.target.value })}
+                        onChange={(e) => setConfig({ ...config, database: sanitizeField(e.target.value, "databaseName") })}
                     />
-                    {errors.database && (
+                    {errors?.database && (
                         <div className="text-sm text-red-500">
                             {errors.database}
                         </div>
