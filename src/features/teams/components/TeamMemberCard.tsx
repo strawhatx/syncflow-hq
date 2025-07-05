@@ -1,7 +1,6 @@
 import { CheckCircle, Mail, Edit, Copy, Trash2 } from "lucide-react";
 import { TeamMemberWithProfile } from "@/types/team";
 import { useTeam } from "@/contexts/TeamContext";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 

@@ -51,7 +51,7 @@ export const CustomSelectButton: FC<CustomSelectButtonProps> = ({
         return `/svg/${icon_name}.svg`;
     };
 
-    const selectedOption = options.find(opt => opt.id === value);
+    const selectedOption = options.find(opt => opt.id === value || opt.name === value);
 
     const buttonClass = cn(
         "flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-2.5 py-1.5 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50",
@@ -95,12 +95,12 @@ export const CustomSelectButton: FC<CustomSelectButtonProps> = ({
                     <CommandList>
                         <CommandEmpty>No results found.</CommandEmpty>
                         <CommandGroup>
-                            {options.map((option) => (
+                            {options.map((option, index) => (
                                 <CommandItem
-                                    key={option.id}
+                                    key={option.id || `${option.name}-${index}`}
                                     value={option.name}
                                     onSelect={() => {
-                                        onValueChange(option.id);
+                                        onValueChange(option.id || option.name);
                                         setOpen(false);
                                     }}
                                 >

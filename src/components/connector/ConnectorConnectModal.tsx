@@ -8,7 +8,7 @@ import { ConnectionFieldsStrategyFactory } from "@/patterns/strategies/connectio
 import { Zap } from "lucide-react";
 import { ConnectionActionsStrategyFactory } from "@/patterns/strategies/connection-actions";
 import { Connector } from "@/types/connectors";
-import { fetchConnectionById } from "@/services/connectionService";
+import { fetchConnectionById } from "@/services/connections/service";
 
 interface ConnectorConnectModalProps {
   isOpen: boolean;

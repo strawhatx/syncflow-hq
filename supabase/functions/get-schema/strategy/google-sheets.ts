@@ -14,8 +14,9 @@ export class GoogleSheetsStrategy implements DataSourceStrategy {
     private config = {
         // Get spreadsheet metadata (including sheets & first row)
         tables: {
-            url: `https://sheets.googleapis.com/v4/spreadsheets/{spreadsheetId}?ranges={sheetName}1!A1:Z1&includeGridData=true`
+            url: `https://sheets.googleapis.com/v4/spreadsheets/{spreadsheet_id}?includeGridData=true&ranges={range}`
         },
+
         // List all spreadsheet files in the user's Drive
         sources: {
             url: `https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.spreadsheet'&fields=files(id,name,createdTime,modifiedTime)`
@@ -24,6 +25,17 @@ export class GoogleSheetsStrategy implements DataSourceStrategy {
 
     private getUrl(type: "tables" | "sources", urlConfig: Record<string, any>): string {
         const { url } = this.config[type];
+
+        // if the type is tables, we build the range
+        // we need to encode the sheet name and range to to revent the wrong encoding
+        // via spaces in the sheet name
+        if (type === "tables") {
+            const sheetName = urlConfig.sheet_name;
+            if (!sheetName) throw new Error("Sheet name is required");
+
+            const range = encodeURIComponent(`'${sheetName}'!A1:Z1`);
+            urlConfig.range = range;
+        }
 
         // Replace all {param} in the URL with the value from urlConfig
         return url.replace(/{(\w+)}/g, (_, key) => {
@@ -116,12 +128,12 @@ export class GoogleSheetsStrategy implements DataSourceStrategy {
 
     async getTables(config: Record<string, any>): Promise<Record<string, any>[]> {
         // must have a spreadsheetId
-        if (!config.spreadsheetId) {
+        if (!config.spreadsheet_id) {
             throw new Error("Spreadsheet ID is required");
         }
 
         // if the sheetName is not provided, use the first sheet
-        if (!config.sheetName) {
+        if (!config.sheet_name) {
             throw new Error("Spreadsheet name is required");
         }
 
@@ -137,7 +149,7 @@ export class GoogleSheetsStrategy implements DataSourceStrategy {
             const cells = sheet.data?.[0]?.rowData?.[0]?.values || [];
 
             const validation = await this.validate(cells);
-            
+
             return validation.valid;
         });
 

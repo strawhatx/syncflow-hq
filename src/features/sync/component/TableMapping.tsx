@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import useSync, { SyncData } from '../hooks/useSync';
+import useSync from '../hooks/useSync';
 import { SyncBuilder } from '@/patterns/builders/sync';
 import { SyncTableMapping } from '@/types/sync';
 import { toast } from '@/hooks/use-toast';
@@ -10,6 +10,7 @@ import { ArrowLeftRight, XIcon } from 'lucide-react';
 import { CustomSelectButton } from '@/components/ui_custom/CustomSelectButton';
 import { Button } from '@/components/ui/button';
 import { MappingStrategyFactory } from '@/patterns/strategies/mapping';
+import { SyncData } from '../helpers/sync-data';
 
 
 export const TableMappingStep = ({ next, sync }: { next: () => void, sync: SyncData }) => {
@@ -115,7 +116,7 @@ export const TableMappingStep = ({ next, sync }: { next: () => void, sync: SyncD
             <div className="flex w-full justify-between gap-2 items-center">
               <CustomSelectButton
                 value={mapping?.source_table}
-                onValueChange={(value: any) => updateTable(index, "source_table", value)}
+                onValueChange={(value: string) => updateTable(index, "source_table", value)}
                 options={MappingStrategyFactory.getStrategy(sync.source?.connector?.provider as ConnectorProvider).map(sourceTableOptions, sync.source?.connector?.provider as ConnectorProvider)}
                 mergeClasses="border-none ring-offset-background-transparent focus:outline-none focus:ring-0 focus:ring-offset-0"
                 placeholder={`Select table`}
@@ -127,7 +128,7 @@ export const TableMappingStep = ({ next, sync }: { next: () => void, sync: SyncD
 
               <CustomSelectButton
                 value={mapping?.destination_table}
-                onValueChange={(value: any) => updateTable(index, "destination_table", value)}
+                onValueChange={(value: string) => updateTable(index, "destination_table", value)}
                 options={MappingStrategyFactory.getStrategy(sync.destination?.connector?.provider as ConnectorProvider).map(destinationTableOptions, sync.destination?.connector?.provider as ConnectorProvider)}
                 mergeClasses="border-none ring-offset-background-transparent focus:outline-none focus:ring-0 focus:ring-offset-0"
                 placeholder={`Select table`}
@@ -148,7 +149,7 @@ export const TableMappingStep = ({ next, sync }: { next: () => void, sync: SyncD
           <hr className="my-2 border-gray-200" />
           <Button
             variant="link"
-            className="py-1 h-6 text-xs"
+            className="py-1 h-6 text-xs text-purple-500"
             onClick={addTable}
           >
             + Add Table

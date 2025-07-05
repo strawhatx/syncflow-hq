@@ -1,7 +1,6 @@
 import { SetupStage } from "@/integrations/supabase/types";
 import { User } from "@supabase/supabase-js";
 import { Team } from "./team";
-
 import Sync from "@/features/sync";
 
 export type SyncDirection = "one-way" | "two-way";

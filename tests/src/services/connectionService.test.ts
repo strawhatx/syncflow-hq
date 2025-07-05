@@ -1,5 +1,5 @@
 import { vi, describe, it } from "vitest";
-import * as connectionService from "@/services/connectionService";
+import * as connectionService from "@/services/connections/service";
 import { Connector } from "@/types/connectors";
 
 // Mock supabase client with full chain

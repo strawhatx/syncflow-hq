@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
-import { createConnection, updateConnection } from "@/services/connectionService";
+import { createConnection, updateConnection } from "@/services/connections/service";
 import { initiateOAuth } from "@/services/oauth/service";
 import { Connector } from "@/types/connectors";
 

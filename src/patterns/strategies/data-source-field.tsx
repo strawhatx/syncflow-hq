@@ -18,7 +18,7 @@ class DropdownFieldStrategy implements DatasourceFieldStrategy {
                     onValueChange={(value) => setValue(value)}
                     options={source.map((item: any) => ({
                         // since were pulling datasources its not guaranteed to have ids
-                        id: item.id || item.name,
+                        id: item.id,
                         name: item.name
                     })) || []}
                     placeholder={`Select datasource`}
@@ -38,7 +38,7 @@ class FileFieldStrategy implements DatasourceFieldStrategy {
                     value={value}
                     files={source.map((item: any) => ({
                         // since were pulling datasources its not guaranteed to have ids
-                        id: item.id || item.name,
+                        id: item.id,
                         name: item.name,
                         type: item.type,
                         size: item.size || 0,

@@ -60,8 +60,8 @@ serve(async (req) => {
     //   access_token: string <= is pulled from the connection config in the db
     // }
     // google_sheets: {
-    //   spreadsheetId: string <= required for getting tables
-    //   sheetName: string <= required for validating the sheet
+    //   spreadsheet_id: string <= required for getting tables
+    //   sheet_name: string <= required for validating the sheet
     //   access_token: string <= is pulled from the connection config in the db
     // }
     // notion: {
@@ -85,8 +85,6 @@ serve(async (req) => {
     if (!connection_id || !provider || !action || !config) {
       throw new Error("Invalid request");
     }
-
-
 
     // get the strategy for the provider
     const strategy = DataSourceStrategyFactory.getStrategy(provider);
@@ -123,7 +121,7 @@ serve(async (req) => {
   } catch (error) {
     console.error(error);
     return new Response(
-      JSON.stringify({ error: "Internal Server Error" }),
+      JSON.stringify({ error: error.message || "Internal Server Error" }),
       { headers: handleReturnCORS(req), status: 500 },
     )
   }

@@ -11,6 +11,7 @@ import { defaultUpdateSync } from "@/types/sync";
 import { useParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import useSync, { SyncData } from "./hooks/useSync";
+import { FieldMappingStep } from "./component/FeildMapping";
 
 // Step state enum for cleaner logic
 enum StepState {
@@ -39,10 +40,10 @@ const steps = [
         component: TableMappingStep,
     },
     {
-        id: "table-mappings",
-        label: "Map your tables",
-        description: "Map the tables you want to sync",
-        component: TableMappingStep,
+        id: "field-mappings",
+        label: "Map your fields",
+        description: "Map the fields you want to sync",
+        component: FieldMappingStep,
     },
     {
         id: "schedule",

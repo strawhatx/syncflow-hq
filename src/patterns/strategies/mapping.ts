@@ -22,7 +22,7 @@ export class DefaultMappingStrategy implements MappingStrategy {
         const icon = getIcon(provider);
 
         return data.map((item) => ({ 
-            id: item.id || item.name, 
+            id: item.id, 
             name: item.name, 
             icon 
         }));
