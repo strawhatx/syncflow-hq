@@ -18,7 +18,7 @@ export const fetchConnectionById = async (id: string): Promise<Connection | null
 };
 
 // create connection via supabase but must validate connection first
-export const createConnection = async (team_id: string, connector: Connector, connectionName: string, config: Record<string, any>) => {
+export const createConnection = async (team_id: string, connector: Connector, config: Record<string, any>) => {
   // Validate required fields 
   const missingFields = connector.required_fields.filter(
     field => !config[field]
@@ -44,8 +44,9 @@ export const createConnection = async (team_id: string, connector: Connector, co
     .from('connections')
     .insert({
       connector_id: connector.id,
-      name: connectionName,
-      config,
+      name: config.name,
+      //omit the name from the config
+      config: omit(config, 'name'),
       team_id,
       is_active: true
     });
@@ -53,7 +54,7 @@ export const createConnection = async (team_id: string, connector: Connector, co
   if (insertError) throw insertError;
 };
 
-export const updateConnection = async (id: string, name: string, connector: Connector, config: Record<string, any>): Promise<void> => {
+export const updateConnection = async (id: string, connector: Connector, config: Record<string, any>): Promise<void> => {
   // Should not be able to update a connection if the connection does not exist
   const connection = await fetchConnectionById(id);
   if (!connection) {
@@ -111,4 +112,9 @@ const validate = async (provider: ConnectorProvider, config: Record<string, any>
     console.error('Connection validation error:', error);
     return false;
   }
+}
+
+function omit(config: Record<string, any>, key: string): any {
+  const { [key]: _, ...rest } = config;
+  return rest;
 }

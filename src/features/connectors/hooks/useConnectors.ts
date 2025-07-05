@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchConnectors, ConnectorWithConnections } from "@/services/connectorService";
+import { fetchConnectors, ConnectorWithConnections } from "@/services/connector/service";
 
 interface UseConnectorsReturn {
   connectedConnectors: ConnectorWithConnections[];

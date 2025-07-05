@@ -19,7 +19,6 @@ interface ConnectorConnectModalProps {
 
 export default function ConnectorConnectModal({ isOpen, onClose, connector, connection_id }: ConnectorConnectModalProps) {
   const { team } = useTeam();
-  const [connectionName, setConnectionName] = useState("");
   const [config, setConfig] = useState<Record<string, any>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,14 +28,12 @@ export default function ConnectorConnectModal({ isOpen, onClose, connector, conn
   useEffect(() => {
     if (isOpen && connection_id)
       fetchConnectionById(connection_id).then(connection => {
-        setConnectionName(connection.name);
 
-        // parse the json config
-        setConfig(
-          typeof connection.config === "string"
-            ? JSON.parse(connection.config)
-            : (connection.config as Record<string, any>)
-        );
+        // parse the json config and set the name
+        var tempConfig = typeof connection.config === "string"
+          ? JSON.parse(connection.config)
+          : (connection.config as Record<string, any>)
+        setConfig({ ...tempConfig, name: connection.name });
       })
   }, [isOpen, connection_id]);
 
@@ -49,22 +46,21 @@ export default function ConnectorConnectModal({ isOpen, onClose, connector, conn
     e.preventDefault();
 
     try {
-    // validate the config
-    const schema = ConnectionFieldsStrategyFactory.getStrategy(connector).getSchema();
-    await schema.validate(config, { abortEarly: false });
+      // validate the config
+      const schema = ConnectionFieldsStrategyFactory.getStrategy(connector).getSchema();
+      await schema.validate(config, { abortEarly: false });
 
-    //continue with the action
-    await ConnectionActionsStrategyFactory.getStrategy(connector.type).handleSubmitAction(
-      connector,
-      connectionName,
-      e,
-      setIsLoading,
-      setError,
-      team.id,
-      // If the connection is being created, create a new connection to do that 
-      // we need to set the connection_id to undefined
-      isOpen && connection_id ? connection_id : undefined,
+      //continue with the action
+      await ConnectionActionsStrategyFactory.getStrategy(connector.type).handleSubmitAction(
+        connector,
+        e,
+        setIsLoading,
+        setError,
         config,
+        team.id,
+        // If the connection is being created, create a new connection to do that 
+        // we need to set the connection_id to undefined
+        isOpen && connection_id ? connection_id : undefined,
         onClose
       );
     } catch (errors: any) {
@@ -72,7 +68,7 @@ export default function ConnectorConnectModal({ isOpen, onClose, connector, conn
         acc[error.path] = error.message;
         return acc;
       }, {});
-      
+
       setValidationErrors(formattedErrors);
     }
   }
@@ -105,9 +101,8 @@ export default function ConnectorConnectModal({ isOpen, onClose, connector, conn
               <Input
                 id="name"
                 placeholder="My Connection"
-                value={connectionName}
-                onChange={(e) => setConnectionName(e.target.value)}
-                required
+                value={config.name || ""}
+                onChange={(e) => setConfig({ ...config, name: e.target.value })}
               />
               {validationErrors.name && (
                 <div className="text-sm text-red-500">

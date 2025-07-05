@@ -9,13 +9,12 @@ import { Connector } from "@/types/connectors";
 interface ConnectionActionsStrategy {
     handleSubmitAction(
         connector: Connector,
-        connectionName: string,
         e: React.FormEvent,
         setIsLoading: (isLoading: boolean) => void,
         setError: (error: string | null) => void,
+        config: Record<string, any>,
         teamId?: string,
         connection_id?: string,
-        config?: Record<string, any>,
         onClose?: () => void
     ): Promise<void>
     renderActions(isLoading: boolean): React.ReactNode
@@ -24,21 +23,26 @@ interface ConnectionActionsStrategy {
 class OauthActionsStrategy implements ConnectionActionsStrategy {
     async handleSubmitAction(
         connector: Connector,
-        connectionName: string,
         e: React.FormEvent,
         setIsLoading: (isLoading: boolean) => void,
-        setError: (error: string | null) => void
+        setError: (error: string | null) => void,
+        config: Record<string, any>,
     ): Promise<void> {
         try {
             if (connector.type !== "oauth") {
                 throw new Error("Unsupported provider");
             }
 
+            // validate the config
+            if (!config.name) {
+                throw new Error("Name is required");
+            }
+
             setIsLoading(true);
             const params: Record<string, string> = {};
             const oauthUrl = initiateOAuth(
-                connectionName,
-                connector.provider,
+                config.name,
+                connector.provider as "google_sheets" | "notion" | "airtable" | "supabase",
                 connector,
                 params
             );
@@ -72,13 +76,12 @@ class OauthActionsStrategy implements ConnectionActionsStrategy {
 class ApiKeyActionsStrategy implements ConnectionActionsStrategy {
     async handleSubmitAction(
         connector: Connector,
-        connectionName: string,
         e: React.FormEvent,
         setIsLoading: (isLoading: boolean) => void,
         setError: (error: string | null) => void,
+        config: Record<string, any>,
         teamId?: string,
         connection_id?: string,
-        config?: Record<string, any>,
         onClose?: () => void
     ): Promise<void> {
         const action = !connection_id ? "create" : "update";
@@ -90,10 +93,10 @@ class ApiKeyActionsStrategy implements ConnectionActionsStrategy {
             // If the connection is being created, create a new connection 
             // otherwise update the existing connection
             if (action === "create") {
-                await createConnection(teamId, connector, connectionName, config);
+                await createConnection(teamId, connector, config);
             }
             else {
-                await updateConnection(connection_id, connectionName, connector, config);
+                await updateConnection(connection_id, connector, config);
             }
 
             toast({

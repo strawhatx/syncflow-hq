@@ -10,8 +10,9 @@ import { Button } from "@/components/ui/button";
 import { defaultUpdateSync } from "@/types/sync";
 import { useParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import useSync, { SyncData } from "./hooks/useSync";
+import useSync from "./hooks/useSync";
 import { FieldMappingStep } from "./component/FeildMapping";
+import { SyncData } from "./helpers/sync-data";
 
 // Step state enum for cleaner logic
 enum StepState {
@@ -142,9 +143,11 @@ export default function Sync() {
                     placeholder="Provide a name"
                     value={syncName}
                     onBlur={() => {
+                        if (syncName.length === 0) return;
                         createSyncMutation.mutate({ step: 'apps', data: { id, name: syncName } as any });
                     }}
                     onChange={(e) => setSyncName(e.target.value)}
+                    required
                 />
 
                 <div className="flex gap-2">

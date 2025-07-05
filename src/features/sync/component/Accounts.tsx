@@ -1,6 +1,6 @@
 // steps/NameStep.tsx
 
-import { ConnectorWithConnections, fetchConnectors } from '@/services/connectors/service';
+import { ConnectorWithConnections, fetchConnectors } from '@/services/connector/service';
 import { Link } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';

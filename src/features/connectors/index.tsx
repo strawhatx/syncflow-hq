@@ -4,7 +4,7 @@ import ConnectorCard from "./components/ConnectorCard";
 import { Button } from "@/components/ui/button";
 import { useConnectors } from "./hooks/useConnectors";
 import ConnectorConnectModal from "../../components/connector/ConnectorConnectModal";
-import { ConnectorWithConnections } from "@/services/connectorService";
+import { ConnectorWithConnections } from "@/services/connector/service";
 import { Connector } from "@/types/connectors";
 
 const Connectors = () => {
