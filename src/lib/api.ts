@@ -18,3 +18,18 @@ export const fetchWithAuth = async (endpoint: string, options: RequestInit = {})
 
   return result;
 }; 
+
+export const fetchWithAuthCache = async (endpoint: string, base:  "schema" | "connection" | "oauth" | "email", keys: string[], options: RequestInit = {}) => {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error("No active session");
+
+  const cacheKey = `${base}-${keys.join("-")}`;
+  const cachedData = await supabase.from("cache").select("*").eq("key", cacheKey);
+  if (cachedData.data && cachedData.data.length > 0) {
+    return cachedData.data[0].value;
+  }
+
+  const result = await fetchWithAuth(endpoint, options);
+  await supabase.from("cache").insert({ key: cacheKey, value: result });
+  return result;
+}

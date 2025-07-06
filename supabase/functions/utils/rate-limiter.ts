@@ -1,10 +1,23 @@
 import { Ratelimit } from "https://cdn.skypack.dev/@upstash/ratelimit@latest";
-import { Redis } from "@upstash/redis";
+import { Redis } from "https://cdn.skypack.dev/@upstash/redis@latest";
+import { handleReturnCORS } from "./cors.ts";
 
 // Create different rate limiters for different functions
 const createRateLimiter = (requests: number, window: string) => {
+  // Ensure environment variables are available
+  const upstashRedisUrl = Deno.env.get("UPSTASH_REDIS_REST_URL");
+  const upstashRedisToken = Deno.env.get("UPSTASH_REDIS_REST_TOKEN");
+  
+  if (!upstashRedisUrl || !upstashRedisToken) {
+    console.warn("Missing Upstash Redis environment variables, rate limiting will be disabled");
+    return null;
+  }
+  
   return new Ratelimit({
-    redis: Redis.fromEnv(),
+    redis: new Redis({
+        url: upstashRedisUrl,
+        token: upstashRedisToken,
+      }),
     limiter: Ratelimit.slidingWindow(requests, window),
     analytics: true,
     prefix: "@upstash/ratelimit",
@@ -52,6 +65,12 @@ export async function applyRateLimit(req: Request, functionName?: string): Promi
     // Create rate limiter with the specific configuration
     const ratelimit = createRateLimiter(config.requests, config.window);
     
+    // If rate limiter is null (missing env vars), skip rate limiting
+    if (!ratelimit) {
+      console.warn("Rate limiting disabled due to missing environment variables");
+      return null;
+    }
+    
     // Get unique identifier
     const identifier = getIdentifier(req);
     
@@ -69,7 +88,7 @@ export async function applyRateLimit(req: Request, functionName?: string): Promi
         { 
           status: 429,
           headers: {
-            'Content-Type': 'application/json',
+            ...handleReturnCORS(req),
             'X-RateLimit-Limit': limit.toString(),
             'X-RateLimit-Remaining': remaining.toString(),
             'X-RateLimit-Reset': new Date(reset).toISOString()

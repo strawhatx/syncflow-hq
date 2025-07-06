@@ -73,6 +73,12 @@ export const TableMappingStep = ({ next, sync }: { next: () => void, sync: SyncD
 
 
   const handleNext = () => {
+    // if there are no changes, move to next step
+    // these are objects so we need to compare the objects
+    if (JSON.stringify(mappings) === JSON.stringify(sync.config?.schema?.table_mappings)) {
+      return next();
+    }
+
     const builder = new SyncBuilder();
     builder.setTableMappings(mappings);
 
@@ -112,8 +118,8 @@ export const TableMappingStep = ({ next, sync }: { next: () => void, sync: SyncD
     <div className="space-y-4">
       <div className="border p-1 rounded">
         {mappings?.map((mapping, index) => (
-          <div key={index} className="flex flex-col gap-2">
-            <div className="flex  text-black gap-2 items-center">
+          <div key={index} className="flex flex-col gap-0">
+            <div className="flex  text-black gap-2 items-center py-1">
               <div className="flex w-full justify-between gap-2 items-center">
                 <CustomSelectButton
                   value={mapping?.source_table}
@@ -147,12 +153,15 @@ export const TableMappingStep = ({ next, sync }: { next: () => void, sync: SyncD
               </Button>
 
             </div>
-            {index !== mappings.length - 1 && <hr className="my-2 border-gray-200" />}
+            {index !== mappings.length - 1 && <hr className=" border-gray-200" />}
           </div>
-        ))}<hr className="my-2 border-gray-200" />
+        ))}
+        
+        <hr className=" border-gray-200" />
+
         <Button
           variant="link"
-          className="py-1 h-6 text-xs text-purple-500"
+          className="py-1 h-4 text-xs text-purple-500"
           onClick={addTable}
         >
           + Add Table

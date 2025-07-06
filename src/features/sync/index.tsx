@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import AccountsStep from "./component/Accounts";
 import DataSourcesStep from "./component/DataSources";
 import { TableMappingStep } from "./component/TableMapping";
 import ReviewStep from "./component/Review";
 import ScheduleStep from "./component/Schedule";
-import { Check, X, RefreshCcw } from "lucide-react";
+import { Check, X, RefreshCcw, ArrowRight, ArrowLeftRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { defaultUpdateSync } from "@/types/sync";
@@ -20,6 +20,13 @@ enum StepState {
     COMPLETED = 'completed',
     CURRENT = 'current',
     UPCOMING = 'upcoming'
+}
+
+// Transition state enum
+enum TransitionState {
+    IDLE = 'idle',
+    CLOSING = 'closing',
+    OPENING = 'opening'
 }
 
 const steps = [
@@ -106,18 +113,67 @@ const getStepLabel = (step: typeof steps[0], state: StepState, onClick?: () => v
     );
 };
 
-const getStepContent = (step: typeof steps[0], state: StepState, sync: SyncData, onNext?: () => void) => {
+const getStepContent = (
+    step: typeof steps[0],
+    state: StepState,
+    sync: SyncData,
+    onNext?: () => void,
+    transitionState: TransitionState = TransitionState.IDLE
+) => {
+    // Base classes for the content container
+    const baseClasses = "flex-1 ml-[10px] border-l-2 transition-all duration-700 ease-in-out";
+
+    // Determine border color based on state
+    const borderClasses = state === StepState.CURRENT ? "border-gray-200" : "border-gray-100";
+
+    // Determine height and opacity based on state and transition
+    let heightClasses = "";
+    let opacityClasses = "";
+    let paddingClasses = "";
+    let transformClasses = "";
+
+    if (state === StepState.CURRENT) {
+        if (transitionState === TransitionState.CLOSING) {
+            heightClasses = "max-h-0";
+            opacityClasses = "opacity-0";
+            paddingClasses = "py-0";
+            transformClasses = "scale-95";
+        } else if (transitionState === TransitionState.OPENING) {
+            heightClasses = "max-h-screen";
+            opacityClasses = "opacity-100";
+            paddingClasses = "px-6 py-8";
+            transformClasses = "scale-100";
+        } else {
+            heightClasses = "max-h-screen";
+            opacityClasses = "opacity-100";
+            paddingClasses = "px-6 py-8";
+            transformClasses = "scale-100";
+        }
+    } else {
+        heightClasses = "max-h-auto";
+        opacityClasses = "opacity-100";
+        paddingClasses = "py-4";
+        transformClasses = "scale-95";
+    }
+
+    const containerClasses = `${baseClasses} ${borderClasses}`;
+
+    const contentClasses = `${heightClasses} ${opacityClasses} ${paddingClasses} ${transformClasses} transition-all duration-700 ease-out`;
+
     if (state === StepState.CURRENT) {
         const StepComponent = step.component;
         return (
-            <div className="flex-1 ml-[10px] px-6 py-8 border-l-2 border-gray-200">
-                <StepComponent next={onNext} sync={sync} />
+            <div className={containerClasses}>
+                <div className={contentClasses}>
+                    <StepComponent next={onNext} sync={sync} />
+                </div>
             </div>
         );
-    }
-    else {
+    } else {
         return (
-            <div className="flex-1 ml-[10px] p-4 border-l-2 border-gray-100" />
+            <div className={containerClasses}>
+                <div className={contentClasses} />
+            </div>
         );
     }
 };
@@ -128,6 +184,10 @@ export default function Sync() {
     const { user } = useAuth();
     const [stepIndex, setStepIndex] = useState(0);
     const [syncName, setSyncName] = useState("Untitled Sync");
+    const [transitionState, setTransitionState] = useState<TransitionState>(TransitionState.IDLE);
+    const [previousStep, setPreviousStep] = useState<number | null>(null);
+    const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const [syncType, setSyncType] = useState<'1-way' | '2-way'>('1-way');
 
     useEffect(() => {
         if (sync) {
@@ -136,20 +196,90 @@ export default function Sync() {
         }
     }, [sync, isLoading]);
 
+    // Custom step change handler with transitions
+    const handleStepChange = (newStepIndex: number) => {
+        if (newStepIndex === stepIndex) return;
+
+        // Clear any existing timeout
+        if (transitionTimeoutRef.current) {
+            clearTimeout(transitionTimeoutRef.current);
+        }
+
+        // set the previous step and transition state
+        setPreviousStep(stepIndex);
+        setTransitionState(TransitionState.CLOSING);
+
+        // After closing animation, change step and start opening
+        transitionTimeoutRef.current = setTimeout(() => {
+            setStepIndex(newStepIndex);
+            setTransitionState(TransitionState.OPENING);
+
+            // After opening animation, reset to idle
+            transitionTimeoutRef.current = setTimeout(() => {
+                setTransitionState(TransitionState.IDLE);
+                setPreviousStep(null);
+            }, 700);
+        }, 600); // Slightly shorter delay for smoother feel
+    };
+
+    // Cleanup timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (transitionTimeoutRef.current) {
+                clearTimeout(transitionTimeoutRef.current);
+            }
+        };
+    }, []);
+
     return (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-2">
             {/* Header */}
             <div className="flex justify-between items-center">
-                <Input className="text-lg w-1/2 py-1 border-none font-semibold"
+                <Input className="text-lg w-1/4 py-1 border-none font-semibold"
                     placeholder="Provide a name"
                     value={syncName}
                     onBlur={() => {
-                        if (syncName.length === 0) return;
+                        // if the sync name is empty or the same as the sync name, don't update it
+                        if (syncName.length === 0 || syncName === sync.name) return;
                         createSyncMutation.mutate({ step: 'apps', data: { id, name: syncName } as any });
                     }}
-                    onChange={(e) => setSyncName(sanitizeField(e.target.value, "text", { maxLength: 100 }))}
+                    onChange={(e) => {
+                        // if the sync name is the same as the sync name, don't update it
+                        const newName = sanitizeField(e.target.value, "text", { maxLength: 100 });
+                        if (newName !== syncName) {
+                            setSyncName(newName);
+                        }
+                    }}
                     required
                 />
+
+                {/* Sync Type Selection */}
+                <div className="flex gap-0">
+                    <button
+                        className={`py-1 px-3 h-8 rounded-md rounded-r-none ${syncType === '1-way' ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white' : 'bg-gray-200'}`}
+                        onClick={() => {
+                            // if the sync type is already 1-way, don't update it
+                            if (syncType !== '1-way') {
+                                setSyncType('1-way');
+                                createSyncMutation.mutate({ step: 'apps', data: { id, syncType: '1-way' } as any });
+                            }
+                        }}
+                    >
+                        <ArrowRight className="w-4 h-4" />
+                    </button>
+                    <button
+                        className={`py-1 px-3 h-8 rounded-md rounded-l-none ${syncType === '2-way' ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white' : 'bg-gray-200'}`}
+                        onClick={() => {
+                            // if the sync type is already 2-way, don't update it
+                            if (syncType !== '2-way') {
+                                setSyncType('2-way');
+                                createSyncMutation.mutate({ step: 'apps', data: { id, syncType: '2-way' } as any });
+                            }
+                        }}
+                    >
+                        <ArrowLeftRight className="w-4 h-4" />
+                    </button>
+                </div>
 
                 <div className="flex gap-2">
                     <Button
@@ -158,6 +288,11 @@ export default function Sync() {
                         onClick={async () => {
                             // reset the wizard data and all sync data
                             setStepIndex(0);
+                            setTransitionState(TransitionState.IDLE);
+                            setPreviousStep(null);
+                            if (transitionTimeoutRef.current) {
+                                clearTimeout(transitionTimeoutRef.current);
+                            }
                             createSyncMutation.mutate({ step: 'apps', data: defaultUpdateSync(id, user) as any });
                         }}
                     >
@@ -166,6 +301,8 @@ export default function Sync() {
                     </Button>
                 </div>
             </div>
+
+            <hr className="border-gray-200" />
 
             {/* Vertical Stepper */}
             <div className="flex flex-col">
@@ -180,7 +317,7 @@ export default function Sync() {
 
                                 {/* Step Label */}
                                 <div className="flex flex-col">
-                                    {getStepLabel(step, state, () => setStepIndex(i))}
+                                    {getStepLabel(step, state, () => handleStepChange(i))}
                                     {state === StepState.CURRENT && (
                                         <span className='text-gray-500 text-sm'>{step.description}</span>
                                     )}
@@ -188,7 +325,13 @@ export default function Sync() {
                             </div>
 
                             {/* Step Content */}
-                            {getStepContent(step, state, sync, () => setStepIndex(i => i + 1))}
+                            {getStepContent(
+                                step,
+                                state,
+                                sync,
+                                () => handleStepChange(i + 1),
+                                transitionState
+                            )}
                         </div>
                     );
                 })}

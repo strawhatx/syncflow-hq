@@ -1,11 +1,12 @@
 // steps/NameStep.tsx
 import { useEffect, useState } from 'react';
-import { Link } from 'lucide-react';
+import { ArrowRightLeft } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Connector, ConnectorProvider } from '@/types/connectors';
 import { toast } from '@/hooks/use-toast';
-import useSync, { SyncData } from '../hooks/useSync';;
+import useSync from '../hooks/useSync';
+import { SyncData } from '../helpers/sync-data';
 import { DatasourceFieldsStrategyFactory } from '@/patterns/strategies/data-source-field';
 import { useDestinationData, useSourceData } from '../hooks/useDataSources';
 
@@ -44,6 +45,12 @@ export default function DataSourcesStep({ next, sync }: { next: () => void, sync
   }
 
   const handleNext = async () => {
+    // if there are no changes, move to next step
+    if (sourceDatabase === sync.config?.schema?.source_database &&
+      destinationDatabase === sync.config?.schema?.destination_database) {
+      return next();
+    }
+
     // now well save the data to the database 
     // we need to make sure we arent overriding the config data
     const dataToSave = {
@@ -81,7 +88,7 @@ export default function DataSourcesStep({ next, sync }: { next: () => void, sync
         </div>
 
         <div className='flex items-center justify-center col-span-1'>
-          <Link className='w-4 h-4' />
+          <ArrowRightLeft className='w-4 h-4' />
         </div>
         <div className='col-span-2'>
           {renderDestinationField()}

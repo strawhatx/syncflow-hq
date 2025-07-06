@@ -1,7 +1,7 @@
 // steps/NameStep.tsx
 
 import { ConnectorWithConnections, fetchConnectors } from '@/services/connector/service';
-import { Link } from 'lucide-react';
+import { ArrowRightLeft, Link } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { CustomSelectButton } from '../../../components/ui_custom/CustomSelectButton';
@@ -96,6 +96,15 @@ export default function AccountsStep({ next, sync }: { next: () => void, sync: S
 
   // handle next button click (save the data to the database)
   const handleNext = () => {
+    // check to see if there are changes to save
+    // if there are no changes, move to next step
+      if (sourceAppId === sync.source?.connector_id &&
+        destinationAppId === sync.destination?.connector_id &&
+        sourceAccountId === sync.source?.id &&
+        destinationAccountId === sync.destination?.id) {
+        return next(); // move to next step
+      }
+
     // now well save the data to the database
     const dataToSave = {
       id,
@@ -135,7 +144,7 @@ export default function AccountsStep({ next, sync }: { next: () => void, sync: S
         )}
 
         <div className='flex items-center justify-center col-span-1'>
-          <Link className='w-6 h-6' />
+          <ArrowRightLeft className='w-6 h-6' />
         </div>
 
         {renderSection(

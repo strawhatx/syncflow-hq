@@ -53,18 +53,18 @@ const TriggerComponent = ({ isLoading, disabled, selectedFile, setOpen }: { isLo
         onClick={() => setOpen(true)}
         disabled={disabled}
       >
-        <div className="flex items-center gap-2">
+        <div className="flex text-muted-foreground items-center gap-2">
           <Cloud className="h-6 w-6 text-purple-700" />
           {selectedFile && !isLoading ? (
             <span className="text-sm text-gray-600 truncate">{selectedFile?.name || selectedFile}</span>
           ) : (
-            <span className="text-sm text-gray-400 truncate">Upload</span>
+            <span className="text-sm text-gray-600 truncate">Upload</span>
           )}
         </div>
         {isLoading ? (
-          <Loader2 className="h-4 w-4 text-gray-300 animate-spin" />
+          <Loader2 className="h-4 w-4 text-gray-500 animate-spin" />
         ) : (
-          <ArrowUpFromLine className="h-4 w-4 text-gray-300" />
+          <ArrowUpFromLine className="h-4 w-4 text-muted-foreground" />
         )}
 
       </Button>
