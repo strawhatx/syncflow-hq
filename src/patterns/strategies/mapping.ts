@@ -10,8 +10,8 @@ export class GoogleSheetsMappingStrategy implements MappingStrategy {
         const icon = getIcon(provider);
 
         return data.map((item) => ({ 
-            id: item.properties.sheetId, 
-            name: item.properties.title, 
+            id: "", 
+            name: item?.properties?.title, 
             icon 
         }));
     }
@@ -22,8 +22,8 @@ export class DefaultMappingStrategy implements MappingStrategy {
         const icon = getIcon(provider);
 
         return data.map((item) => ({ 
-            id: item.id, 
-            name: item.name, 
+            id: "", 
+            name: item?.name, 
             icon 
         }));
     }

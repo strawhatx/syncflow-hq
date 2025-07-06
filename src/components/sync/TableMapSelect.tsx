@@ -1,17 +1,10 @@
-import { cn } from '@/lib/utils';
-import { ArrowRightLeft, Box, Loader2 } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
+import { cn, getImagePath } from '@/lib/utils';
+import { ArrowRight, ArrowRightLeft, Box, X } from 'lucide-react';
 import { FC, useState } from 'react';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
+import { Skeleton } from '../ui/skeleton';
 
 interface SelectOption {
-    id: number;
+    id: string;
     source: {
         name: string;
         icon?: string;
@@ -23,9 +16,13 @@ interface SelectOption {
 }
 
 interface TableMapSelectProps {
+    value: string;
+    setValue: (value: string) => void;
     options: SelectOption[];
     disabled?: boolean;
     isLoading: boolean;
+    onSelect?: (value: string) => void;
+    onCancel?: () => void;
 }
 
 export const LoadingState: FC = () => (
@@ -35,97 +32,116 @@ export const LoadingState: FC = () => (
     </div>
 );
 
-const getImagePath = (icon_name: string) => {
-    if (!icon_name) return;
-    return `/svg/${icon_name}.svg`;
-};
+const placeholder = (
+    <span className="text-muted-foreground flex items-center gap-2">
+        <Box className="h-6 w-6 text-purple-700" />
+        <span className="text-sm">Select a map</span>
+    </span>
+)
+
+const selectItem: FC<SelectOption> = (option) => {
+    return (
+        <div className="flex justify-between items-center gap-2">
+            <div className="flex items-center gap-2">
+                <img
+                    src={getImagePath(option?.source?.icon)}
+                    alt={option?.source?.name}
+                    className="h-6 w-6 object-contin"
+                />
+                <span className="text-sm">{option?.source?.name}</span>
+            </div>
+
+            <ArrowRightLeft className="h-4 w-4" />
+
+            <div className="flex items-center gap-2">
+                <img
+                    src={getImagePath(option?.destination?.icon)}
+                    alt={option?.destination?.name}
+                    className="h-6 w-6 object-contain"
+                />
+                <span className="text-sm">{option?.destination?.name}</span>
+            </div>
+        </div>
+    )
+}
 
 export const TableMapSelect: FC<TableMapSelectProps> = ({
     options,
+    value,
+    setValue,
     disabled,
     isLoading,
+    onSelect,
+    onCancel,
 }) => {
-    const [value, setValue] = useState<number>(0);
+    const [isOpen, setIsOpen] = useState(false);
+
+    const handleSelect = (value: string) => {
+        setValue(value);
+        onSelect?.(value);
+        setIsOpen(false);
+    }
+
     const selectedOption = options?.find(opt => opt.id === value);
 
     return (
-        <Select value={value} onValueChange={setValue} disabled={disabled}>
-            <SelectTrigger
+        <div className="relative">
+            <button
+                onClick={() => setIsOpen(!isOpen)}
                 className={cn(
                     "flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-2.5 py-1.5 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50",
                     !value && "text-muted-foreground"
                 )}
+                disabled={disabled}
             >
                 <div className="flex items-center gap-2">
-                    <SelectValue placeholder={
-                        <span className="text-muted-foreground flex items-center gap-2">
-                            <Box className="h-6 w-6 text-purple-700" />
-                            <span className="text-sm">Select a map</span>
-                        </span>
-                    }>
-                        {value && (
-                            <div className="flex items-center gap-2">
-                                <div className="flex items-center gap-2">
-                                    <img
-                                        src={getImagePath(selectedOption?.source?.icon)}
-                                        alt={selectedOption?.source?.name}
-                                        className="h-6 w-6 object-contin"
-                                    />
-                                    <span className="text-sm">{selectedOption?.source?.name}</span>
-                                </div>
-
-                                <ArrowRightLeft className="h-4 w-4" />
-
-                                <div className="flex items-center gap-2">
-                                    <img
-                                        src={getImagePath(selectedOption?.destination?.icon)}
-                                        alt={selectedOption?.destination?.name}
-                                        className="h-6 w-6 object-contain"
-                                    />
-                                    <span className="text-sm">{selectedOption?.destination?.name}</span>
-                                </div>
-                            </div>
-                        )}
-                    </SelectValue>
+                    {selectedOption ? (
+                        selectItem(selectedOption)
+                    ) : (
+                        placeholder
+                    )}
                 </div>
-                {isLoading && (
-                    <div className="flex items-end gap-2">
-                        <Loader2 className="h-3.5 w-3.5 opacity-50 animate-spin" />
-                    </div>
-                )}
-            </SelectTrigger>
-
-            <SelectContent>
-                {options.map((option) => (
-                    <SelectItem
-                        key={option.id}
-                        value={option.id}
-                        className="flex items-center gap-2"
+                {onCancel && (
+                    <span
+                        onClick={onCancel}
+                        className="text-sm text-red-500 hover:text-red-700 transition-colors cursor-pointer"
                     >
-                        <div className="flex items-center gap-2">
-                                <div className="flex items-center gap-2">
-                                    <img
-                                        src={getImagePath(option?.source?.icon)}
-                                        alt={option?.source?.name}
-                                        className="h-6 w-6 object-contin"
-                                    />
-                                    <span className="text-sm">{option?.source?.name}</span>
-                                </div>
+                        <X className="h-4 w-4" />
+                    </span>
+                )}
+            </button>
 
-                                <ArrowRightLeft className="h-4 w-4" />
-
-                                <div className="flex items-center gap-2">
-                                    <img
-                                        src={getImagePath(option?.destination?.icon)}
-                                        alt={option?.destination?.name}
-                                        className="h-6 w-6 object-contain"
-                                    />
-                                    <span className="text-sm">{option?.destination?.name}</span>
-                                </div>
+            {isOpen && (
+                <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg">
+                    {options.map((option) => (
+                        <label key={option.id} className="flex items-center gap-2 p-2 hover:bg-gray-100 cursor-pointer">
+                            <input
+                                type="radio"
+                                name="tableMap"
+                                value={option.id}
+                                checked={value === option.id}
+                                onChange={() => handleSelect(option.id)}
+                                className="form-radio"
+                            />
+                            <div className="flex items-center gap-2">
+                                <img
+                                    src={getImagePath(option.source.icon)}
+                                    alt={option.source.name}
+                                    className="h-6 w-6 object-contain"
+                                />
+                                <span className="text-sm">{option.source.name}</span>
+                                <ArrowRight className="h-4 w-4" />
+                                <img
+                                    src={getImagePath(option.destination.icon)}
+                                    alt={option.destination.name}
+                                    className="h-6 w-6 object-contain"
+                                />
+                                <span className="text-sm">{option.destination.name}</span>
                             </div>
-                    </SelectItem>
-                ))}
-            </SelectContent>
-        </Select>
+                        </label>
+                    ))}
+                </div>
+            )}
+        </div>
     );
 }; 

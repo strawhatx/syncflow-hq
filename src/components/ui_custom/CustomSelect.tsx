@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils';
+import { cn, getImagePath } from '@/lib/utils';
 import { Box, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FC } from 'react';
@@ -41,11 +41,6 @@ export const CustomSelect: FC<CustomSelectProps> = ({
   disabled,
   isLoading,
 }) => {
-  const getImagePath = (icon_name: string) => {
-    if (!icon_name) return;
-    return `/svg/${icon_name}.svg`;
-  };
-
   const handleValueChange = (newValue: string) => {
     onValueChange(newValue);
   };

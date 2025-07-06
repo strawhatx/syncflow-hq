@@ -33,7 +33,7 @@ export class AirtableStrategy implements DataSourceStrategy {
     //     ...
     //   ]
     // }
-    private async connect(type: "tables" | "sources", config: Record<string, any>): Promise<{ valid: boolean, result: any }> {
+    private async connect(type: "tables" | "sources" | "columns", config: Record<string, any>): Promise<{ valid: boolean, result: any }> {
         // Airtable is not a standard datasource so we need to call
         // the Airtable API to get the tables
         try {
@@ -71,6 +71,21 @@ export class AirtableStrategy implements DataSourceStrategy {
     }
 
     async getTables(config: Record<string, any>): Promise<Record<string, any>[]> {
+        // must have a baseId
+        if (!config.baseId) {
+            throw new Error("Base ID is required");
+        }
+
+        // first validate the connection
+        const { valid, result } = await this.connect("tables", config);
+        if (!valid) {
+            throw new Error("Failed to connect to Airtable");
+        }
+
+        return result.tables;
+    }
+
+    async getColumns(config: Record<string, any>): Promise<Record<string, any>[]> {
         // must have a baseId
         if (!config.baseId) {
             throw new Error("Base ID is required");

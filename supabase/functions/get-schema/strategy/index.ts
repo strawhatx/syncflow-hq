@@ -11,6 +11,7 @@ import { providerMap } from "../../utils/utils.ts";
 export interface DataSourceStrategy {
     getSources(config: Record<string, any>): Promise<Record<string, any>[]>;
     getTables(config: Record<string, any>): Promise<Record<string, any>[]>;
+    getColumns(config: Record<string, any>): Promise<Record<string, any>[]>;
 }
 
 export class DataSourceStrategyFactory {

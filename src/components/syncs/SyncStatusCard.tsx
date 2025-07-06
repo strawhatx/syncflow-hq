@@ -3,6 +3,7 @@ import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { SetupStage } from "@/integrations/supabase/types";
+import { getImagePath } from "@/lib/utils";
 
 interface SyncStatusCardProps {
   title: string;
@@ -58,16 +59,10 @@ const SyncStatusCard = ({
   source,
   destination,
   entityCount,
-  syncId,
-  setup_stage
+  syncId
 }: SyncStatusCardProps) => {
   const navigate = useNavigate();
   const statusInfo = is_completed ? statusConfig[status] : statusConfig.pending;
-
-  const getImagePath = (icon_name: string) => {
-    if (!icon_name) return;
-    return `/svg/${icon_name}.svg`;
-  };
 
   const handleCardClick = () => {
     if (is_completed) {

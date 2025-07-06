@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils';
+import { cn, getImagePath } from '@/lib/utils';
 import { Box, Check, ChevronsUpDown, Loader2, Plus } from 'lucide-react';
 import {
     Popover,
@@ -45,12 +45,6 @@ export const CustomSelectButton: FC<CustomSelectButtonProps> = ({
     onCreateNew,
 }) => {
     const [open, setOpen] = useState(false);
-
-    const getImagePath = (icon_name: string) => {
-        if (!icon_name) return;
-        return `/svg/${icon_name}.svg`;
-    };
-
     const selectedOption = options.find(opt => opt.id === value || opt.name === value);
 
     const buttonClass = cn(

@@ -145,13 +145,13 @@ export class GoogleSheetsStrategy implements DataSourceStrategy {
 
         // need to validate the first row of all sheets to try to 
         // determine if the sheet has a valid table 
-        var isSheetValid = result.sheets.some(async (sheet: any) => {
+        const isSheetValid = await Promise.all(result.sheets.map(async (sheet: any) => {
             const cells = sheet.data?.[0]?.rowData?.[0]?.values || [];
 
             const validation = await this.validate(cells);
 
             return validation.valid;
-        });
+        })).then(results => results.some(valid => valid));
 
         if (!isSheetValid) {
             throw new Error("Sheet is invalid, please check the header row, or select a different sheet");

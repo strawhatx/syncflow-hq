@@ -1,10 +1,12 @@
 import { SyncTableMapping, SyncFieldMapping } from "@/types/sync";
+import { v4 as uuidv4 } from 'uuid';
 
 export class TableMappingBuilder {
     private mapping: SyncTableMapping;
 
     constructor(source: string, destination: string) {
         this.mapping = {
+            id: uuidv4(),
             source_table: source,
             destination_table: destination,
             field_mappings: [],

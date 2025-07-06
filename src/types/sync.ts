@@ -16,6 +16,7 @@ export interface SyncFieldMapping {
 }
 
 export interface SyncTableMapping {
+    id: string;
     source_table: string;
     destination_table: string;
     field_mappings: SyncFieldMapping[];
