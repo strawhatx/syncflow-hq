@@ -6,17 +6,17 @@ ADD COLUMN last_sync TIMESTAMPTZ DEFAULT NULL;
 CREATE TABLE public.connection_databases (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
-    connection_id UUID REFERENCES public.connection(id) ON DELETE CASCADE,
+    connection_id UUID REFERENCES public.connections(id) ON DELETE CASCADE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
-    UNIQUE(name, connector_id) -- Ensure unique database names per connector
+    UNIQUE(name, connection_id) -- Ensure unique database names per connector
 );
 
 -- Create tables table
 CREATE TABLE public.connection_tables (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
-    database_id UUID REFERENCES public.databases(id) ON DELETE CASCADE,
+    database_id UUID REFERENCES public.connection_databases(id) ON DELETE CASCADE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE(name, database_id) -- Ensure unique table names per database
@@ -27,7 +27,7 @@ CREATE TABLE public.connection_tables (
 CREATE TABLE public.connection_columns (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
-    table_id UUID REFERENCES public.tables(id) ON DELETE CASCADE,
+    table_id UUID REFERENCES public.connection_tables(id) ON DELETE CASCADE,
     data_type TEXT NOT NULL,
     is_nullable BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
