@@ -1,0 +1,17 @@
+{
+  "unknown": {
+    "versionFramework": "4.17.1",
+    "error": {
+      "message": "Cannot parse \"serverless.yml\": bad indentation of a mapping entry in \"/Users/nathanieljames/Documents/syncflow-hq/metadata-sync/serverless.yml\" (18:13)\n\n 15 | functions:\n 16 |   processJobs:\n 17 |     handler: handler.processJobs\n 18 |      timeout: 900 # 15 minutes\n------------------^\n 19 |     events:\n 20 |       - schedule: rate(1 minute)",
+      "stack": "ServerlessError2: Cannot parse \"serverless.yml\": bad indentation of a mapping entry in \"/Users/nathanieljames/Documents/syncflow-hq/metadata-sync/serverless.yml\" (18:13)\n\n 15 | functions:\n 16 |   processJobs:\n 17 |     handler: handler.processJobs\n 18 |      timeout: 900 # 15 minutes\n------------------^\n 19 |     events:\n 20 |       - schedule: rate(1 minute)\n    at parseConfigurationFile (file:///Users/nathanieljames/.serverless/releases/4.17.1/package/dist/sf-core.js:827:3949)\n    at async read_default (file:///Users/nathanieljames/.serverless/releases/4.17.1/package/dist/sf-core.js:827:5324)\n    at async routeNew (file:///Users/nathanieljames/.serverless/releases/4.17.1/package/dist/sf-core.js:836:625)\n    at async commandOnboarding (file:///Users/nathanieljames/.serverless/releases/4.17.1/package/dist/sf-core.js:834:20215)\n    at async _CoreRunner.run (file:///Users/nathanieljames/.serverless/releases/4.17.1/package/dist/sf-core.js:1148:6301)\n    at async route (file:///Users/nathanieljames/.serverless/releases/4.17.1/package/dist/sf-core.js:1582:2878)\n    at async Object.run (file:///Users/nathanieljames/.serverless/releases/4.17.1/package/dist/sf-core.js:1583:3661)\n    at async run2 (file:///Users/nathanieljames/.serverless/releases/4.17.1/package/dist/sf-core.js:1583:4815)",
+      "code": "CONFIGURATION_PARSE_ERROR"
+    },
+    "command": [],
+    "options": {},
+    "serviceProviderAwsCfStackId": null,
+    "serviceProviderAwsCfStackCreated": null,
+    "serviceProviderAwsCfStackUpdated": null,
+    "serviceProviderAwsCfStackStatus": null,
+    "serviceProviderAwsCfStackOutputs": null
+  }
+}
