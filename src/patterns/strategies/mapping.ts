@@ -11,7 +11,7 @@ export class GoogleSheetsMappingStrategy implements MappingStrategy {
 
         return data.map((item) => ({ 
             id: "", 
-            name: item?.properties?.title, 
+            name: item?.properties.title, 
             icon 
         }));
     }
@@ -23,7 +23,7 @@ export class DefaultMappingStrategy implements MappingStrategy {
 
         return data.map((item) => ({ 
             id: "", 
-            name: item?.name, 
+            name: item.name, 
             icon 
         }));
     }

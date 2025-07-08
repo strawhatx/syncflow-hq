@@ -1,0 +1,29 @@
+{
+  "name": "metadata-sync",
+  "version": "1.0.0",
+  "description": "background microservice that syncs metadata",
+  "license": "ISC",
+  "author": "Nathaniel James",
+  "type": "es6",
+  "main": "dist/handler.ts",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "prebuild": "npm run clean",
+    "deploy": "serverless deploy",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.7",
+    "aws-sdk": "^2.1574.0",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.149",
+    "@types/aws-sdk": "^2.7.4",
+    "@types/node": "^20.11.24",
+    "serverless": "^3.38.0",
+    "serverless-plugin-typescript": "^2.1.5",
+    "typescript": "^5.3.3"
+  }
+}

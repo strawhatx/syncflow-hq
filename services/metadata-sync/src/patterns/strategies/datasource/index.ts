@@ -6,12 +6,11 @@ import { PostgresStrategy } from "./postgres.ts";
 import { S3Strategy } from "./s3.ts";
 import { GoogleSheetsStrategy } from "./google-sheets.ts";
 import { NotionStrategy } from "./notion.ts";
-import { providerMap } from "../util/providers.ts";
+import { providerMap } from "../../../util/providers.ts";
 
 export interface DataSourceStrategy {
-    getSources(config: Record<string, any>): Promise<Record<string, any>[]>;
+    getSources(connection_id: string, config: Record<string, any>): Promise<Record<string, any>[]>;
     getTables(config: Record<string, any>): Promise<Record<string, any>[]>;
-    getColumns(config: Record<string, any>): Promise<Record<string, any>[]>;
 }
 
 // get the provider and config from the request

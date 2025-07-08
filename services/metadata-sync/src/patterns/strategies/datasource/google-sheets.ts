@@ -1,3 +1,5 @@
+import { supabase } from "../../../config/supabase.ts";
+import { saveColumns, saveDatabases, saveTable } from "../../../services/connection.ts";
 import { DataSourceStrategy } from "./index.ts";
 
 type HeaderValidationResult = {
@@ -30,7 +32,7 @@ export class GoogleSheetsStrategy implements DataSourceStrategy {
         // we need to encode the sheet name and range to to revent the wrong encoding
         // via spaces in the sheet name
         if (type === "tables") {
-            const sheetName = urlConfig.sheet_name;
+            const sheetName = urlConfig.spreadsheet_name;
             if (!sheetName) throw new Error("Sheet name is required");
 
             const range = encodeURIComponent(`'${sheetName}'!A1:Z1`);
@@ -115,25 +117,38 @@ export class GoogleSheetsStrategy implements DataSourceStrategy {
         }
     }
 
-    async getSources(config: Record<string, any>): Promise<Record<string, any>[]> {
+    async getSources(connection_id: string, config: Record<string, any>): Promise<Record<string, any>[]> {
         // first validate the connection
         const { valid, result } = await this.connect("sources", config);
         if (!valid) {
             throw new Error("Failed to connect to Google Sheets");
         }
 
+        // save the spreadsheet files to the db
+        const databases = await saveDatabases(
+            result.files.map((file: any) => ({
+                connection_id,
+                config: {
+                    spreadsheet_id: file.properties.sheetId,
+                    spreadsheet_name: file.properties.title,
+                    createdTime: file.properties.createdTime,
+                    modifiedTime: file.properties.modifiedTime
+                }
+            }))
+        );
+
         // return the list of spreadsheet files
-        return result.files;
+        return databases;
     }
 
-    async getTables(config: Record<string, any>): Promise<Record<string, any>[]> {
+    async getTables( config: Record<string, any>): Promise<Record<string, any>[]> {
         // must have a spreadsheetId
         if (!config.spreadsheet_id) {
             throw new Error("Spreadsheet ID is required");
         }
 
         // if the sheetName is not provided, use the first sheet
-        if (!config.sheet_name) {
+        if (!config.spreadsheet_name) {
             throw new Error("Spreadsheet name is required");
         }
 
@@ -145,16 +160,41 @@ export class GoogleSheetsStrategy implements DataSourceStrategy {
 
         // need to validate the first row of all sheets to try to 
         // determine if the sheet has a valid table 
-        const isSheetValid = await Promise.all(result.sheets.map(async (sheet: any) => {
+        const sheets = await Promise.all(result.sheets.map(async (sheet: any) => {
             const cells = sheet.data?.[0]?.rowData?.[0]?.values || [];
 
             const validation = await this.validate(cells);
 
             return validation.valid;
-        })).then(results => results.some(valid => valid));
+        }));
 
-        if (!isSheetValid) {
-            throw new Error("Sheet is invalid, please check the header row, or select a different sheet");
+        // filter out the sheets that are not valid
+        const validSheets = sheets.filter(valid => valid);
+        if (!validSheets.length) return [];
+
+        // save the tables and columns
+        for (const sheet of validSheets) {
+            const sheetData = await saveTable({
+                database_id: config.spreadsheet_id,
+                config: {
+                    sheet_id: sheet.properties.sheetId,
+                    sheet_name: sheet.properties.title
+                }
+            });
+
+            // get the seet header row
+            const header = sheet.data?.[0]?.rowData?.[0]?.values || [];
+
+            // save the columns to the db
+            await saveColumns(
+                header?.map((column: any, index: number) => ({
+                    table_id: sheetData.id,
+                    id: index,
+                    name: column.formattedValue,
+                    data_type: "text",
+                    is_nullable: true
+                }))
+            );
         }
 
         // return the list of sheets
