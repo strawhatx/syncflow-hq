@@ -44,7 +44,7 @@ export class DefaultFactory implements ConfigFactory {
     constructor(private readonly value: string) {}
 
     create(): Record<string, any> {
-        return { database_url: this.value };
+        return { database_id: this.value };
     }
 }
 

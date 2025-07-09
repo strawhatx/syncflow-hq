@@ -1,4 +1,12 @@
-export type Provider = "airtable" | "supabase"| "google_sheets" | "notion" | "postgresql" | "mysql" | "mongodb" | "s3";
+export type Provider =
+    "airtable" |
+    "supabase" |
+    "google_sheets" |
+    "notion" |
+    "postgresql" |
+    "mysql" |
+    "mongodb" |
+    "sqlserver";
 
 export const providerMap: Record<Provider, string> = {
     airtable: "airtable",
@@ -8,7 +16,7 @@ export const providerMap: Record<Provider, string> = {
     postgresql: "postgresql",
     mysql: "mysql",
     mongodb: "mongodb",
-    s3: "s3",
+    sqlserver: "sqlserver",
 }
 
 export const oauthProviders = [

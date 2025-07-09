@@ -32,7 +32,7 @@ const processTablesAndFields = async (provider: string, config: Record<string, a
     const sourceConfig = CreateConfigFactory.create(provider as ConnectorProvider, source);
     const mergedConfig = { ...config, ...sourceConfig };
 
-    await strategy.getTables(source, mergedConfig);
+    await strategy.getTables(mergedConfig);
   }
 }
 

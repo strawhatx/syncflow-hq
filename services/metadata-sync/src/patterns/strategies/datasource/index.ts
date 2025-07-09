@@ -3,7 +3,7 @@ import { SupabaseStrategy } from "./supabase.ts";
 import { MongoStrategy } from "./mongo.ts";
 import { MySQLStrategy } from "./my-sql.ts";
 import { PostgresStrategy } from "./postgres.ts";
-import { S3Strategy } from "./s3.ts";
+import { SQLServerStrategy } from "./sql-server.ts";
 import { GoogleSheetsStrategy } from "./google-sheets.ts";
 import { NotionStrategy } from "./notion.ts";
 import { providerMap } from "../../../util/providers.ts";
@@ -58,8 +58,8 @@ export class DataSourceStrategyFactory {
                 return new MySQLStrategy();
             case providerMap.mongodb:
                 return new MongoStrategy();
-            case providerMap.s3:
-                return new S3Strategy();
+            case providerMap.sqlserver:
+                return new SQLServerStrategy();
             case providerMap.supabase:
                 return new SupabaseStrategy();
             case providerMap.airtable:

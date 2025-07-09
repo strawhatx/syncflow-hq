@@ -1,3 +1,4 @@
+import { saveColumns, saveDatabases, saveTable } from "../../../services/connection.ts";
 import { DataSourceStrategy } from "./index.ts";
 import { Client } from "npm:pg@8.16.2";
 
@@ -13,7 +14,7 @@ export class PostgresStrategy implements DataSourceStrategy {
         }
     }
 
-    async getSources(config: Record<string, any>): Promise<Record<string, any>[]> {
+    async getSources(connection_id: string, config: Record<string, any>): Promise<Record<string, any>[]> {
         // first validate the connection
         const { valid, client } = await this.connect(config);
         if (!valid) {
@@ -29,8 +30,17 @@ export class PostgresStrategy implements DataSourceStrategy {
         // release the connection
         await client.end();
 
+        // save the databases
+        const databases = await saveDatabases(result.rows.map((db: any) => ({
+            connection_id,
+            config: {
+                id: db.datname,
+                name: db.datname
+            }
+        })));
+
         // return the databases
-        return result.rows;
+        return databases;
     }
 
     async getTables(config: Record<string, any>): Promise<Record<string, any>[]> {
@@ -44,6 +54,7 @@ export class PostgresStrategy implements DataSourceStrategy {
             ...config,
             database: config.database
         });
+
         if (!valid) {
             throw new Error("Failed to connect to PostgreSQL");
         }
@@ -51,7 +62,7 @@ export class PostgresStrategy implements DataSourceStrategy {
         // default schema to public if not provided
         const schema = config.schema || "public";
 
-        // get all tables from the selected schema
+        // get all tables with the columns
         const result = await client.query(
             `
             SELECT table_name FROM information_schema.tables
@@ -59,6 +70,33 @@ export class PostgresStrategy implements DataSourceStrategy {
             `,
             [schema]
         );
+
+        // save the tables & columns
+        for (const table of result.rows) {
+            const tableData = await saveTable({
+                database_id: config.database_id,
+                config: {
+                    table_name: table.table_name
+                }
+            });
+
+            // get the columns
+            const columns = await client.query(
+                `
+                SELECT column_name, data_type, is_nullable FROM information_schema.columns
+                WHERE table_schema = $1 AND table_name = $2;
+                `,
+                [schema, table.table_name]
+            );
+
+            // save the columns
+            await saveColumns(columns.map((col: any) => ({
+                table_id: tableData.id,
+                name: col.column_name,
+                data_type: col.data_type,
+                is_nullable: col.is_nullable
+            })));
+        }
 
         // release the connection
         await client.end();

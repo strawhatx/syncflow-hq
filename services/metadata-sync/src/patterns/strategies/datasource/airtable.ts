@@ -110,7 +110,7 @@ export class AirtableStrategy implements DataSourceStrategy {
             // save the columns to the db
             await saveColumns(table.fields.map((column: any) => ({
                     table_id: tableData.id,
-                    id: column.id,
+                    //id: column.id,
                     name: column.name,
                     data_type: column.type,
                     is_nullable: column.is_nullable

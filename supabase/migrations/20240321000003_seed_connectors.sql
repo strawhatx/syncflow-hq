@@ -121,6 +121,18 @@ VALUES
         true
     ),
     (
+        'SQL Server',
+        'api_key',
+        'sqlserver',
+        '{
+            "required_fields": ["host", "port", "database", "username", "password"],
+            "optional_fields": ["schema", "encrypt"],
+            "description": "Connect to your Microsoft SQL Server database",
+            "icon": "sqlserver-icon"
+        }'::jsonb,
+        true
+    ),
+    (
         'Amazon S3',
         'api_key',
         'aws',

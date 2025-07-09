@@ -189,7 +189,7 @@ export class GoogleSheetsStrategy implements DataSourceStrategy {
             await saveColumns(
                 header?.map((column: any, index: number) => ({
                     table_id: sheetData.id,
-                    id: index,
+                    //id: index,
                     name: column.formattedValue,
                     data_type: "text",
                     is_nullable: true
