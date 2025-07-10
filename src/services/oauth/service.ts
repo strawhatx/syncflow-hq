@@ -301,7 +301,7 @@ export const processOAuthCallback = async (
       })
     });
 
-    return result;
+    return await result.json();
   } catch (error) {
     console.error("Error processing OAuth callback:", error);
     throw error;

@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { createConnection, updateConnection } from "@/services/connections/service";
+import { addMetadataSyncJob } from "@/services/jobs/service";
 import { initiateOAuth } from "@/services/oauth/service";
 import { Connector } from "@/types/connectors";
 
@@ -98,6 +99,9 @@ class ApiKeyActionsStrategy implements ConnectionActionsStrategy {
             else {
                 await updateConnection(connection_id, connector, config);
             }
+
+            // add metadata sync job to start syncing the metadata
+            await addMetadataSyncJob(connection_id, teamId);
 
             toast({
                 title: `Connection ${action}d`,

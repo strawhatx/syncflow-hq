@@ -9,6 +9,7 @@ export const addMetadataSyncJob = async (connectionId: string, teamId: string) =
         throw new Error("User not authenticated");
     }
 
+    // add job to job queue
     const { data, error } = await supabase.functions.invoke('insert_metadata_sync_job', {
         body: {
             p_connection_id: connectionId,

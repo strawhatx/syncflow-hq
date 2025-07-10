@@ -7,10 +7,6 @@ import { failJob, getPendingJob, updateJobStatus } from './services/job.ts';
 import { getConnectionConfig } from './services/connection.ts';
 import { CreateConfigFactory } from './patterns/factories/config.ts';
 import { ConnectorProvider } from './types/connector.ts';
-import * as dotenv from 'dotenv';
-
-// Load environment variables from .env file
-dotenv.config();
 
 const processSources = async (provider: string, connection_id: string, config: Record<string, any>) => {
   // get the strategy for the provider
@@ -40,21 +36,11 @@ const processTablesAndFields = async (provider: string, config: Record<string, a
   }
 }
 
-export const processTestJob: ScheduledHandler = async (event) => {
-  const job = '123'
-
-  if (!job) {
-    console.log("No pending jobs found");
-    return;
-  }
-
-  console.log('job', job);
-}
-
 export const processJobs: ScheduledHandler = async (event) => {
   let currentJobId: string | undefined;
 
   try {
+    // check if there are any pending jobs
     const job = await getPendingJob();
 
     if (!job) {

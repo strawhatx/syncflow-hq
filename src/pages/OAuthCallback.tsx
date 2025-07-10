@@ -5,6 +5,7 @@ import { toast } from "@/components/ui/use-toast";
 import { processOAuthCallback } from "@/services/oauth/service";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTeam } from "@/contexts/TeamContext";
+import { addMetadataSyncJob } from "@/services/jobs/service";
 
 /**
  * Handles the OAuth callback flow for third-party integrations.
@@ -71,7 +72,11 @@ const OAuthCallback = () => {
         }
 
         try {
-            await processOAuthCallback(team.id, code, state, provider, searchParams);
+            // process the oauth callback & get the connector
+            const result = await processOAuthCallback(team.id, code, state, provider, searchParams);
+
+            // add metadata sync job to start syncing the metadata
+            await addMetadataSyncJob(result.id, team.id);
             queryClient.invalidateQueries({ queryKey: ["connectors"] });
 
             toast({
@@ -98,7 +103,7 @@ const OAuthCallback = () => {
         if (isTeamLoading || !team) return;
 
         handleCallback();
-        
+
     }, [handleCallback, isTeamLoading, team]);
 
     return (
