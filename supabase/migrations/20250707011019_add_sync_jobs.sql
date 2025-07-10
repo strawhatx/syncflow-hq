@@ -2,6 +2,7 @@
 CREATE TABLE public.metadata_sync_jobs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid (),
     connection_id UUID NOT NULL REFERENCES public.connections (id),
+    team_id UUID NOT NULL REFERENCES public.teams (id),
     status TEXT NOT NULL DEFAULT 'pending',
     progress INT DEFAULT 0,
     last_synced_at TIMESTAMPTZ,
@@ -14,6 +15,7 @@ CREATE TABLE public.metadata_sync_jobs (
 CREATE TABLE public.data_sync_jobs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid (),
     sync_id UUID NOT NULL REFERENCES public.syncs (id),
+    team_id UUID NOT NULL REFERENCES public.teams (id),
     status TEXT NOT NULL DEFAULT 'pending',
     progress INT DEFAULT 0,
     last_synced_at TIMESTAMPTZ,
@@ -24,30 +26,26 @@ CREATE TABLE public.data_sync_jobs (
 -- Index to quickly find jobs by status (for workers)
 CREATE INDEX idx_data_sync_jobs_status ON public.data_sync_jobs (status);
 CREATE INDEX idx_metadata_sync_jobs_status ON public.metadata_sync_jobs (status);
+
 CREATE INDEX idx_data_sync_jobs_sync_id ON public.data_sync_jobs (sync_id);
-CREATE INDEX idx_metadata_sync_jobs_sync_id ON public.metadata_sync_jobs (sync_id);
+CREATE INDEX idx_metadata_sync_jobs_connection_id ON public.metadata_sync_jobs (connection_id);
+
+CREATE INDEX idx_data_sync_jobs_team_id ON public.data_sync_jobs (team_id);
+CREATE INDEX idx_metadata_sync_jobs_team_id ON public.metadata_sync_jobs (team_id);
 
 -- Enable RLS for sync_jobs
 ALTER TABLE public.metadata_sync_jobs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.data_sync_jobs ENABLE ROW LEVEL SECURITY;
 
--- Policy for metadata_sync_jobs: Allow access to users with a specific role
-CREATE POLICY metadata_sync_jobs_policy ON public.metadata_sync_jobs
-    USING (current_user = 'your_role' OR current_user = 'admin');
+-- Policy to allow only the service role to view jobs
+CREATE POLICY service_role_can_view_jobs ON public.metadata_sync_jobs
+    FOR SELECT
+    USING (current_user = 'service_role');
 
--- Policy for data_sync_jobs: Allow access to users with a specific role
-CREATE POLICY data_sync_jobs_policy ON public.data_sync_jobs
-    USING (current_user = 'your_role' OR current_user = 'admin');
-
--- Optionally, you can add more policies for different operations like INSERT, UPDATE, DELETE
--- Example: Allow only specific users to insert new jobs
-CREATE POLICY insert_metadata_sync_jobs_policy ON public.metadata_sync_jobs
-    FOR INSERT
-    WITH CHECK (current_user = 'admin');
-
-CREATE POLICY insert_data_sync_jobs_policy ON public.data_sync_jobs
-    FOR INSERT
-    WITH CHECK (current_user = 'admin');
+-- Policy to allow only the service role to view jobs
+CREATE POLICY service_role_can_view_jobs ON public.data_sync_jobs
+    FOR SELECT
+    USING (current_user = 'service_role');
 
 
 -- Optional: Trigger to update updated_at on row update for data_sync_jobs

@@ -19,11 +19,6 @@ ALTER TABLE public.connection_tables ENABLE ROW LEVEL SECURITY;
 -- Enable RLS on connection_columns table
 ALTER TABLE public.connection_columns ENABLE ROW LEVEL SECURITY;
 
--- Example policy for connections table
-CREATE POLICY team_members_can_access_connections ON public.connections
-    USING (
-        team_id = ANY(public.get_team_ids_for_user(auth.uid()))
-    );
 
 -- Example policy for connection_databases table
 CREATE POLICY team_members_can_access_databases ON public.connection_databases
