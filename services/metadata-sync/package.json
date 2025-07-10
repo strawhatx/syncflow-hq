@@ -7,6 +7,7 @@
   "type": "es6",
   "main": "dist/handler.ts",
   "scripts": {
+    "dev": "serverless offline",
     "build": "tsc",
     "clean": "rm -rf dist",
     "prebuild": "npm run clean",
@@ -16,14 +17,20 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.39.7",
     "aws-sdk": "^2.1574.0",
-    "node-fetch": "^3.3.2"
+    "mongodb": "^6.17.0",
+    "mssql": "^11.0.1",
+    "mysql2": "^3.14.1",
+    "node-fetch": "^3.3.2",
+    "pg": "^8.16.3"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.149",
     "@types/aws-sdk": "^2.7.4",
+    "@types/mssql": "^9.1.7",
     "@types/node": "^20.11.24",
-    "serverless": "^3.38.0",
-    "serverless-plugin-typescript": "^2.1.5",
+    "@types/pg": "^8.15.4",
+    "serverless": "^4.17.1",
+    "serverless-offline": "^14.4.0",
     "typescript": "^5.3.3"
   }
 }

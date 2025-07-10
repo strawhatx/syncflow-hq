@@ -36,7 +36,7 @@ export class StrictPermissionStrategy implements TeamPermissionStrategy {
 }
 
 // Factory for creating permission strategies
-export const createPermissionStrategy = (type: 'role-based' | 'strict'): PermissionStrategy => {
+export const createPermissionStrategy = (type: 'role-based' | 'strict'): TeamPermissionStrategy => {
     switch (type) {
         case 'strict':
             return new StrictPermissionStrategy();

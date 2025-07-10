@@ -1,6 +1,6 @@
 import { saveColumns, saveDatabases, saveTable } from "../../../services/connection.ts";
 import { DataSourceStrategy } from "./index.ts";
-import { Client } from "npm:pg@8.16.2";
+import { Client } from "pg";
 
 export class PostgresStrategy implements DataSourceStrategy {
     private async connect(config: Record<string, any>): Promise<{ valid: boolean, client: Client }> {

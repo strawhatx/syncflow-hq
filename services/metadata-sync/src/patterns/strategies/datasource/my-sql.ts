@@ -1,6 +1,6 @@
 import { saveColumns, saveDatabases, saveTable } from "../../../services/connection.ts";
 import { DataSourceStrategy } from "./index.ts";
-import { createPool } from "npm:mysql2@3.14.1/promise";
+import { createPool } from "mysql2/promise";
 
 export class MySQLStrategy implements DataSourceStrategy {
     private config(config: Record<string, any>): Record<string, any> {

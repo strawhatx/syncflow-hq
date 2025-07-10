@@ -2,6 +2,8 @@
 ALTER TABLE public.connections
 ADD COLUMN last_sync TIMESTAMPTZ DEFAULT NULL;
 
+
+
 -- Create databases table
 CREATE TABLE public.connection_databases (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -39,4 +41,3 @@ CREATE TABLE public.connection_columns (
 CREATE INDEX idx_databases_connection_id ON public.connection_databases(connection_id);
 CREATE INDEX idx_tables_database_id ON public.connection_tables(database_id);
 CREATE INDEX idx_columns_table_id ON public.connection_columns(table_id);
-

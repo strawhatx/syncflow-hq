@@ -1,5 +1,5 @@
 import { DataSourceStrategy } from "./index.ts";
-import { MongoClient } from "npm:mongodb@6.17.0";
+import { MongoClient } from "mongodb";
 import { saveDatabases, saveTable, saveColumns } from "../../../services/connection.ts";
 
 export class MongoStrategy implements DataSourceStrategy {
@@ -55,14 +55,16 @@ export class MongoStrategy implements DataSourceStrategy {
         database_id: config.database_id,
         config: {
           table_name: collection.name,
-          table_id: collection.id
         }
       });
 
       // Sample 1 doc to infer column names/types
       const sample = await db.collection(collection.name).findOne();
 
-      await saveColumns(Object.keys(sample)?.map((key) => ({
+      if (!sample) continue;
+
+      // save the columns
+      await saveColumns(Object.keys(sample).map((key) => ({
         table_id: table.id,
         name: key,
         data_type: typeof sample[key],

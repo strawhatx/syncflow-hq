@@ -1,5 +1,5 @@
 import { DataSourceStrategy } from ".";
-import { Client } from "mssql@10.2.0";
+import { Client } from "mssql";
 import { saveColumns, saveDatabases, saveTable } from "../../../services/connection";
 
 export class SQLServerStrategy implements DataSourceStrategy {

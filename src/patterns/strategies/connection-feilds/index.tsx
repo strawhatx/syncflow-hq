@@ -5,7 +5,7 @@ import { Connector } from "@/types/connectors";
 import { PostgresFieldsStrategy } from "./postgres";
 import { MongoFieldsStrategy } from "./mongo";
 import { MySQLFieldsStrategy } from "./mysql";
-import { S3FieldsStrategy } from "./aws";
+import { SQLServerFieldsStrategy } from "./sqlserver";
 
 export interface ConnectionFieldsStrategy {
     getDefaults(): Record<string, any>;
@@ -40,8 +40,8 @@ export class ConnectionFieldsStrategyFactory {
                 return new MongoFieldsStrategy();
             case "mysql":
                 return new MySQLFieldsStrategy();
-            case "aws":
-                return new S3FieldsStrategy();
+            case "sqlserver":
+                return new SQLServerFieldsStrategy();
 
             default:
                 return new DefaultFieldsStrategy();

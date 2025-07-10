@@ -237,7 +237,7 @@ supabase functions deploy
 
 ### Platform-Specific Limitations
 
-#### SQL Server Support
+#### SQL Server Support (possible to remove)
 Supabase Edge Functions are based on Deno Deploy, which does not support Node.js modules (e.g., `mssql`) or native drivers. As a result, direct SQL Server connections are not supported in this environment. If you need SQL Server access, you must use:
 - A separate Node.js service that exposes SQL Server queries over HTTP
 - Or move SQL Server integration to your backend infrastructure

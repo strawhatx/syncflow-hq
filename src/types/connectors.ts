@@ -1,7 +1,16 @@
 import { Json } from "@/integrations/supabase/types";
 
 export type ConnectorType = 'oauth' | 'api_key';
-export type ConnectorProvider = 'supabase'|'airtable' | 'google_sheets' | 'notion' | 'postgresql' | 'mongodb' | 'mysql' | 'aws' ;
+export type ConnectorProvider =
+  'supabase' |
+  'airtable' |
+  'google_sheets' |
+  'notion' |
+  'postgresql' |
+  'mongodb' |
+  'mysql' |
+  'aws' |
+  'sqlserver';
 
 export interface ConnectorConfig {
   required_fields: string[];

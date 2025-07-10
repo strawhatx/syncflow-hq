@@ -9,7 +9,7 @@ provider:
   region: us-east-1
   environment:
     SUPABASE_URL: ${env.SUPABASE_URL}
-    SUPABASE_ANON_KEY: ${env.SUPABASE_ANON_KEY}
+    SUPABASE_ANON_KEY: ${env.SUPABASE_SERVICE_ROLE_KEY}
     RATE_LIMIT_TABLE: ${env.RATE_LIMIT_TABLE}
 
 functions:
@@ -21,4 +21,4 @@ functions:
     memorySize: 256
     
 plugins:
-  - serverless-plugin-typescript
+  - serverless-offline
