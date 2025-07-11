@@ -12,19 +12,20 @@ import { NoTeamFound } from "./components/NoTeamFound";
 import { getRoleColor, getRoleIcon, getMemberStatusColor } from "./utils/roleUtils";
 import { TeamMemberWithProfile, TeamRole } from "@/types/team";
 import { useHeaderContent } from "@/contexts/HeaderContentContext";
+import { withPermission } from "@/hocs/withPermission";
 
 export const Teams = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [showInviteModal, setShowInviteModal] = useState(false);
     const { setContent } = useHeaderContent();
 
-    const { 
-        members: teamMembers, 
+    const {
+        members: teamMembers,
         loading: isLoading,
         initialLoading,
-        currentMember: teamMember, 
-        updateMemberRole, 
-        removeMember, 
+        currentMember: teamMember,
+        updateMemberRole,
+        removeMember,
         canInviteMembers
     } = useTeam();
 
@@ -33,11 +34,11 @@ export const Teams = () => {
 
     const headerContent = useCallback(() => (
         <TeamHeader
-                searchTerm={searchTerm}
-                onSearchChange={setSearchTerm}
-                canInviteMembers={canInviteMembers()}
-                onInviteClick={() => setShowInviteModal(true)}
-            />
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            canInviteMembers={canInviteMembers()}
+            onInviteClick={() => setShowInviteModal(true)}
+        />
     ), [searchTerm, canInviteMembers]);
 
     // Effect for setting content
@@ -47,7 +48,7 @@ export const Teams = () => {
 
     // Separate effect for cleanup
     useEffect(() => {
-        return () => {setContent(null)};
+        return () => { setContent(null) };
     }, [setContent]);
 
     if (initialLoading) return <div>Loading team data...</div>;
@@ -62,6 +63,23 @@ export const Teams = () => {
         removeMember(member.id);
     };
 
+    const MembersList = () => (
+        <TeamMembersList
+            members={teamMembers as TeamMemberWithProfile[]}
+            renderMember={(member) => (
+                <TeamMemberCard
+                    key={member.id}
+                    member={member as TeamMemberWithProfile}
+                    onUpdateRole={handleUpdateRole}
+                    onRemoveMember={handleRemoveMember}
+                    onCopyEmail={(email) => navigator.clipboard.writeText(email)}
+                    getRoleColor={getRoleColor}
+                    getRoleIcon={getRoleIcon}
+                    getMemberStatusColor={getMemberStatusColor}
+                />
+            )}
+        />)
+
     return (
         <div className="space-y-8">
             <TeamStats stats={teamStats}>
@@ -73,29 +91,16 @@ export const Teams = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <div className="lg:col-span-2">
-                    <TeamMembersList 
-                        members={teamMembers as TeamMemberWithProfile[]}
-                        renderMember={(member) => (
-                            <TeamMemberCard 
-                                key={member.id}
-                                member={member as TeamMemberWithProfile}
-                                onUpdateRole={handleUpdateRole}
-                                onRemoveMember={handleRemoveMember}
-                                onCopyEmail={(email) => navigator.clipboard.writeText(email)}
-                                getRoleColor={getRoleColor}
-                                getRoleIcon={getRoleIcon}
-                                getMemberStatusColor={getMemberStatusColor}
-                            />
-                        )}
-                    />
+                    {/* Render the component returned by withPermission as a JSX element */}
+                    {withPermission(MembersList, 'team_members', 'view')({})}
                 </div>
                 <div>
                     <RolePermissions />
                 </div>
             </div>
 
-            <InviteModal 
-                isOpen={showInviteModal} 
+            <InviteModal
+                isOpen={showInviteModal}
                 onClose={() => setShowInviteModal(false)}
             />
         </div>

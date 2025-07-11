@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import DashboardPage from "./pages/Dashboard";
 import Syncs from "./pages/Syncs";
 import Sync from "./pages/Sync";
@@ -20,7 +20,6 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { HeaderContentProvider } from '@/contexts/HeaderContentContext';
 import TeamsPage from "./pages/Teams";
 import { TeamProvider } from "./contexts/TeamContext";
-import { withPermission } from './hocs/withPermission';
 
 const queryClient = new QueryClient();
 
@@ -40,14 +39,14 @@ const App = () => (
               <Route path="/:provider/callback" element={<OAuthCallback />} />
 
               {/* Protected Routes with Main SidebarLayout */}
-              <Route element={<ProtectedRoute><SidebarLayout /></ProtectedRoute>}>
+              <Route element={<SidebarLayout />}>
                 <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/syncs" element={<>{withPermission(Syncs, 'syncs', 'view')}</>} />
-                <Route path="/syncs/edit/:id" element={<>{withPermission(Sync, 'syncs', 'update')}</>} />
-                <Route path="/syncs/view/:id" element={<>{withPermission(SyncDetails, 'syncs', 'view')}</>} />
-                <Route path="/connectors" element={<>{withPermission(ConnectorsPage, 'connectors', 'view')}</>} />
-                <Route path="/teams" element={<>{withPermission(TeamsPage, 'teams', 'view')}</>} />
-                <Route path="/profile" element={<>{withPermission(Profile, 'team_members', 'view')}</>} />
+                <Route path="/syncs" element={<ProtectedRoute resource="syncs" action="view"><Syncs /></ProtectedRoute>} />
+                <Route path="/syncs/edit/:id" element={<ProtectedRoute resource="syncs" action="update"><Sync /></ProtectedRoute>} />
+                <Route path="/syncs/view/:id" element={<ProtectedRoute resource="syncs" action="view"><SyncDetails /></ProtectedRoute>} />
+                <Route path="/connectors" element={<ProtectedRoute resource="connectors" action="view"><ConnectorsPage /></ProtectedRoute>} />
+                <Route path="/teams" element={<ProtectedRoute resource="teams" action="view"><TeamsPage /></ProtectedRoute>} />
+                <Route path="/profile" element={<ProtectedRoute resource="team_members" action="view"><Profile /></ProtectedRoute>} />
               </Route>
 
               {/* Catch all route */}
