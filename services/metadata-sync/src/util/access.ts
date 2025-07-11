@@ -1,3 +1,4 @@
+import { supabase } from "../config/supabase";
 
 interface Connector {
     token_url: string;

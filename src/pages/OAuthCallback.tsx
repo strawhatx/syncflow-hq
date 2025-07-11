@@ -37,6 +37,7 @@ const OAuthCallback = () => {
                 description: error,
                 variant: "destructive",
             });
+
             navigate("/integrations");
             return;
         }
@@ -47,6 +48,7 @@ const OAuthCallback = () => {
                 description: "Missing required parameters from OAuth provider.",
                 variant: "destructive",
             });
+
             navigate("/connectors");
             return;
         }
@@ -57,6 +59,7 @@ const OAuthCallback = () => {
                 description: "Provider not specified in callback URL.",
                 variant: "destructive",
             });
+
             navigate("/connectors");
             return;
         }
@@ -67,6 +70,7 @@ const OAuthCallback = () => {
                 description: "Team information is not available. Please try again.",
                 variant: "destructive",
             });
+
             navigate("/connectors");
             return;
         }
@@ -85,15 +89,17 @@ const OAuthCallback = () => {
             });
 
             navigate("/connectors");
-        } catch (err) {
-            console.error("Error processing callback:", err);
+        }
+        catch (err) {
             toast({
                 title: "Connection failed",
                 description: err instanceof Error ? err.message : "An unknown error occurred",
                 variant: "destructive",
             });
+
             navigate("/connectors");
-        } finally {
+        }
+        finally {
             setIsProcessing(false);
         }
     }, [getCallbackParams, provider, team, searchParams, queryClient, navigate]);

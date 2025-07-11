@@ -17,6 +17,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.39.7",
     "aws-sdk": "^2.1574.0",
+    "bottleneck": "^2.19.5",
     "mongodb": "^6.17.0",
     "mssql": "^11.0.1",
     "mysql2": "^3.14.1",

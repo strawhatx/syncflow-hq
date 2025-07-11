@@ -7,6 +7,7 @@ import { failJob, getPendingJob, updateJobStatus } from './services/job.ts';
 import { getConnectionConfig } from './services/connection.ts';
 import { CreateConfigFactory } from './patterns/factories/config.ts';
 import { ConnectorProvider } from './types/connector.ts';
+import { limiter } from './util/rate-limiter.ts';
 
 const processSources = async (provider: string, connection_id: string, config: Record<string, any>) => {
   // get the strategy for the provider
@@ -20,7 +21,8 @@ const processSources = async (provider: string, connection_id: string, config: R
   }
 
   // check if the action is getTables or getSources
-  let data = await strategy.getSources(connection_id, config);
+  // Use the limiter to throttle requests
+  let data = await limiter.schedule(() => strategy.getSources(connection_id, config));
 
   return data;
 }
@@ -32,7 +34,8 @@ const processTablesAndFields = async (provider: string, config: Record<string, a
     const sourceConfig = CreateConfigFactory.create(provider as ConnectorProvider, source);
     const mergedConfig = { ...config, ...sourceConfig };
 
-    await strategy.getTables(mergedConfig);
+    // Use the limiter to throttle requests
+    await limiter.schedule(() => strategy.getTables(mergedConfig));
   }
 }
 

@@ -13,13 +13,14 @@ import NotFound from "./pages/NotFound";
 import IndexPage from "./pages/Index";
 import AuthPage from "./pages/Auth";
 import Profile from "./pages/Profile";
-import ProtectedRoute from "./components/auth/ProtectedRoute";
+import ProtectedRoute from "./routes/ProtectedRoute";
 import { AuthProvider } from "./contexts/AuthContext";
 import { SidebarLayout } from "./layouts/Index";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { HeaderContentProvider } from '@/contexts/HeaderContentContext';
 import TeamsPage from "./pages/Teams";
 import { TeamProvider } from "./contexts/TeamContext";
+import { withPermission } from './hocs/withPermission';
 
 const queryClient = new QueryClient();
 
@@ -41,12 +42,12 @@ const App = () => (
               {/* Protected Routes with Main SidebarLayout */}
               <Route element={<ProtectedRoute><SidebarLayout /></ProtectedRoute>}>
                 <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/syncs" element={<Syncs />} />
-                <Route path="/syncs/edit/:id" element={<Sync />} />
-                <Route path="/syncs/view/:id" element={<SyncDetails />} />
-                <Route path="/connectors" element={<ConnectorsPage />} />
-                <Route path="/teams" element={<TeamsPage />} />
-                <Route path="/profile" element={<Profile />} />
+                <Route path="/syncs" element={<>{withPermission(Syncs, 'syncs', 'view')}</>} />
+                <Route path="/syncs/edit/:id" element={<>{withPermission(Sync, 'syncs', 'update')}</>} />
+                <Route path="/syncs/view/:id" element={<>{withPermission(SyncDetails, 'syncs', 'view')}</>} />
+                <Route path="/connectors" element={<>{withPermission(ConnectorsPage, 'connectors', 'view')}</>} />
+                <Route path="/teams" element={<>{withPermission(TeamsPage, 'teams', 'view')}</>} />
+                <Route path="/profile" element={<>{withPermission(Profile, 'team_members', 'view')}</>} />
               </Route>
 
               {/* Catch all route */}

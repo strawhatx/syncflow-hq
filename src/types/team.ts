@@ -1,4 +1,4 @@
-export type TeamRole = 'owner' | 'admin' | 'member';
+export type TeamRole = 'owner' | 'member';
 export type TeamMemberStatus = 'active' | 'invited';
 export type InviteStatus = 'pending' | 'accepted' | 'expired';
 

@@ -6,7 +6,7 @@ export interface TeamMemberData {
   id: string;
   team_id: string;
   user_id: string;
-  roles: ('owner' | 'admin' | 'member')[];
+  role: 'owner' | 'member';
   status: 'active' | 'invited';
 }
 
@@ -40,7 +40,7 @@ export function useTeamMember() {
           return;
         }
 
-        setTeamMember({ ...data, roles: [data.role] });
+        setTeamMember({ ...data, role: data.role });
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Failed to fetch team member data'));
       } finally {
