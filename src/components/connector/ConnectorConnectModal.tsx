@@ -11,6 +11,7 @@ import { Connector } from "@/types/connectors";
 import { fetchConnectionById } from "@/services/connections/service";
 import { z } from "zod";
 import { sanitizeField } from "@/lib/sanitize";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ConnectorConnectModalProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ interface ConnectorConnectModalProps {
 
 export default function ConnectorConnectModal({ isOpen, onClose, connector, connection_id }: ConnectorConnectModalProps) {
   const { team } = useTeam();
+  const { user } = useAuth();
   const [config, setConfig] = useState<Record<string, any>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,9 +63,11 @@ export default function ConnectorConnectModal({ isOpen, onClose, connector, conn
         setError,
         config,
         team.id,
+        
         // If the connection is being created, create a new connection to do that 
         // we need to set the connection_id to undefined
         isOpen && connection_id ? connection_id : undefined,
+        user?.id,
         onClose
       );
     } catch (validationError) {

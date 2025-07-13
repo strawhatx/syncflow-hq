@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import DashboardPage from "./pages/Dashboard";
 import Syncs from "./pages/Syncs";
 import Sync from "./pages/Sync";
@@ -39,14 +39,15 @@ const App = () => (
               <Route path="/:provider/callback" element={<OAuthCallback />} />
 
               {/* Protected Routes with Main SidebarLayout */}
-              <Route element={<SidebarLayout />}>
+              <Route element={<ProtectedRoute><SidebarLayout /></ProtectedRoute>}>
                 <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/syncs" element={<ProtectedRoute resource="syncs" action="view"><Syncs /></ProtectedRoute>} />
-                <Route path="/syncs/edit/:id" element={<ProtectedRoute resource="syncs" action="update"><Sync /></ProtectedRoute>} />
-                <Route path="/syncs/view/:id" element={<ProtectedRoute resource="syncs" action="view"><SyncDetails /></ProtectedRoute>} />
-                <Route path="/connectors" element={<ProtectedRoute resource="connectors" action="view"><ConnectorsPage /></ProtectedRoute>} />
-                <Route path="/teams" element={<ProtectedRoute resource="teams" action="view"><TeamsPage /></ProtectedRoute>} />
-                <Route path="/profile" element={<ProtectedRoute resource="team_members" action="view"><Profile /></ProtectedRoute>} />
+                {/* Pages with data-dependent permissions - handled at page level */}
+                <Route path="/syncs" element={<Syncs />} />
+                <Route path="/syncs/edit/:id" element={<Sync />} />
+                <Route path="/syncs/view/:id" element={<SyncDetails />} />
+                <Route path="/connectors" element={<ConnectorsPage />} />
+                <Route path="/teams" element={<TeamsPage />} />
+                <Route path="/profile" element={<Profile />} />
               </Route>
 
               {/* Catch all route */}

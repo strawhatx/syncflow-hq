@@ -37,16 +37,20 @@ CREATE INDEX idx_metadata_sync_jobs_team_id ON public.metadata_sync_jobs (team_i
 ALTER TABLE public.metadata_sync_jobs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.data_sync_jobs ENABLE ROW LEVEL SECURITY;
 
--- Policy to allow only the service role to view jobs
-CREATE POLICY service_role_can_view_jobs ON public.metadata_sync_jobs
-    FOR SELECT
-    USING (current_user = 'service_role');
+-- Policy to allow insets by team members as long as they are authenticated
+CREATE POLICY "Team members can insert their own metadata sync jobs"
+    ON public.metadata_sync_jobs
+    FOR INSERT
+    WITH CHECK (
+        team_id = ANY(public.get_team_ids_for_user(auth.uid()))
+    );
 
--- Policy to allow only the service role to view jobs
-CREATE POLICY service_role_can_view_jobs ON public.data_sync_jobs
-    FOR SELECT
-    USING (current_user = 'service_role');
-
+CREATE POLICY "Team members can insert their own data sync jobs"
+    ON public.data_sync_jobs
+    FOR INSERT
+    WITH CHECK (
+        team_id = ANY(public.get_team_ids_for_user(auth.uid()))
+    );
 
 -- Optional: Trigger to update updated_at on row update for data_sync_jobs
 CREATE OR REPLACE FUNCTION update_updated_at_column()

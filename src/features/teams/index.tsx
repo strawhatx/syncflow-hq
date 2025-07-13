@@ -13,6 +13,7 @@ import { getRoleColor, getRoleIcon, getMemberStatusColor } from "./utils/roleUti
 import { TeamMemberWithProfile, TeamRole } from "@/types/team";
 import { useHeaderContent } from "@/contexts/HeaderContentContext";
 import { withPermission } from "@/hocs/withPermission";
+import { PagePermissionGuard } from "@/hocs/withPagePermission";
 
 export const Teams = () => {
     const [searchTerm, setSearchTerm] = useState("");
@@ -80,7 +81,7 @@ export const Teams = () => {
             )}
         />)
 
-    return (
+    const MainContent = () => (
         <div className="space-y-8">
             <TeamStats stats={teamStats}>
                 <StatCard title="Total Members" type="total" stats={teamStats} />
@@ -104,5 +105,15 @@ export const Teams = () => {
                 onClose={() => setShowInviteModal(false)}
             />
         </div>
+    )
+
+    return (
+        <PagePermissionGuard
+            resource="teams"
+            action="view"
+            isLoading={isLoading} // Show loading while team data is being fetched
+        >
+            <MainContent />
+        </PagePermissionGuard>
     );
 };

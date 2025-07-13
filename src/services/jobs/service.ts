@@ -1,26 +1,30 @@
-import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
-
 export const addMetadataSyncJob = async (connectionId: string, teamId: string) => {
-    const { user } = useAuth();
+    //validate connctionId  & teamId are valid guids
+    if (!isValidUUID(connectionId)) {
+        throw new Error('Invalid connectionId');
+    }
 
-    if (!user) {
-        throw new Error("User not authenticated");
+    if (!isValidUUID(teamId)) {
+        throw new Error('Invalid teamId');
     }
 
     // add job to job queue
-    const { data, error } = await supabase.functions.invoke('insert_metadata_sync_job', {
-        body: {
-            p_connection_id: connectionId,
-            p_team_id: teamId,
-            p_user_id: user?.id
-        }
-    });
+    const { error } = await supabase
+        .from('metadata_sync_jobs')
+        .insert({
+            connection_id: connectionId,
+            team_id: teamId
+        });
 
     if (error) {
         throw error;
     }
 
-    return data;
+    return true;
+}
+
+const isValidUUID = (uuid: string) => {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uuid);
 }

@@ -2,6 +2,8 @@
 
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { useTeam } from "@/contexts/TeamContext";
 import { createConnection, updateConnection } from "@/services/connections/service";
 import { addMetadataSyncJob } from "@/services/jobs/service";
 import { initiateOAuth } from "@/services/oauth/service";
@@ -16,6 +18,7 @@ interface ConnectionActionsStrategy {
         config: Record<string, any>,
         teamId?: string,
         connection_id?: string,
+        userId?: string,
         onClose?: () => void
     ): Promise<void>
     renderActions(isLoading: boolean): React.ReactNode
@@ -83,6 +86,7 @@ class ApiKeyActionsStrategy implements ConnectionActionsStrategy {
         config: Record<string, any>,
         teamId?: string,
         connection_id?: string,
+        userId?: string,
         onClose?: () => void
     ): Promise<void> {
         const action = !connection_id ? "create" : "update";
@@ -101,7 +105,7 @@ class ApiKeyActionsStrategy implements ConnectionActionsStrategy {
             }
 
             // add metadata sync job to start syncing the metadata
-            await addMetadataSyncJob(connection_id, teamId);
+            await addMetadataSyncJob(connection_id, teamId, userId);
 
             toast({
                 title: `Connection ${action}d`,

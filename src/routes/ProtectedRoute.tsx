@@ -2,18 +2,9 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
-import { hasPermission, Permissions } from '@/lib/permissions';
-import { useTeamMember } from '@/hooks/useTeamMember';
 
-interface ProtectedRouteProps {
-  children: React.ReactNode;
-  resource: keyof Permissions;
-  action: Permissions[keyof Permissions]["action"];
-}
-
-const ProtectedRoute = ({ children, resource, action }: ProtectedRouteProps) => {
+const ProtectedRoute = ({ children }) => {
   const { user, isLoading } = useAuth();
-  const { teamMember } = useTeamMember();
   const location = useLocation();
 
   if (isLoading) {
@@ -31,13 +22,7 @@ const ProtectedRoute = ({ children, resource, action }: ProtectedRouteProps) => 
     // Redirect to login but save the location they tried to access
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
-  // Check if the user has the required permissions
-  const hasAccess = hasPermission(teamMember, resource, action);
 
-  if (!hasAccess) {
-    // Redirect to the dashboard if the user lacks permissions
-    return <Navigate to="/dashboard" replace />;
-  }
 
   return <>{children}</>;
 };

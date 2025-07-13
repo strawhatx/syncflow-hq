@@ -6,6 +6,7 @@ import NoResults from "./components/NoResults";
 import SyncsSkeleton from "./components/SyncsSkeleton";
 import useSyncs from "./hooks/useSyncs";
 import { useToast } from "@/hooks/use-toast";
+import { PagePermissionGuard } from "@/hocs/withPagePermission";
 
 const Syncs = () => {
     const [search, setSearch] = useState("");
@@ -43,7 +44,7 @@ const Syncs = () => {
         return () => {setContent(null)};
     }, [setContent]);
 
-    return (
+    const MainContent = () => (
         <div>
             {isLoading ? (
                 <SyncsSkeleton />
@@ -53,6 +54,16 @@ const Syncs = () => {
                 <SyncsGrid syncs={filteredSyncs} />
             )}
         </div>
+    )
+
+    return (
+        <PagePermissionGuard
+            resource="syncs"
+            action="view"
+            isLoading={isLoading} // Show loading while team data is being fetched
+        >
+            <MainContent />
+        </PagePermissionGuard>
     );
 };
 

@@ -64,7 +64,7 @@ type RolesWithPermissions = {
 type Permissions = {
   teams: {
     dataType: Teams
-    action: "view" | "create" | "update" | "delete" | "invite_member" | "remove_member"
+    action: "view"|"view_detail" | "create" | "update" | "delete" | "invite_member" | "remove_member"
   }
   team_members: {
     dataType: TeamMembers
@@ -76,11 +76,11 @@ type Permissions = {
   }
   connections: {
     dataType: Connections
-    action: "view" | "create" | "update" | "delete" | "sync"
+    action: "view"|"view_detail" | "create" | "update" | "delete" | "sync"
   }
   syncs: {
     dataType: Syncs
-    action: "view" | "create" | "update" | "delete"
+    action: "view"|"view_detail" | "create" | "update" | "delete"
   }
 }
 
@@ -88,7 +88,8 @@ const ROLES = {
   owner: {
     teams: {
       // only allow functions that are related to the user's team
-      view: (user, team) => user.team_member?.team_id === team.id,
+      view: true,
+      view_detail: (user, team) => user.team_member?.team_id === team.id,
       create: true,
       update: (user, team) => user.team_member?.team_id === team.id,
       delete: (user, team) => user.team_member?.team_id === team.id,
@@ -96,7 +97,7 @@ const ROLES = {
       remove_member: (user, team) => user.team_member?.team_id === team.id,
     },
     team_members: {
-      view: (user, member) => user.team_member?.team_id === member.team_id,
+      view: true,
       update_role: (user, member) => user.team_member?.team_id === member.team_id,
       remove: (user, member) => user.team_member?.team_id === member.team_id,
     },
@@ -105,14 +106,16 @@ const ROLES = {
       connect: true,
     },
     connections: {
-      view: (user, connection) => user.team_member?.team_id === connection.team_id,
+      view: true,
+      view_detail: (user, connection) => user.team_member?.team_id === connection.team_id,
       create: true,
       update: (user, connection) => user.team_member?.team_id === connection.team_id,
       delete: (user, connection) => user.team_member?.team_id === connection.team_id,
       sync: (user, connection) => user.team_member?.team_id === connection.team_id,
     },
     syncs: {
-      view: (user, sync) => user.team_member?.team_id === sync.team_id,
+      view: true,
+      view_detail: (user, sync) => user.team_member?.team_id === sync.team_id,
       create: true,
       update: (user, sync) => user.team_member?.team_id === sync.team_id,
       delete: (user, sync) => user.team_member?.team_id === sync.team_id,
@@ -137,14 +140,16 @@ const ROLES = {
       connect: true,
     },
     connections: {
-      view: (user, connection) => user.team_member?.team_id === connection.team_id,
+      view: true,
+      view_detail: (user, connection) => user.team_member?.team_id === connection.team_id,
       create: true,
       update: (user, connection) => user.team_member?.team_id === connection.team_id,
       delete: (user, connection) => user.team_member?.team_id === connection.team_id,
       sync: (user, connection) => user.team_member?.team_id === connection.team_id,
     },
     syncs: {
-      view: (user, sync) => user.team_member?.team_id === sync.team_id,
+      view: true,
+      view_detail: (user, sync) => user.team_member?.team_id === sync.team_id,
       create: true,
       update: (user, sync) => user.team_member?.team_id === sync.team_id,
       delete: false,
