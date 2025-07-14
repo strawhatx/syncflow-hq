@@ -11,7 +11,7 @@ export const getPendingJob = async () => {
         .single();
 
     if (error) {
-        if (error.message.includes('No rows found')) {
+        if (error.code === 'PGRST116') {
             console.log("No pending jobs found");
             return;
         }

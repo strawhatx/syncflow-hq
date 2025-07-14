@@ -16,7 +16,7 @@ export class GoogleSheetsStrategy implements DataSourceStrategy {
     private config = {
         // Get spreadsheet metadata (including sheets & first row)
         tables: {
-            url: `https://sheets.googleapis.com/v4/spreadsheets/{spreadsheet_id}?includeGridData=true&ranges={range}`
+            url: `https://sheets.googleapis.com/v4/spreadsheets/{spreadsheet_id}?includeGridData=true`
         },
 
         // List all spreadsheet files in the user's Drive
@@ -27,17 +27,6 @@ export class GoogleSheetsStrategy implements DataSourceStrategy {
 
     private getUrl(type: "tables" | "sources", urlConfig: Record<string, any>): string {
         const { url } = this.config[type];
-
-        // if the type is tables, we build the range
-        // we need to encode the sheet name and range to to revent the wrong encoding
-        // via spaces in the sheet name
-        if (type === "tables") {
-            const sheetName = urlConfig.spreadsheet_name;
-            if (!sheetName) throw new Error("Sheet name is required");
-
-            const range = encodeURIComponent(`'${sheetName}'!A1:Z1`);
-            urlConfig.range = range;
-        }
 
         // Replace all {param} in the URL with the value from urlConfig
         return url.replace(/{(\w+)}/g, (_, key) => {
@@ -137,10 +126,9 @@ export class GoogleSheetsStrategy implements DataSourceStrategy {
                 connection_id,
                 team_id,
                 config: {
-                    spreadsheet_id: file.properties.sheetId,
-                    spreadsheet_name: file.properties.title,
-                    createdTime: file.properties.createdTime,
-                    modifiedTime: file.properties.modifiedTime
+                    spreadsheet_id: file.id,
+                    spreadsheet_name: file.name,
+                    modifiedTime: file.modifiedTime
                 }
             }))
         );
@@ -149,11 +137,11 @@ export class GoogleSheetsStrategy implements DataSourceStrategy {
         return databases;
     }
 
-    async getTables( config: Record<string, any>): Promise<Record<string, any>[]> {
-        const { team_id, spreadsheet_id, spreadsheet_name } = config;
+    async getTables(config: Record<string, any>): Promise<Record<string, any>[]> {
+        const { database_id, team_id, spreadsheet_id, spreadsheet_name } = config;
 
         // validate the necessary fields
-        if (!team_id || !spreadsheet_id || !spreadsheet_name) {
+        if (!database_id || !team_id || !spreadsheet_id || !spreadsheet_name) {
             throw new Error("Team ID|Spreadsheet ID|Spreadsheet Name are required");
         }
 
@@ -170,30 +158,39 @@ export class GoogleSheetsStrategy implements DataSourceStrategy {
 
             const validation = await this.validate(cells);
 
-            return validation.valid;
+            return {
+                isValid: validation.valid,
+                cells,
+                sheet_id: sheet.properties.sheetId,
+                sheet_name: sheet.properties.title,
+                sheet_type: sheet.properties.sheetType,
+            };
         }));
 
         // filter out the sheets that are not valid
-        const validSheets = sheets.filter(valid => valid);
+        const validSheets = sheets.filter(sheet => sheet.isValid);
         if (!validSheets.length) return [];
 
         // save the tables and columns
         for (const sheet of validSheets) {
+            const { sheet_id, sheet_name, sheet_type, cells } = sheet;
+
             const sheetData = await saveTable({
-                database_id: spreadsheet_id,
+                database_id: database_id,
                 team_id,
                 config: {
-                    sheet_id: sheet.properties.sheetId,
-                    sheet_name: sheet.properties.title
+                    sheet_id,
+                    sheet_name,
+                    sheet_type,
                 }
             });
 
-            // get the seet header row
-            const header = sheet.data?.[0]?.rowData?.[0]?.values || [];
+            // get the set header row and filter out empty cells
+            const header = cells.filter((cell: any) => cell.formattedValue);
 
             // save the columns to the db
             await saveColumns(
-                header?.map((column: any, index: number) => ({
+                header?.map((column: any) => ({
                     table_id: sheetData.id,
                     team_id,
                     //id: index,

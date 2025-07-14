@@ -23,6 +23,12 @@ CREATE TABLE public.data_sync_jobs (
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Prevent duplicate metadata sync jobs for the same connection and team
+ALTER TABLE public.metadata_sync_jobs 
+ADD CONSTRAINT unique_metadata_sync_job_per_connection_team 
+UNIQUE (connection_id, team_id);
+
 -- Index to quickly find jobs by status (for workers)
 CREATE INDEX idx_data_sync_jobs_status ON public.data_sync_jobs (status);
 CREATE INDEX idx_metadata_sync_jobs_status ON public.metadata_sync_jobs (status);

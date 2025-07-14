@@ -4,7 +4,7 @@ import { DataSourceStrategyFactory } from './patterns/strategies/datasource/inde
 import { oauthProviders } from './util/providers.ts';
 import { getValidAccessToken } from './util/access.ts';
 import { failJob, getPendingJob, updateJobStatus } from './services/job.ts';
-import { getConnectionConfig } from './services/connection.ts';
+import { getConnectionConfig, rollbackDatabaseSync } from './services/connection.ts';
 import { CreateConfigFactory } from './patterns/factories/config.ts';
 import { ConnectorProvider } from './types/connector.ts';
 import { limiter } from './util/rate-limiter.ts';
@@ -41,6 +41,7 @@ const processTablesAndFields = async (provider: string, config: Record<string, a
 
 export const processJobs: ScheduledHandler = async (event) => {
   let currentJobId: string | undefined;
+  let connection_id: string | undefined;
 
   try {
     // check if there are any pending jobs
@@ -62,8 +63,8 @@ export const processJobs: ScheduledHandler = async (event) => {
 
     // vars for the job
     const provider = job?.connection?.connector?.provider;
-    const connection_id = job?.connection?.id;
     const team_id = job?.team_id;
+    connection_id = job?.connection?.id;
 
     // merge the configs with the connection config in the db
     const config = await getConnectionConfig(connection_id);
@@ -73,15 +74,24 @@ export const processJobs: ScheduledHandler = async (event) => {
     const sources = await processSources(provider, mergedConfig);
 
     // process the tables
-    await processTablesAndFields(provider, config, sources);
+    await processTablesAndFields(provider, mergedConfig, sources);
+
+    // update the job status to completed
+    await updateJobStatus(currentJobId, "completed", "processing");
 
     console.log(`Successfully processed job: ${currentJobId}`);
 
-  } catch (error) {
+  } 
+  catch (error) {
     console.error('Error:', error);
 
     if (currentJobId) {
       await failJob(currentJobId, error instanceof Error ? error.message : String(error));
+    }
+
+    // rollback the database sync if it fails if any
+    if (connection_id) {
+      await rollbackDatabaseSync(connection_id);
     }
   }
 }; 

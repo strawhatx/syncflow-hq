@@ -405,4 +405,4 @@ export const Constants = {
 
 export type SyncDirection = 'one-way' | 'two-way';
 export type ConflictResolution = 'source' | 'destination' | 'latest';
-export type SetupStage = 'connect' | 'mapping' | 'schedule' | 'review';
+export type SetupStage = 'accounts' | 'datasources' |'review' |'table-mapping' |'feild-mapping'| 'schedule' | 'review'|'complete';

@@ -1,4 +1,3 @@
-import { memo } from "react";
 import SyncStatusCard from "@/components/syncs/SyncStatusCard";
 import { SetupStage } from "@/integrations/supabase/types";
 
@@ -13,12 +12,10 @@ type Sync = {
   setup_stage?: SetupStage;
 };
 
-const SyncsGrid = memo(({ syncs }: { syncs: Sync[] }) => (
+const SyncsGrid = ({ syncs }: { syncs: Sync[] }) => (
   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
     {syncs.map((sync) => {
-      const status = sync.is_active && sync.setup_stage === "authorize"
-        ? "active"
-        : "paused";
+      const status = sync.is_active ? "active" : "paused";
       return (
         <SyncStatusCard
           key={sync.id}
@@ -35,6 +32,6 @@ const SyncsGrid = memo(({ syncs }: { syncs: Sync[] }) => (
       );
     })}
   </div>
-));
+);
 
 export default SyncsGrid; 

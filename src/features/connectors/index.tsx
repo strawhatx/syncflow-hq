@@ -6,7 +6,6 @@ import { useConnectors } from "./hooks/useConnectors";
 import ConnectorConnectModal from "../../components/connector/ConnectorConnectModal";
 import { ConnectorWithConnections } from "@/services/connector/service";
 import { Connector } from "@/types/connectors";
-import { PagePermissionGuard } from "@/hocs/withPagePermission";
 
 const Connectors = () => {
   const {
@@ -48,7 +47,7 @@ const Connectors = () => {
       )}
       
       <div>
-        {connectedConnectors.length > 0 && (
+        {connectedConnectors?.length > 0 && (
           <div className="mb-6">
             <h2 className="text-lg font-medium mb-4">Connected</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -71,7 +70,7 @@ const Connectors = () => {
         <div>
           <h2 className="text-lg font-medium mb-4">Available Connectors</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {availableConnectors.map(connector => (
+            {availableConnectors?.map(connector => (
               <ConnectorCard
                 key={connector.id}
                 name={connector.name}
@@ -98,13 +97,7 @@ const Connectors = () => {
   )
 
   return (
-    <PagePermissionGuard
-      resource="connectors"
-      action="view"
-      isLoading={isLoading} // Show loading while team data is being fetched
-    >
-      <MainContent />
-    </PagePermissionGuard>
+    <MainContent />
   );
 };
 

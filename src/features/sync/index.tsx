@@ -14,6 +14,7 @@ import useSync from "./hooks/useSync";
 import { FieldMappingStep } from "./component/FeildMapping";
 import { SyncData } from "./helpers/sync-data";
 import { sanitizeField } from "@/lib/sanitize";
+import { PagePermissionGuard } from "@/hocs/withPagePermission";
 
 // Step state enum for cleaner logic
 enum StepState {
@@ -231,7 +232,7 @@ export default function Sync() {
         };
     }, []);
 
-    return (
+    const MainContent = () => (
         <div className="flex flex-col gap-2">
             {/* Header */}
             <div className="flex justify-between items-center">
@@ -337,5 +338,9 @@ export default function Sync() {
                 })}
             </div>
         </div>
+    );
+
+    return (
+        <MainContent />
     );
 }

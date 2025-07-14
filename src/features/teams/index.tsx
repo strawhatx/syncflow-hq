@@ -12,8 +12,6 @@ import { NoTeamFound } from "./components/NoTeamFound";
 import { getRoleColor, getRoleIcon, getMemberStatusColor } from "./utils/roleUtils";
 import { TeamMemberWithProfile, TeamRole } from "@/types/team";
 import { useHeaderContent } from "@/contexts/HeaderContentContext";
-import { withPermission } from "@/hocs/withPermission";
-import { PagePermissionGuard } from "@/hocs/withPagePermission";
 
 export const Teams = () => {
     const [searchTerm, setSearchTerm] = useState("");
@@ -26,8 +24,7 @@ export const Teams = () => {
         initialLoading,
         currentMember: teamMember,
         updateMemberRole,
-        removeMember,
-        canInviteMembers
+        removeMember
     } = useTeam();
 
     // Call useTeamStats once at the top level to maintain hook order
@@ -37,10 +34,10 @@ export const Teams = () => {
         <TeamHeader
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
-            canInviteMembers={canInviteMembers()}
+            canInviteMembers={true}
             onInviteClick={() => setShowInviteModal(true)}
         />
-    ), [searchTerm, canInviteMembers]);
+    ), [searchTerm]);
 
     // Effect for setting content
     useEffect(() => {
@@ -93,7 +90,7 @@ export const Teams = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <div className="lg:col-span-2">
                     {/* Render the component returned by withPermission as a JSX element */}
-                    {withPermission(MembersList, 'team_members', 'view')({})}
+                    <MembersList />
                 </div>
                 <div>
                     <RolePermissions />
@@ -108,12 +105,6 @@ export const Teams = () => {
     )
 
     return (
-        <PagePermissionGuard
-            resource="teams"
-            action="view"
-            isLoading={isLoading} // Show loading while team data is being fetched
-        >
-            <MainContent />
-        </PagePermissionGuard>
+     <MainContent />
     );
 };

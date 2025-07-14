@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { TeamMember, Team, TeamRole, TeamMemberStatus } from '@/types/team';
 import { teamService } from '@/services/team/service';
-import { createPermissionStrategy } from '@/patterns/strategies/team';
 import { useAuth } from './AuthContext';
 
 interface TeamContextType {
@@ -11,16 +10,12 @@ interface TeamContextType {
     initialLoading: boolean;
     error: Error | null;
     currentMember: TeamMember | null;
-    permissionStrategy: ReturnType<typeof createPermissionStrategy>;
     loadTeam: (teamId: string) => Promise<void>;
     loadCurrentUserTeam: () => Promise<void>;
     createTeamWithOwner: (userId: string, teamName: string) => Promise<Team>;
     updateMemberRole: (memberId: string, newRole: TeamRole) => Promise<void>;
     removeMember: (memberId: string) => Promise<void>;
     inviteMember: (email: string) => Promise<void>;
-    canInviteMembers: () => boolean;
-    canUpdateRole: (targetMember: TeamMember) => boolean;
-    canRemoveMember: (targetMember: TeamMember) => boolean;
 }
 
 const TeamContext = createContext<TeamContextType | undefined>(undefined);
@@ -32,7 +27,6 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [initialLoading, setInitialLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
     const [currentMember, setCurrentMember] = useState<TeamMember | null>(null);
-    const permissionStrategy = createPermissionStrategy('role-based');
     const { user } = useAuth();
 
     const loadTeam = useCallback(async (teamId: string) => {
@@ -149,18 +143,6 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     }, [team, loadTeam]);
 
-    const canInviteMembers = useCallback(() => {
-        return currentMember ? permissionStrategy.canInviteMembers(currentMember) : false;
-    }, [currentMember, permissionStrategy]);
-
-    const canUpdateRole = useCallback((targetMember: TeamMember) => {
-        return currentMember ? permissionStrategy.canUpdateRole(currentMember, targetMember) : false;
-    }, [currentMember, permissionStrategy]);
-
-    const canRemoveMember = useCallback((targetMember: TeamMember) => {
-        return currentMember ? permissionStrategy.canRemoveMember(currentMember, targetMember) : false;
-    }, [currentMember, permissionStrategy]);
-
     const value = {
         team,
         members,
@@ -168,16 +150,12 @@ export const TeamProvider: React.FC<{ children: React.ReactNode }> = ({ children
         initialLoading,
         error,
         currentMember,
-        permissionStrategy,
         loadTeam,
         loadCurrentUserTeam,
         createTeamWithOwner,
         updateMemberRole,
         removeMember,
         inviteMember,
-        canInviteMembers,
-        canUpdateRole,
-        canRemoveMember
     };
 
     return <TeamContext.Provider value={value}>{children}</TeamContext.Provider>;

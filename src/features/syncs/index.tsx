@@ -6,7 +6,6 @@ import NoResults from "./components/NoResults";
 import SyncsSkeleton from "./components/SyncsSkeleton";
 import useSyncs from "./hooks/useSyncs";
 import { useToast } from "@/hooks/use-toast";
-import { PagePermissionGuard } from "@/hocs/withPagePermission";
 
 const Syncs = () => {
     const [search, setSearch] = useState("");
@@ -41,29 +40,19 @@ const Syncs = () => {
 
     // Separate effect for cleanup
     useEffect(() => {
-        return () => {setContent(null)};
+        return () => { setContent(null) };
     }, [setContent]);
 
-    const MainContent = () => (
+    return (
         <div>
             {isLoading ? (
                 <SyncsSkeleton />
             ) : filteredSyncs.length === 0 ? (
                 <NoResults onGetStarted={() => createSyncMutation.mutate()} />
             ) : (
-                <SyncsGrid syncs={filteredSyncs} />
+                <SyncsGrid key="syncs-grid" syncs={filteredSyncs} />
             )}
         </div>
-    )
-
-    return (
-        <PagePermissionGuard
-            resource="syncs"
-            action="view"
-            isLoading={isLoading} // Show loading while team data is being fetched
-        >
-            <MainContent />
-        </PagePermissionGuard>
     );
 };
 

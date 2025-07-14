@@ -74,8 +74,10 @@ const SyncStatusCard = ({
 
   return (
     <Card 
-      className="card-hover cursor-pointer" 
+      className="transition-all duration-200 hover:shadow-md cursor-pointer hover:bg-accent/50" 
       onClick={handleCardClick}
+      data-sync-id={syncId}
+      data-sync-status={status}
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
         <h3 className="font-medium">{title}</h3>
