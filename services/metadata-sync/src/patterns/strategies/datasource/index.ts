@@ -9,7 +9,7 @@ import { NotionStrategy } from "./notion.ts";
 import { providerMap } from "../../../util/providers.ts";
 
 export interface DataSourceStrategy {
-    getSources(connection_id: string, config: Record<string, any>): Promise<Record<string, any>[]>;
+    getSources(config: Record<string, any>): Promise<Record<string, any>[]>;
     getTables(config: Record<string, any>): Promise<Record<string, any>[]>;
 }
 

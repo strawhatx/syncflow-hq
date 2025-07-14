@@ -14,8 +14,15 @@ export class PostgresStrategy implements DataSourceStrategy {
         }
     }
 
-    async getSources(connection_id: string, config: Record<string, any>): Promise<Record<string, any>[]> {
-        // first validate the connection
+    async getSources(config: Record<string, any>): Promise<Record<string, any>[]> {
+        const { connection_id, team_id } = config;
+
+        // validate the necessary fields
+        if (!connection_id || !team_id) {
+            throw new Error("Connection ID and team ID are required");
+        }
+
+        // validate the connection by getting the data
         const { valid, client } = await this.connect(config);
         if (!valid) {
             throw new Error("Failed to connect to PostgreSQL");
@@ -33,6 +40,7 @@ export class PostgresStrategy implements DataSourceStrategy {
         // save the databases
         const databases = await saveDatabases(result.rows.map((db: any) => ({
             connection_id,
+            team_id,
             config: {
                 id: db.datname,
                 name: db.datname
@@ -44,15 +52,17 @@ export class PostgresStrategy implements DataSourceStrategy {
     }
 
     async getTables(config: Record<string, any>): Promise<Record<string, any>[]> {
-        // must have a database
-        if (!config.database) {
-            throw new Error("Database is required");
+        const { database_id, team_id } = config;
+
+        // validate the necessary fields
+        if (!database_id || !team_id) {
+            throw new Error("Database ID and team ID are required");
         }
 
         // first validate the connection to the selected database
         const { valid, client } = await this.connect({
             ...config,
-            database: config.database
+            database: database_id
         });
 
         if (!valid) {
@@ -74,7 +84,8 @@ export class PostgresStrategy implements DataSourceStrategy {
         // save the tables & columns
         for (const table of result.rows) {
             const tableData = await saveTable({
-                database_id: config.database_id,
+                database_id,
+                team_id,
                 config: {
                     table_name: table.table_name
                 }
@@ -90,8 +101,9 @@ export class PostgresStrategy implements DataSourceStrategy {
             );
 
             // save the columns
-            await saveColumns(columns.map((col: any) => ({
+            await saveColumns(columns.rows.map((col: any) => ({
                 table_id: tableData.id,
+                team_id,
                 name: col.column_name,
                 data_type: col.data_type,
                 is_nullable: col.is_nullable

@@ -14,7 +14,15 @@ export class MongoStrategy implements DataSourceStrategy {
     }
   }
 
-  async getSources(connection_id: string, config: Record<string, any>): Promise<Record<string, any>[]> {
+  async getSources(config: Record<string, any>): Promise<Record<string, any>[]> {
+    const { connection_id, team_id } = config;
+
+    // validate the necessary fields
+    if (!connection_id || !team_id) {
+      throw new Error("Connection ID and team ID are required");
+    }
+
+    // validate the connection
     const { valid, client } = await this.connect(config);
     if (!valid) throw new Error("Failed to connect to MongoDB");
 
@@ -30,6 +38,7 @@ export class MongoStrategy implements DataSourceStrategy {
     const databases = await saveDatabases(
       userDatabases.map((db: any) => ({
         connection_id,
+        team_id,
         config: {
           name: db.name,
           sizeOnDisk: db.sizeOnDisk,
@@ -42,17 +51,24 @@ export class MongoStrategy implements DataSourceStrategy {
   }
 
   async getTables(config: Record<string, any>): Promise<Record<string, any>[]> {
-    if (!config.database) throw new Error("Database name is required");
+    const { database_id, database_name, team_id } = config;
 
+    // validate the necessary fields
+    if (!database_id || !database_name || !team_id) {
+      throw new Error("Database ID and team ID are required");
+    }
+
+    // validate the connection
     const { valid, client } = await this.connect(config);
     if (!valid) throw new Error("Failed to connect to MongoDB");
 
-    const db = client.db(config.database);
+    const db = client.db(database_name);
     const collections = await db.listCollections().toArray();
 
     for (const collection of collections) {
       const table = await saveTable({
-        database_id: config.database_id,
+        database_id,
+        team_id,
         config: {
           table_name: collection.name,
         }
@@ -66,6 +82,7 @@ export class MongoStrategy implements DataSourceStrategy {
       // save the columns
       await saveColumns(Object.keys(sample).map((key) => ({
         table_id: table.id,
+        team_id,
         name: key,
         data_type: typeof sample[key],
         is_nullable: sample[key] === null || sample[key] === undefined

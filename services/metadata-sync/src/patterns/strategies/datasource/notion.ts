@@ -6,7 +6,7 @@ export class NotionStrategy implements DataSourceStrategy {
     private config = {
         tables: {
             // Retrieve database schema
-            url: `https://api.notion.com/v1/databases/{database_id}`,
+            url: `https://api.notion.com/v1/databases/{database_ref}`,
             method: "GET"
         },
         sources: {
@@ -58,7 +58,15 @@ export class NotionStrategy implements DataSourceStrategy {
         }
     }
 
-    async getSources(connection_id: string, config: Record<string, any>): Promise<Record<string, any>[]> {
+    async getSources(config: Record<string, any>): Promise<Record<string, any>[]> {
+        const { connection_id, team_id } = config;
+
+        // validate the necessary fields
+        if (!connection_id || !team_id) {
+            throw new Error("Connection ID and team ID are required");
+        }
+
+        // validate the connection by getting the data
         const { valid, result } = await this.connect("sources", config, {
             filter: {
                 value: "database",
@@ -73,6 +81,7 @@ export class NotionStrategy implements DataSourceStrategy {
         // save the databases to the db
         const databases = await saveDatabases(result.results.map((database: any) => ({
             connection_id,
+            team_id,
             config: {
                 database_id: database.id,
                 database_name: database.title[0].plain_text
@@ -83,10 +92,14 @@ export class NotionStrategy implements DataSourceStrategy {
     }
 
     async getTables(config: Record<string, any>): Promise<Record<string, any>[]> {
-        if (!config.database_id) {
-            throw new Error("Database ID is required");
+        const { database_id, database_ref, team_id } = config;
+
+        // validate the necessary fields
+        if (!database_id || !database_ref || !team_id) {
+            throw new Error("Database ID|Database Ref|Team ID are required");
         }
 
+        // validate the connection
         const { valid, result } = await this.connect("tables", config);
         if (!valid) {
             throw new Error("Failed to query Notion database");
@@ -95,7 +108,8 @@ export class NotionStrategy implements DataSourceStrategy {
         // save the tables to the db
         for (const table of result.results) {
             const tableData = await saveTable({
-                database_id: config.database_id,
+                database_id,
+                team_id,
                 config: {
                     table_id: table.id,
                     table_name: table.title[0].plain_text
@@ -105,6 +119,7 @@ export class NotionStrategy implements DataSourceStrategy {
             // save the columns to the db
             await saveColumns(table.properties.properties.map((property: any) => ({
                 table_id: tableData.id,
+                team_id,
                 id: property.id,
                 name: property.name,
                 data_type: property.type,

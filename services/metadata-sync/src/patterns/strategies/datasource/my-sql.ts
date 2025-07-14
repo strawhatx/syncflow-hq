@@ -32,8 +32,15 @@ export class MySQLStrategy implements DataSourceStrategy {
         }
     }
 
-    async getSources(connection_id: string, config: Record<string, any>): Promise<Record<string, any>[]> {
-        // first validate the connection
+    async getSources(config: Record<string, any>): Promise<Record<string, any>[]> {
+        const { connection_id, team_id } = config;
+
+        // validate the necessary fields
+        if (!connection_id || !team_id) {
+            throw new Error("Connection ID and team ID are required");
+        }
+
+        // validate the connection
         const { valid, pool, connection } = await this.connect(config);
         if (!valid) {
             throw new Error("Failed to connect to MySQL");
@@ -56,6 +63,7 @@ export class MySQLStrategy implements DataSourceStrategy {
         const databases = await saveDatabases(
             userDatabases.map((db: any) => ({
                 connection_id,
+                team_id,
                 config: {
                     id: db.id,
                     name: db.Database
@@ -68,15 +76,17 @@ export class MySQLStrategy implements DataSourceStrategy {
     }
 
     async getTables(config: Record<string, any>): Promise<Record<string, any>[]> {
-        // first validate the connection
+        const { database_id, database_name, team_id } = config;
+
+        // validate the necessary fields
+        if (!database_id || !database_name || !team_id) {
+            throw new Error("Database ID|Database Name|Team ID are required");
+        }
+
+        // validate the connection
         const { valid, pool, connection } = await this.connect(config);
         if (!valid) {
             throw new Error("Failed to connect to MySQL");
-        }
-
-        // must have a database
-        if (!config.database) {
-            throw new Error("Database is required");
         }
 
         // Assuming `connection` is your database connection and `config.database` is your database name
@@ -85,7 +95,7 @@ export class MySQLStrategy implements DataSourceStrategy {
             SELECT table_name, table_id FROM information_schema.tables
             WHERE table_schema = ? AND table_type = 'BASE TABLE';
             `,
-            [config.database]
+            [database_name]
         );
 
         for (const table of tables) {
@@ -98,12 +108,13 @@ export class MySQLStrategy implements DataSourceStrategy {
                 FROM information_schema.columns
                 WHERE table_schema = ? AND table_name = ?;
                 `,
-                [config.database, tableName]
+                [database_name, tableName]
             );
 
             // save the table
             const tableData = await saveTable({
-                database_id: config.database_id,
+                database_id,
+                team_id,
                 config: {
                     table_id: table.id,
                     table_name: tableName
@@ -113,6 +124,7 @@ export class MySQLStrategy implements DataSourceStrategy {
             // save the columns
             await saveColumns(columns.map((col: any) => ({
                 table_id: tableData.id,
+                team_id,
                 name: col.column_name,
                 data_type: col.data_type,
                 is_nullable: col.is_nullable

@@ -117,8 +117,15 @@ export class GoogleSheetsStrategy implements DataSourceStrategy {
         }
     }
 
-    async getSources(connection_id: string, config: Record<string, any>): Promise<Record<string, any>[]> {
-        // first validate the connection
+    async getSources(config: Record<string, any>): Promise<Record<string, any>[]> {
+        const { connection_id, team_id } = config;
+
+        // validate the necessary fields
+        if (!connection_id || !team_id) {
+            throw new Error("Connection ID and team ID are required");
+        }
+
+        // validate the connection by getting the data
         const { valid, result } = await this.connect("sources", config);
         if (!valid) {
             throw new Error("Failed to connect to Google Sheets");
@@ -128,6 +135,7 @@ export class GoogleSheetsStrategy implements DataSourceStrategy {
         const databases = await saveDatabases(
             result.files.map((file: any) => ({
                 connection_id,
+                team_id,
                 config: {
                     spreadsheet_id: file.properties.sheetId,
                     spreadsheet_name: file.properties.title,
@@ -142,17 +150,14 @@ export class GoogleSheetsStrategy implements DataSourceStrategy {
     }
 
     async getTables( config: Record<string, any>): Promise<Record<string, any>[]> {
-        // must have a spreadsheetId
-        if (!config.spreadsheet_id) {
-            throw new Error("Spreadsheet ID is required");
+        const { team_id, spreadsheet_id, spreadsheet_name } = config;
+
+        // validate the necessary fields
+        if (!team_id || !spreadsheet_id || !spreadsheet_name) {
+            throw new Error("Team ID|Spreadsheet ID|Spreadsheet Name are required");
         }
 
-        // if the sheetName is not provided, use the first sheet
-        if (!config.spreadsheet_name) {
-            throw new Error("Spreadsheet name is required");
-        }
-
-        // first validate the connection
+        // validate the connection
         const { valid, result } = await this.connect("tables", config);
         if (!valid) {
             throw new Error("Failed to connect to Google Sheets");
@@ -175,7 +180,8 @@ export class GoogleSheetsStrategy implements DataSourceStrategy {
         // save the tables and columns
         for (const sheet of validSheets) {
             const sheetData = await saveTable({
-                database_id: config.spreadsheet_id,
+                database_id: spreadsheet_id,
+                team_id,
                 config: {
                     sheet_id: sheet.properties.sheetId,
                     sheet_name: sheet.properties.title
@@ -189,6 +195,7 @@ export class GoogleSheetsStrategy implements DataSourceStrategy {
             await saveColumns(
                 header?.map((column: any, index: number) => ({
                     table_id: sheetData.id,
+                    team_id,
                     //id: index,
                     name: column.formattedValue,
                     data_type: "text",

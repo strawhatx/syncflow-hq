@@ -63,7 +63,15 @@ export class AirtableStrategy implements DataSourceStrategy {
         }
     }
 
-    async getSources(connection_id: string, config: Record<string, any>): Promise<Record<string, any>[]> {
+    async getSources(config: Record<string, any>): Promise<Record<string, any>[]> {
+        const { connection_id, team_id } = config;
+
+        // validate the necessary fields
+        if (!connection_id || !team_id) {
+            throw new Error("Connection ID and team ID are required");
+        }
+
+        // validate the connection by getting the data
         const { valid, result } = await this.connect("sources", config);
         if (!valid) {
             throw new Error("Failed to connect to Airtable");
@@ -73,6 +81,7 @@ export class AirtableStrategy implements DataSourceStrategy {
         const databases = await saveDatabases(
             result.bases.map((base: any) => ({
                 connection_id,
+                team_id,
                 config: {
                     base_id: base.id,
                     base_name: base.name,
@@ -85,9 +94,11 @@ export class AirtableStrategy implements DataSourceStrategy {
     }
 
     async getTables(config: Record<string, any>): Promise<Record<string, any>[]> {
-        // must have a baseId
-        if (!config.base_id) {
-            throw new Error("Base ID is required");
+        const { database_id, base_id, team_id } = config;
+
+        // validate the necessary fields
+        if (!database_id || !base_id || !team_id) {
+            throw new Error("Database ID and team ID are required");
         }
 
         // first validate the connection
@@ -100,7 +111,8 @@ export class AirtableStrategy implements DataSourceStrategy {
         for (const table of result.tables) {
             // save the table to the db
             const tableData = await saveTable({
-                database_id: config.base_id,
+                database_id,
+                team_id,
                 config: {
                     table_id: table.id,
                     table_name: table.name
@@ -110,6 +122,7 @@ export class AirtableStrategy implements DataSourceStrategy {
             // save the columns to the db
             await saveColumns(table.fields.map((column: any) => ({
                     table_id: tableData.id,
+                    team_id,
                     //id: column.id,
                     name: column.name,
                     data_type: column.type,

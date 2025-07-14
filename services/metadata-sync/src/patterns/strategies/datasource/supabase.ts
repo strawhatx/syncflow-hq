@@ -46,13 +46,23 @@ export class SupabaseStrategy implements DataSourceStrategy {
         }
     }
 
-    async getSources(connection_id: string, config: Record<string, any>): Promise<Record<string, any>[]> {
+    async getSources(config: Record<string, any>): Promise<Record<string, any>[]> {
+        const { connection_id, team_id } = config;
+
+        // validate the necessary fields
+        if (!connection_id || !team_id) {
+            throw new Error("Connection ID and team ID are required");
+        }
+
+        // validate the connection by getting the data
         const { valid, result } = await this.connect("projects", config);
         if (!valid) throw new Error("Failed to fetch Supabase projects");
 
+        // save the databases to the db
         const projects = await saveDatabases(
             result.projects.map((project: any) => ({
                 connection_id,
+                team_id,
                 config: {
                     project_id: project.id,
                     project_name: project.name,
@@ -67,7 +77,12 @@ export class SupabaseStrategy implements DataSourceStrategy {
     }
 
     async getTables(config: Record<string, any>): Promise<Record<string, any>[]> {
-        if (!config.project_ref) throw new Error("project_ref is required");
+        const { database_id, project_ref, team_id } = config;
+
+        // validate the necessary fields
+        if (!database_id || !project_ref || !team_id) {
+            throw new Error("Project Ref and team ID are required");
+        }
 
         // TODO: This is a temporary solution to get the tables and columns.
         // once supabase supports this, we can use the supabase api to get the tables and columns
@@ -99,7 +114,8 @@ export class SupabaseStrategy implements DataSourceStrategy {
         // save tables & columns
         for (const [tableName, columns] of Object.entries(grouped)) {
             const tableData = await saveTable({
-                database_id: config.project_ref,
+                database_id,
+                team_id,
                 config: {
                     table_name: tableName
                 }
@@ -108,6 +124,7 @@ export class SupabaseStrategy implements DataSourceStrategy {
             await saveColumns(
                 columns.map((col: any) => ({
                     table_id: tableData.id,
+                    team_id,
                     name: col.column_name,
                     data_type: col.data_type,
                     is_nullable: col.is_nullable === "YES"

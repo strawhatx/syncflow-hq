@@ -9,20 +9,20 @@ import { CreateConfigFactory } from './patterns/factories/config.ts';
 import { ConnectorProvider } from './types/connector.ts';
 import { limiter } from './util/rate-limiter.ts';
 
-const processSources = async (provider: string, connection_id: string, config: Record<string, any>) => {
+const processSources = async (provider: string, config: Record<string, any>) => {
   // get the strategy for the provider
   const strategy = DataSourceStrategyFactory.getStrategy(provider);
 
   // get the access token from the connection config in the db 
   // or refresh the token if it's expired
-  if (oauthProviders.includes(provider)) {
-    const accessToken = await getValidAccessToken(connection_id);
+  if (oauthProviders.includes(provider) && config?.connection_id) {
+    const accessToken = await getValidAccessToken(config.connection_id);
     config.access_token = accessToken;
   }
 
   // check if the action is getTables or getSources
   // Use the limiter to throttle requests
-  let data = await limiter.schedule(() => strategy.getSources(connection_id, config));
+  let data = await limiter.schedule(() => strategy.getSources(config));
 
   return data;
 }
@@ -63,12 +63,14 @@ export const processJobs: ScheduledHandler = async (event) => {
     // vars for the job
     const provider = job?.connection?.connector?.provider;
     const connection_id = job?.connection?.id;
+    const team_id = job?.team_id;
 
     // merge the configs with the connection config in the db
     const config = await getConnectionConfig(connection_id);
+    const mergedConfig = { ...config, team_id, connection_id };
 
     // process the sources (databases)
-    const sources = await processSources(provider, connection_id, config);
+    const sources = await processSources(provider, mergedConfig);
 
     // process the tables
     await processTablesAndFields(provider, config, sources);

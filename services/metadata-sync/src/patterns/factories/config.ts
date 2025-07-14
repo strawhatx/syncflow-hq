@@ -9,10 +9,9 @@ export class AirtableFactory implements ConfigFactory {
 
     create(): Record<string, any> {
         return { 
-            base_id: this.value.id, 
-            base_name: this.value.name, 
-            permission_level: this.value.permissionLevel,
-        };
+            database_id: this.value.id, 
+            base_id: this.value.config.base_id, 
+       };
     }
 }
 
@@ -20,7 +19,7 @@ export class GoogleSheetsFactory implements ConfigFactory {
     constructor(private readonly value: Record<string, any>) {}
 
     create(): Record<string, any> {
-        return { spreadsheet_id: this.value.id, spreadsheet_name: this.value.name };
+        return {database_id: this.value.id,  spreadsheet_id: this.value.config.spreadsheet_id, spreadsheet_name: this.value.config.spreadsheet_name };
     }
 }
 
@@ -28,23 +27,23 @@ export class SupabaseFactory implements ConfigFactory {
     constructor(private readonly value: Record<string, any>) {}
 
     create(): Record<string, any> {
-        return { project_ref: this.value.project_id };
+        return {database_id: this.value.id,  project_ref: this.value.config.project_id };
     }
 }
 
 export class NotionFactory implements ConfigFactory {
-    constructor(private readonly value: string) {}
+    constructor(private readonly value: Record<string, any>) {}
 
     create(): Record<string, any> {
-        return { database_id: this.value };
+        return { database_id: this.value.id, database_ref: this.value.config.project_id };
     }
 }
 
 export class DefaultFactory implements ConfigFactory {
-    constructor(private readonly value: string) {}
+    constructor(private readonly value: Record<string, any>) {}
 
     create(): Record<string, any> {
-        return { database_id: this.value };
+        return { database_id: this.value.id, database_name: this.value.config.name };
     }
 }
 

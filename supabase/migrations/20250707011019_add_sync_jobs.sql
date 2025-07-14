@@ -5,7 +5,7 @@ CREATE TABLE public.metadata_sync_jobs (
     team_id UUID NOT NULL REFERENCES public.teams (id),
     status TEXT NOT NULL DEFAULT 'pending',
     progress INT DEFAULT 0,
-    last_synced_at TIMESTAMPTZ,
+    started_at TIMESTAMPTZ,
     error TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()

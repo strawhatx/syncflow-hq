@@ -1,6 +1,7 @@
 export interface MetadataSyncJob {
     id: string;
     connection_id: string;
+    team_id: string;
     connection: {
         id: string;
         connector: {
