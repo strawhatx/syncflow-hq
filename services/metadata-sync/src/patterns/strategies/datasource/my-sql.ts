@@ -2,10 +2,22 @@ import { saveColumns, saveDatabases, saveTable } from "../../../services/connect
 import { DataSourceStrategy } from "./index.ts";
 import { createPool } from "mysql2/promise";
 
+// ✅ mysql2 config 
+interface MysqlConfig {
+    host: string;
+    port: number;
+    user: string;
+    password: string;
+    database: string;
+    ssl?: boolean;
+}
+
 export class MySQLStrategy implements DataSourceStrategy {
     private config(config: Record<string, any>): Record<string, any> {
         // Convert boolean SSL to proper mysql2 SSL object format
-        const mysqlConfig = { ...config };
+        const mysqlConfig = { ...config as MysqlConfig };
+
+        
         if (typeof mysqlConfig.ssl === 'boolean') {
             if (mysqlConfig.ssl) {
                 mysqlConfig.ssl = { rejectUnauthorized: false };
@@ -66,7 +78,7 @@ export class MySQLStrategy implements DataSourceStrategy {
                 team_id,
                 config: {
                     id: db.id,
-                    name: db.Database
+                    name: db.name
                 }
             }))
         );
@@ -92,7 +104,7 @@ export class MySQLStrategy implements DataSourceStrategy {
         // Assuming `connection` is your database connection and `config.database` is your database name
         const [tables] = await connection.query(
             `
-            SELECT table_name, table_id FROM information_schema.tables
+            SELECT * FROM information_schema.tables
             WHERE table_schema = ? AND table_type = 'BASE TABLE';
             `,
             [database_name]
@@ -116,7 +128,7 @@ export class MySQLStrategy implements DataSourceStrategy {
                 database_id,
                 team_id,
                 config: {
-                    table_id: table.id,
+                    //table_id: table.id,
                     table_name: tableName
                 }
             });

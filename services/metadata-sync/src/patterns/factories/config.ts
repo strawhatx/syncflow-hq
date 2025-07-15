@@ -35,7 +35,7 @@ export class NotionFactory implements ConfigFactory {
     constructor(private readonly value: Record<string, any>) {}
 
     create(): Record<string, any> {
-        return { database_id: this.value.id, database_ref: this.value.config.project_id };
+        return { database_id: this.value.id, database_ref: this.value.config.database_id };
     }
 }
 

@@ -13,7 +13,7 @@ export class MySQLFieldsStrategy implements ConnectionFieldsStrategy {
             host: "",
             port: "",
             database: "",
-            username: "",
+            user: "",
             password: "",
             ssl: false
         }
@@ -24,7 +24,7 @@ export class MySQLFieldsStrategy implements ConnectionFieldsStrategy {
             host: z.string().min(1, "Host is required"),
             port: z.number().min(1, "Port must be greater than 0"),
             database: z.string().min(1, "Database is required"),
-            username: z.string().min(1, "Username is required"),
+            user: z.string().min(1, "Username is required"),
             password: z.string().min(1, "Password is required"),
             ssl: z.boolean().optional()
         })
@@ -76,9 +76,9 @@ export class MySQLFieldsStrategy implements ConnectionFieldsStrategy {
                     )}
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="username">Username</Label>
+                    <Label htmlFor="user">Username</Label>
                     <Input
-                        id="username"
+                        id="user"
                         placeholder="root"
                         value={config.user || ""}
                         onChange={(e) => setConfig({ ...config, user: sanitizeField(e.target.value, "text") })}

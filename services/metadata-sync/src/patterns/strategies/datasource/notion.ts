@@ -1,16 +1,10 @@
-import { supabase } from "../../../config/supabase.ts";
 import { saveColumns, saveDatabases, saveTable } from "../../../services/connection.ts";
 import { DataSourceStrategy } from "./index.ts";
 
 export class NotionStrategy implements DataSourceStrategy {
     private config = {
-        tables: {
-            // Retrieve database schema
-            url: `https://api.notion.com/v1/databases/{database_ref}`,
-            method: "GET"
-        },
         sources: {
-            // Search all objects
+            // Search all tables
             url: "https://api.notion.com/v1/search",
             method: "POST"
         }
@@ -58,6 +52,9 @@ export class NotionStrategy implements DataSourceStrategy {
         }
     }
 
+    // get the sources from notion
+    // nottion doesnt actuall have databases what it calls databases are actually tables
+    // so we will create a wrapper database ad associat the tables to it later
     async getSources(config: Record<string, any>): Promise<Record<string, any>[]> {
         const { connection_id, team_id } = config;
 
@@ -66,7 +63,28 @@ export class NotionStrategy implements DataSourceStrategy {
             throw new Error("Connection ID and team ID are required");
         }
 
-        // validate the connection by getting the data
+        // just save the database wrapper to the db
+        // no validation needed as we are just saving the wrapper
+        const databases = await saveDatabases([{
+            connection_id,
+            team_id,
+            config: {
+                database_name: "Notion Database"
+            }
+        }]);
+
+        return databases;
+    }
+
+    async getTables(config: Record<string, any>): Promise<Record<string, any>[]> {
+        const { database_id, team_id } = config;
+
+        // validate the necessary fields
+        if (!database_id || !team_id) {
+            throw new Error("Database ID|Database Ref|Team ID are required");
+        }
+
+        // validate the connection makesure to add the filter.
         const { valid, result } = await this.connect("sources", config, {
             filter: {
                 value: "database",
@@ -74,33 +92,6 @@ export class NotionStrategy implements DataSourceStrategy {
             }
         });
 
-        if (!valid) {
-            throw new Error("Failed to connect to Notion");
-        }
-
-        // save the databases to the db
-        const databases = await saveDatabases(result.results.map((database: any) => ({
-            connection_id,
-            team_id,
-            config: {
-                database_id: database.id,
-                database_name: database.title[0].plain_text
-            }
-        })));
-
-        return databases;
-    }
-
-    async getTables(config: Record<string, any>): Promise<Record<string, any>[]> {
-        const { database_id, database_ref, team_id } = config;
-
-        // validate the necessary fields
-        if (!database_id || !database_ref || !team_id) {
-            throw new Error("Database ID|Database Ref|Team ID are required");
-        }
-
-        // validate the connection
-        const { valid, result } = await this.connect("tables", config);
         if (!valid) {
             throw new Error("Failed to query Notion database");
         }
@@ -116,15 +107,23 @@ export class NotionStrategy implements DataSourceStrategy {
                 }
             });
 
+            // map the data
+            const mappedData = Object.keys(table.properties).map((key) => {
+                //get the object from the table.properties
+                const property = table.properties[key];
+                
+                return {
+                    table_id: tableData.id,
+                    team_id,
+                    //id: property.id,
+                    name: property.name,
+                    data_type: property.type,
+                    //is_nullable: property.is_nullable
+                };
+            });
+
             // save the columns to the db
-            await saveColumns(table.properties.properties.map((property: any) => ({
-                table_id: tableData.id,
-                team_id,
-                id: property.id,
-                name: property.name,
-                data_type: property.type,
-                is_nullable: property.is_nullable
-            })));
+            await saveColumns(mappedData);
         }
 
         return result.results;

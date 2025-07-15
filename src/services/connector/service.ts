@@ -20,5 +20,9 @@ export const fetchConnectors = async (): Promise<ConnectorWithConnections[]> => 
     throw error;
   }
 
-  return connectors || [];
+  // convert the code_challenge_required to a boolean
+  return connectors.map((connector) => ({
+    ...connector,
+    code_challenge_required: connector.code_challenge_required === 'true'
+  })) || [];
 }; 

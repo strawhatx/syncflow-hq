@@ -23,7 +23,8 @@ export async function getValidAccessToken(connectionId: string): Promise<string>
 
     const now = Date.now();
 
-    if (expires_at && now < expires_at - 60 * 1000) {
+    //  if not exprired or if no expriration exists just retutn the access token.
+    if (!expires_at || (expires_at && now < expires_at - 60 * 1000)) {
         // token valid for at least another minute
         return access_token;
     }
