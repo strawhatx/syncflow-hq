@@ -9,15 +9,13 @@ interface MysqlConfig {
     user: string;
     password: string;
     database: string;
-    ssl?: boolean;
+    ssl?: boolean | { rejectUnauthorized: boolean };
 }
 
 export class MySQLStrategy implements DataSourceStrategy {
     private config(config: Record<string, any>): Record<string, any> {
         // Convert boolean SSL to proper mysql2 SSL object format
         const mysqlConfig = { ...config as MysqlConfig };
-
-        
         if (typeof mysqlConfig.ssl === 'boolean') {
             if (mysqlConfig.ssl) {
                 mysqlConfig.ssl = { rejectUnauthorized: false };
