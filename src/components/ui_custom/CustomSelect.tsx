@@ -45,7 +45,7 @@ export const CustomSelect: FC<CustomSelectProps> = ({
     onValueChange(newValue);
   };
 
-  const selectedOption = options?.find(opt => opt.id === value);
+  const selectedOption = options.find(opt => opt.id === value || opt.name === value);
 
   return (
     <Select value={value || ''}  onValueChange={handleValueChange} disabled={disabled}>
@@ -85,7 +85,7 @@ export const CustomSelect: FC<CustomSelectProps> = ({
           <SelectItem
             key={option.id}
             value={option.id}
-            className="flex items-center gap-2"
+            className="flex items-start gap-2"
           >
             {option.icon && (
               <img

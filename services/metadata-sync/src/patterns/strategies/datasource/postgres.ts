@@ -42,7 +42,7 @@ export class PostgresStrategy implements DataSourceStrategy {
             connection_id,
             team_id,
             config: {
-                id: db.datname,
+                //id: db.datname,
                 name: db.datname
             }
         })));

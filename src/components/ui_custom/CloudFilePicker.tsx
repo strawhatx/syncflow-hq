@@ -44,33 +44,52 @@ const ToolbarComponent = ({ setSearch }: { setSearch: (search: string) => void }
   )
 }
 
-const TriggerComponent = ({ isLoading, disabled, selectedFile, setOpen }: { isLoading: boolean, disabled: boolean, selectedFile: any, setOpen: (open: boolean) => void }) => {
-  return (
-    <>
-      <Button
-        variant="outline"
-        className={`flex h-9 w-full justify-between border rounded-md px-2.5 py-1.5 text-sm ring-offset-background placeholder:text-muted-foreground items-center overflow-hidden cursor-pointer ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
-        onClick={() => setOpen(true)}
-        disabled={disabled}
-      >
-        <div className="flex text-muted-foreground items-center gap-2">
-          <Cloud className="h-6 w-6 text-purple-700" />
-          {selectedFile && !isLoading ? (
-            <span className="text-sm text-gray-600 truncate">{selectedFile?.name || selectedFile}</span>
-          ) : (
-            <span className="text-sm text-gray-600 truncate">Upload</span>
-          )}
-        </div>
-        {isLoading ? (
-          <Loader2 className="h-4 w-4 text-gray-500 animate-spin" />
-        ) : (
-          <ArrowUpFromLine className="h-4 w-4 text-muted-foreground" />
-        )}
+const TriggerComponent =
+  ({ isLoading, disabled, selectedFile, files, setOpen }:
+    {
+      isLoading: boolean,
+      disabled: boolean,
+      selectedFile: string,
+      files: any[],
+      setOpen: (open: boolean) => void
+    }) => {
+    const selected = files.find(file => file.id === selectedFile || file.name === selectedFile);
 
-      </Button>
-    </>
-  );
-};
+    return (
+      <>
+        <Button
+          variant="outline"
+          className={`flex h-9 w-full justify-between border rounded-md px-2.5 py-1.5 text-sm ring-offset-background placeholder:text-muted-foreground items-center overflow-hidden cursor-pointer ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+          onClick={() => setOpen(true)}
+          disabled={disabled}
+        >
+
+          {selected && !isLoading ? (
+            <div className="flex text-muted-foreground items-center gap-2">
+              <img
+                src="/svg/google_sheets-icon.svg"
+                alt={selected.name}
+                className="w-4 h-4 rounded-md"
+              />
+              < span className="text-sm text-gray-600 truncate">{selected?.name || selected}</span>
+            </div>
+          ) : (
+            <div className="flex text-muted-foreground items-center gap-2">
+              <Cloud className="h-6 w-6 text-purple-700" />
+              <span className="text-sm text-gray-600 truncate">Upload</span>
+            </div>
+          )}
+
+          {isLoading ? (
+            <Loader2 className="h-4 w-4 text-gray-500 animate-spin" />
+          ) : (
+            <ArrowUpFromLine className="h-4 w-4 text-muted-foreground" />
+          )}
+
+        </Button >
+      </>
+    );
+  };
 
 const TableComponent = ({
   files,
@@ -78,7 +97,7 @@ const TableComponent = ({
   setSelectedFile,
 }: {
   files: any[];
-  selectedFile: any;
+  selectedFile: string;
   setSelectedFile: (file: any) => void;
 }) => {
   return (
@@ -98,9 +117,9 @@ const TableComponent = ({
           files.map((row) => (
             <div
               key={row.id}
-              className={`grid grid-cols-3 cursor-pointer hover:bg-gray-100 ${selectedFile?.id === row.id ? "bg-gray-100" : ""
+              className={`grid grid-cols-3 cursor-pointer hover:bg-gray-100 ${selectedFile === row.id ? "bg-gray-100" : ""
                 }`}
-              onClick={() => setSelectedFile(row)}
+              onClick={() => setSelectedFile(row.id)}
             >
               {tableColumns.map((column) => (
                 <div key={column.name} className="py-2 px-3 flex items-center gap-2 text-sm">
@@ -132,22 +151,14 @@ const TableComponent = ({
 
 
 export default function CloudFilePicker({ onClose, files, value, isLoading, disabled }: CloudFilePickerProps) {
-  const [selectedFile, setSelectedFile] = useState<any>(null);
+  const [selectedFile, setSelectedFile] = useState<string>(null);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [search, setSearch] = useState<string>("");
-  const filtered = files.filter((file) => file.name.toLowerCase().includes(search.toLowerCase()));
+  const filtered = files?.filter((file) => file?.name?.toLowerCase().includes(search.toLowerCase()));
 
   const handleSelect = () => {
     onClose(selectedFile);
     setIsOpen(false);
-  }
-
-  // validate the file
-  const validateFile = (file: any) => {
-    if (!file) {
-      return false;
-    }
-    return true;
   }
 
   useEffect(() => {
@@ -158,7 +169,13 @@ export default function CloudFilePicker({ onClose, files, value, isLoading, disa
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <TriggerComponent setOpen={setIsOpen} isLoading={isLoading} disabled={disabled} selectedFile={selectedFile} />
+      <TriggerComponent
+        setOpen={setIsOpen}
+        isLoading={isLoading}
+        disabled={disabled}
+        selectedFile={selectedFile}
+        files={files}
+      />
 
       <DialogContent className="max-h-[80vh] max-w-full md:max-w-xl lg:max-w-3xl">
         <DialogHeader>

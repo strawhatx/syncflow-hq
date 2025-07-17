@@ -1,14 +1,47 @@
 import { SyncTableMapping, SyncFieldMapping } from "@/types/sync";
 import { v4 as uuidv4 } from 'uuid';
 
+export class FieldMappingBuilder {
+    private mapping: SyncFieldMapping;
+
+    constructor(source: string, destination: string, transformation?: string, params?: Record<string, any>) {
+        this.mapping = {
+            source_field: source,
+            destination_field: destination,
+            transformation,
+            params
+        };
+    }
+
+    setSourceField(source: string) {
+        this.mapping.source_field = source;
+        return this;
+    }
+
+    setDestinationField(destination: string) {
+        this.mapping.destination_field = destination;
+        return this;
+    }
+
+    setTransformation(transformation: string, params?: Record<string, any>) {
+        this.mapping.transformation = transformation;
+        this.mapping.params = params;
+        return this;
+    }
+
+    build() {
+        return this.mapping;
+    }
+}
+
 export class TableMappingBuilder {
     private mapping: SyncTableMapping;
 
     constructor(source: string, destination: string) {
         this.mapping = {
             id: uuidv4(),
-            source_table: source,
-            destination_table: destination,
+            source_table_id: source,
+            destination_table_id: destination,
             field_mappings: [],
         };
     }
@@ -26,6 +59,29 @@ export class TableMappingBuilder {
             params
         });
 
+        return this;
+    }
+
+    removeFieldMapping(index: number) {
+        this.mapping.field_mappings.splice(index, 1);
+        return this;
+    }
+
+    updateFieldMapping(
+        index: number,
+        source: string,
+        destination: string,
+        transformation?: string,
+        params?: Record<string, any>
+    ) {
+        if (index >=0 && index < this.mapping.field_mappings.length) {
+            this.mapping.field_mappings[index] = {
+                source_field: source,
+                destination_field: destination,
+                transformation,
+                params
+            };
+        }
         return this;
     }
 

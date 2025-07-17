@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { SyncData, defaultSyncData } from "../helpers/sync-data";
+import { SyncData, defaultSyncData } from "../utils/sync-data";
 import { fetchSyncById, saveStepData } from "@/services/syncs/service";
 
 const mapSyncData = (data: any[]): SyncData => {

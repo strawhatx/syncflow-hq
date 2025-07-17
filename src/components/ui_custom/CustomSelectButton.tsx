@@ -89,14 +89,15 @@ export const CustomSelectButton: FC<CustomSelectButtonProps> = ({
                     <CommandList>
                         <CommandEmpty>No results found.</CommandEmpty>
                         <CommandGroup>
-                            {options.map((option, index) => (
+                            {options.map((option) => (
                                 <CommandItem
-                                    key={option.id || `${option.name}-${index}`}
-                                    value={option.name}
+                                    key={option.id}
+                                    value={option.id}
                                     onSelect={() => {
-                                        onValueChange(option.id || option.name);
+                                        onValueChange(option.id);
                                         setOpen(false);
                                     }}
+                                    className="flex items-start gap-2"
                                 >
                                     {option.icon && (
                                         <img

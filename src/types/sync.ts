@@ -9,22 +9,22 @@ export type Schedule = "every 1 hour" | "every 1 day" | "every 1 week" | "every 
 export type Backoff = "exponential" | "linear" | "constant";
 
 export interface SyncFieldMapping {
-    source_field: string;
-    destination_field: string;
+    source_field_id: string;
+    destination_field_id: string;
     transformation?: string; // e.g., "combine", "toISOString", "uppercase"
     params?: Record<string, any>; // e.g., { separator: " " }
 }
 
 export interface SyncTableMapping {
     id: string;
-    source_table: string;
-    destination_table: string;
+    source_table_id: string;
+    destination_table_id: string;
     field_mappings: SyncFieldMapping[];
 }
 
 export interface SyncSchema {
-    source_database: string;
-    destination_database: string;
+    source_database_id: string;
+    destination_database_id: string;
     table_mappings: SyncTableMapping[];
 }
 
@@ -86,8 +86,8 @@ const defaultData = (user: User): Omit<Sync, "id" | "created_by" | "team_id"> =>
         config: {
             conflict_resolution: "latest" as ConflictResolution,
             schema: {
-                source_database: null,
-                destination_database: null,
+                source_database_id: null,
+                destination_database_id: null,
                 table_mappings: [],
             },
             schedule: "every 1 hour" as Schedule,

@@ -12,7 +12,7 @@ import { toast } from '@/hooks/use-toast';
 import useSync from '../hooks/useSync';
 import { useQuery } from '@tanstack/react-query';
 import { CustomSelect } from '@/components/ui_custom/CustomSelect';
-import { SyncData } from '../helpers/sync-data';
+import { SyncData } from '../utils/sync-data';
 
 const renderSection = (
   appId: string,

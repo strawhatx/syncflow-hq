@@ -276,6 +276,84 @@ export interface Database {
           updated_at: string;
         }
       }
+      connection_databases: {
+        Row: {
+          id: string
+          connection_id: string
+          team_id: string
+          config: Json
+          created_at: string
+          updated_at: string
+        }
+      }
+      connection_tables: {
+        Row: {
+          id: string
+          database_id: string
+          team_id: string
+          config: Json
+          created_at: string
+          updated_at: string
+        }
+      }
+      connection_columns: {
+        Row: {
+          id: string
+          table_id: string
+          team_id: string
+          name: string
+          data_type: string
+          is_nullable: boolean
+          created_at: string
+          updated_at: string
+        }
+      }
+      metadata_sync_jobs: {
+        Row: {
+          id?: string
+          connection_id: string
+          status?: 'pending' | 'running' | 'completed' | 'failed'
+          started_at?: string | null
+          error?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Insert: {
+          id?: string
+          connection_id: string
+          status?: 'pending' | 'running' | 'completed' | 'failed'
+          started_at?: string | null
+          error?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      data_sync_jobs: {
+        Row: {
+          id: string
+          sync_id: string
+          status: 'pending' | 'running' | 'completed' | 'failed'
+          records_processed: number
+          records_synced: number
+          started_at: string | null
+          completed_at: string | null
+          error_message: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          sync_id: string
+          status?: 'pending' | 'running' | 'completed' | 'failed'
+          records_processed?: number
+          records_synced?: number
+          started_at?: string | null
+          completed_at?: string | null
+          error_message?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never

@@ -6,9 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Connector, ConnectorProvider } from '@/types/connectors';
 import { toast } from '@/hooks/use-toast';
 import useSync from '../hooks/useSync';
-import { SyncData } from '../helpers/sync-data';
+import { SyncData } from '../utils/sync-data';
 import { DatasourceFieldsStrategyFactory } from '@/patterns/strategies/data-source-field';
-import { useDestinationData, useSourceData } from '../hooks/useDataSources';
+import { useDestinationDatabases, useSourceDatabases } from '../hooks/useDataSources';
 
 export default function DataSourcesStep({ next, sync }: { next: () => void, sync: SyncData }) {
   const [sourceDatabase, setSourceDatabase] = useState("");
@@ -16,38 +16,38 @@ export default function DataSourcesStep({ next, sync }: { next: () => void, sync
   const { id } = useParams();
   const { createSyncMutation } = useSync(id);
 
-  const { data: sourceOptions = [], isLoading: isSourceLoading } = useSourceData(
-    sync.source?.id,
-    sync.source?.connector?.provider as ConnectorProvider
-  );
+  const {
+    data: sourceOptions = [],
+    isLoading: isSourceLoading
+  } = useSourceDatabases(sync.source?.id);
 
-  const { data: destinationOptions = [], isLoading: isDestinationLoading } = useDestinationData(
-    sync.destination?.id,
-    sync.destination?.connector?.provider as ConnectorProvider
-  );
+  const {
+    data: destinationOptions = [],
+    isLoading: isDestinationLoading
+  } = useDestinationDatabases(sync.destination?.id);
 
   // set the source and destination ids
   useEffect(() => {
-    setSourceDatabase(sync.config?.schema?.source_database);
-    setDestinationDatabase(sync.config?.schema?.destination_database);
+    setSourceDatabase(sync.config?.schema?.source_database_id);
+    setDestinationDatabase(sync.config?.schema?.destination_database_id);
   }, [sync]);
 
   // render source field
   const renderSourceField = () => {
     return DatasourceFieldsStrategyFactory.getStrategy(sync.source?.connector as unknown as Connector)
-      .renderFields(sourceOptions, isSourceLoading, setSourceDatabase, "source", sourceDatabase);
+      .renderFields(sourceOptions, isSourceLoading, setSourceDatabase, sourceDatabase);
   }
 
   // render destination field
   const renderDestinationField = () => {
     return DatasourceFieldsStrategyFactory.getStrategy(sync.destination?.connector as unknown as Connector)
-      .renderFields(destinationOptions, isDestinationLoading, setDestinationDatabase, "destination", destinationDatabase);
+      .renderFields(destinationOptions, isDestinationLoading, setDestinationDatabase, destinationDatabase);
   }
 
   const handleNext = async () => {
     // if there are no changes, move to next step
-    if (sourceDatabase === sync.config?.schema?.source_database &&
-      destinationDatabase === sync.config?.schema?.destination_database) {
+    if (sourceDatabase === sync.config?.schema?.source_database_id &&
+      destinationDatabase === sync.config?.schema?.destination_database_id) {
       return next();
     }
 
@@ -59,8 +59,8 @@ export default function DataSourcesStep({ next, sync }: { next: () => void, sync
         ...sync.config,
         schema: {
           ...sync.config.schema,
-          source_database: sourceDatabase,
-          destination_database: destinationDatabase,
+          source_database_id: sourceDatabase,
+          destination_database_id: destinationDatabase,
         }
       }
     }

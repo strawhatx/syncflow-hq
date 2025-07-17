@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import AccountsStep from "./component/Accounts";
 import DataSourcesStep from "./component/DataSources";
-import { TableMappingStep } from "./component/TableMapping";
+import { MappingStep } from "./component/Mapping";
 import ReviewStep from "./component/Review";
 import ScheduleStep from "./component/Schedule";
 import { Check, X, RefreshCcw, ArrowRight, ArrowLeftRight } from "lucide-react";
@@ -11,8 +11,7 @@ import { defaultUpdateSync } from "@/types/sync";
 import { useParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import useSync from "./hooks/useSync";
-import { FieldMappingStep } from "./component/FeildMapping";
-import { SyncData } from "./helpers/sync-data";
+import { SyncData } from "./utils/sync-data";
 import { sanitizeField } from "@/lib/sanitize";
 import { PagePermissionGuard } from "@/hocs/withPagePermission";
 
@@ -47,13 +46,7 @@ const steps = [
         id: "table-mappings",
         label: "Map your tables",
         description: "Map the tables you want to sync",
-        component: TableMappingStep,
-    },
-    {
-        id: "field-mappings",
-        label: "Map your fields",
-        description: "Map the fields you want to sync",
-        component: FieldMappingStep,
+        component: MappingStep,
     },
     {
         id: "schedule",

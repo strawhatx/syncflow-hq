@@ -2,8 +2,14 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
 import { fetchWithAuth } from '@/lib/api';
 import { Connector, ConnectorProvider } from "@/types/connectors";
+import { DatasourceMapAdapterFactory } from '@/patterns/factories/mapper';
+import getIcon from '@/features/sync/utils/util';
 
+// types for connection related tables
 type Connection = Database['public']['Tables']['connections']['Row'];
+type ConnectionDatabase = Database['public']['Tables']['connection_databases']['Row'];
+type ConnectionTable = Database['public']['Tables']['connection_tables']['Row'];
+type ConnectionColumn = Database['public']['Tables']['connection_columns']['Row'];
 
 // fetch connection by id via supabase
 export const fetchConnectionById = async (id: string): Promise<Connection | null> => {
@@ -12,6 +18,40 @@ export const fetchConnectionById = async (id: string): Promise<Connection | null
     .select('*')
     .eq('id', id)
     .single();
+
+  if (error) throw error;
+  return data;
+};
+
+  // fetch connection databases
+  export const fetchConnectionDatabases = async (connection_id: string): Promise<ConnectionDatabase[]> => {
+  const { data, error } = await supabase
+    .from('connection_databases')
+    .select('*')
+    .eq('connection_id', connection_id);
+
+  if (error) throw error;
+  return data;
+};
+
+// fetch tables for a connection database
+export const fetchTablesByDatabaseId = async (database_id: string, provider: ConnectorProvider): Promise<TableOption[]> => {
+  const { data, error } = await supabase
+    .from('connection_tables')
+    .select('*, connection_columns( id, name )')
+    .eq('database_id', database_id);
+
+  if (error) throw error;
+
+  return data.map(DatasourceMapAdapterFactory.getAdapter(provider));
+};
+
+// fetch columns for a connection table
+export const fetchColumnsByTableId = async (table_id: string): Promise<ConnectionColumn[]> => {
+  const { data, error } = await supabase
+    .from('connection_columns')
+    .select('*')
+    .eq('table_id', table_id);
 
   if (error) throw error;
   return data;
