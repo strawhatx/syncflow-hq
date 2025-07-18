@@ -23,8 +23,6 @@ const renderSection = (
   connections: Connection[],
   onCreateNew: () => void
 ) => {
-  // Debugging: Log the appId value
-  console.log("App ID:", appId);
 
   return (
     <div className='col-span-2'>

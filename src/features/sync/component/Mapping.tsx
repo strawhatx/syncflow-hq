@@ -48,7 +48,7 @@ const Form = ({
   onRemove
 }: Omit<MapSidesProps, 'tableMapping'>) => {
   return (
-    <div className="flex w-full text-black gap-2 items-center py-1">
+    <div key={index} className="flex w-full text-black gap-2 items-center py-1">
       <div className="flex w-full justify-between gap-2">
         <CustomSelectButton
           value={sourceValue}
