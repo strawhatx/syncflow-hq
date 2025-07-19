@@ -62,9 +62,9 @@ function findColumnMatch(
     //TODO: maybe instad of that we create an exeception for primary keys   
     const match = destCols.filter(col => {
         const normalizedDest = normalize(col);
-        return  normalizedSource === normalizedDest || 
-        (normalizedSource.toLocaleUpperCase().endsWith("ID") && normalizedDest.toLocaleUpperCase().endsWith("ID")) ||
-               stringSimilarity.compareTwoStrings(normalizedSource, normalizedDest) >= threshold;
+        return normalizedSource === normalizedDest ||
+            (normalizedSource.toLocaleUpperCase().endsWith("ID") && normalizedDest.toLocaleUpperCase().endsWith("ID")) ||
+            stringSimilarity.compareTwoStrings(normalizedSource, normalizedDest) >= threshold;
     });
 
     if (match.length > 0) {
@@ -89,7 +89,7 @@ const findBestTableMatch = (
     const scores = destinations.map(dest => {
         const sourceNorm = normalizeTableName(source.name);
         const destNorm = normalizeTableName(dest.name);
-        
+
         const nameScore = stringSimilarity.compareTwoStrings(sourceNorm, destNorm);
 
         return {
@@ -112,7 +112,7 @@ const findBestTableMatch = (
 };
 
 /**
- * Production-level auto-mapping function that maps tables and columns between source and destination
+ * auto-mapping function that maps tables and columns between source and destination
  * 
  * @param sourceTables List of source tables with their columns
  * @param destinationTables List of destination tables with their columns
@@ -160,29 +160,22 @@ export const autoMap = (
                 finalConfig.columnMatchThreshold
             );
 
-            if (matchedCol) {
-                fieldMappings.push({
-                    source_field_id: sourceCol.id,
-                    destination_field_id: matchedCol,
-                });
-                console.log(`Mapped column: ${sourceCol.name} -> ${matchedCol}`);
-            } else {
-                console.log(`No match found for column: ${sourceCol.name}`);
-            }
+            if (!matchedCol) continue;
+
+            fieldMappings.push({
+                source_field_id: sourceCol.id,
+                destination_field_id: matchedCol,
+            });
         }
 
         // Only create mapping if we have at least one field mapped
-        if (fieldMappings.length > 0) {
-            mappings.push({
-                source_table_id: sourceTable.id,
-                destination_table_id: bestDest.id,
-                field_mappings: fieldMappings,
-            });
+        if (fieldMappings.length === 0) continue;
 
-            console.debug(`Mapped table ${sourceTable.name} to ${bestDest.name} with ${fieldMappings.length} field mappings`);
-        } else {
-            console.debug(`No field mappings found for table pair: ${sourceTable.name} -> ${bestDest.name}`);
-        }
+        mappings.push({
+            source_table_id: sourceTable.id,
+            destination_table_id: bestDest.id,
+            field_mappings: fieldMappings,
+        });
     }
 
     console.log(`AutoMap completed. Total mappings found: ${mappings.length}`);

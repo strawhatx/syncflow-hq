@@ -247,34 +247,6 @@ export default function Sync() {
                     required
                 />
 
-                {/* Sync Type Selection */}
-                <div className="flex gap-0">
-                    <button
-                        className={`py-1 px-3 h-8 rounded-md rounded-r-none ${syncType === '1-way' ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white' : 'bg-gray-200'}`}
-                        onClick={() => {
-                            // if the sync type is already 1-way, don't update it
-                            if (syncType !== '1-way') {
-                                setSyncType('1-way');
-                                createSyncMutation.mutate({ step: 'apps', data: { id, syncType: '1-way' } as any });
-                            }
-                        }}
-                    >
-                        <ArrowRight className="w-4 h-4" />
-                    </button>
-                    <button
-                        className={`py-1 px-3 h-8 rounded-md rounded-l-none ${syncType === '2-way' ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white' : 'bg-gray-200'}`}
-                        onClick={() => {
-                            // if the sync type is already 2-way, don't update it
-                            if (syncType !== '2-way') {
-                                setSyncType('2-way');
-                                createSyncMutation.mutate({ step: 'apps', data: { id, syncType: '2-way' } as any });
-                            }
-                        }}
-                    >
-                        <ArrowLeftRight className="w-4 h-4" />
-                    </button>
-                </div>
-
                 <div className="flex gap-2">
                     <Button
                         variant="outline"

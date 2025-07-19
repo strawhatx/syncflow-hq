@@ -6,20 +6,20 @@ export class FieldMappingBuilder {
 
     constructor(source: string, destination: string, transformation?: string, params?: Record<string, any>) {
         this.mapping = {
-            source_field: source,
-            destination_field: destination,
+            source_field_id: source,
+            destination_field_id: destination,
             transformation,
             params
         };
     }
 
     setSourceField(source: string) {
-        this.mapping.source_field = source;
+        this.mapping.source_field_id = source;
         return this;
     }
 
     setDestinationField(destination: string) {
-        this.mapping.destination_field = destination;
+        this.mapping.destination_field_id = destination;
         return this;
     }
 
@@ -43,6 +43,8 @@ export class TableMappingBuilder {
             source_table_id: source,
             destination_table_id: destination,
             field_mappings: [],
+            direction: "one-way",
+            filters: [],
         };
     }
 
@@ -53,8 +55,8 @@ export class TableMappingBuilder {
         params?: Record<string, any>
     ) {
         this.mapping.field_mappings.push({
-            source_field: source,
-            destination_field: destination,
+            source_field_id: source,
+            destination_field_id: destination,
             transformation,
             params
         });
@@ -76,8 +78,8 @@ export class TableMappingBuilder {
     ) {
         if (index >=0 && index < this.mapping.field_mappings.length) {
             this.mapping.field_mappings[index] = {
-                source_field: source,
-                destination_field: destination,
+                source_field_id: source,
+                destination_field_id: destination,
                 transformation,
                 params
             };

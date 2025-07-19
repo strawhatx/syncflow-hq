@@ -15,23 +15,25 @@ export interface SyncFieldMapping {
     params?: Record<string, any>; // e.g., { separator: " " }
 }
 
+export interface SyncFilter {
+    source_field: string;
+    operator: "eq" | "neq" | "gt" | "gte" | "lt" | "lte" | "in" | "nin" | "like" | "nlike" | "ilike" | "nilike" | "is" | "is_not" | "is_null" | "is_not_null";
+    value: string | number | boolean | string[] | number[] | boolean[];
+}
+
 export interface SyncTableMapping {
     id: string;
     source_table_id: string;
     destination_table_id: string;
     field_mappings: SyncFieldMapping[];
+    direction: SyncDirection;         // NEW: direction per mapping
+    filters: SyncFilter[];            // NEW: filters per mapping
 }
 
 export interface SyncSchema {
     source_database_id: string;
     destination_database_id: string;
     table_mappings: SyncTableMapping[];
-}
-
-export interface SyncFilter {
-    source_field: string;
-    operator: "eq" | "neq" | "gt" | "gte" | "lt" | "lte" | "in" | "nin" | "like" | "nlike" | "ilike" | "nilike" | "is" | "is_not" | "is_null" | "is_not_null";
-    value: string | number | boolean | string[] | number[] | boolean[];
 }
 
 export interface SyncBatchSize {
@@ -57,10 +59,10 @@ export interface SyncConfig {
     conflict_resolution: ConflictResolution;
     schema: SyncSchema;
     schedule: Schedule;
-    filters: SyncFilter[];
     batch_size: SyncBatchSize;
     retry_policy: SyncRetryPolicy;
     notifications: SyncNotifications;
+    // REMOVE: filters: SyncFilter[]; // Now handled per table mapping
 }
 
 export interface Sync {
@@ -73,7 +75,6 @@ export interface Sync {
     team_id: string
     setup_stage: SetupStage
     is_active: boolean
-    sync_direction: SyncDirection
 }
 
 const defaultData = (user: User): Omit<Sync, "id" | "created_by" | "team_id"> => {
@@ -81,7 +82,6 @@ const defaultData = (user: User): Omit<Sync, "id" | "created_by" | "team_id"> =>
         name: "Untitled Sync",
         source_id: null,
         destination_id: null,
-        sync_direction: "two-way" as SyncDirection,
 
         config: {
             conflict_resolution: "latest" as ConflictResolution,
@@ -91,7 +91,6 @@ const defaultData = (user: User): Omit<Sync, "id" | "created_by" | "team_id"> =>
                 table_mappings: [],
             },
             schedule: "every 1 hour" as Schedule,
-            filters: [],
             batch_size: {
                 size: 100,
                 interval: 1000,

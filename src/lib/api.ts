@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
+//Edge function to fetch with auth
 export const fetchWithAuth = async (endpoint: string, options: RequestInit = {}) => {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) throw new Error("No active session");
@@ -17,7 +18,7 @@ export const fetchWithAuth = async (endpoint: string, options: RequestInit = {})
   if (result.error) throw new Error(result.error);
 
   return result;
-}; 
+};
 
 export const fetchWithAuthCache = async (endpoint: string, base:  "schema" | "connection" | "oauth" | "email", keys: string[], options: RequestInit = {}) => {
   const { data: { session } } = await supabase.auth.getSession();

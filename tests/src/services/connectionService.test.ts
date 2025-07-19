@@ -49,6 +49,6 @@ describe("connectionService", () => {
     const connectionName = "test";
     const config = { test: "test", url: "mongodb://test:test@test.com:27017/test" };
 
-    await connectionService.createConnection(team_id, connector, connectionName, config);
+    await connectionService.createConnection(team_id, connector, config);
   });
 });

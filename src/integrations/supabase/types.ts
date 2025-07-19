@@ -196,7 +196,6 @@ export interface Database {
           created_by: string
           created_at: string
           updated_at: string
-          sync_direction: 'one-way' | 'two-way'
         }
         Insert: {
           id?: string
@@ -210,7 +209,6 @@ export interface Database {
           created_by: string
           created_at?: string
           updated_at?: string
-          sync_direction?: 'one-way' | 'two-way'
         }
         Update: {
           id?: string
@@ -224,7 +222,6 @@ export interface Database {
           created_by?: string
           created_at?: string
           updated_at?: string
-          sync_direction?: 'one-way' | 'two-way'
         }
       }
       field_mapping: {

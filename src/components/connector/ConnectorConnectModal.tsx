@@ -124,7 +124,6 @@ export default function ConnectorConnectModal({ isOpen, onClose, connector, conn
 
             {renderConfigFields()}
 
-
             {error && (
               <div className="text-sm text-red-500">
                 {error}

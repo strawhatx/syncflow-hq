@@ -66,7 +66,6 @@ CREATE TABLE public.syncs (
     config JSONB NOT NULL,
     team_id UUID REFERENCES public.teams(id) ON DELETE CASCADE,
     setup_stage TEXT NOT NULL DEFAULT 'apps',
-    sync_direction TEXT NOT NULL DEFAULT 'two-way' CHECK (sync_direction IN ('one-way', 'two-way')),
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
