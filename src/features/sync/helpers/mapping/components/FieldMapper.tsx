@@ -1,13 +1,13 @@
 import { SyncFieldMapping, SyncTableMapping } from "@/types/sync";
 import { useSourceColumns, useDestinationColumns } from "../../../hooks/useDataSources";
-import { CollapsibleContent } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { MappingRow } from "@/components/sync/MappingRow";
+import { ArrowLeft, ArrowLeftRight, ArrowRight } from "lucide-react";
 
 interface FieldMapperProps {
     tableMapping: SyncTableMapping;
     fieldMappings: SyncFieldMapping[];
-    setFieldMappings: (fieldMappings: SyncFieldMapping[]) => void;
+    setFieldMappings: (fieldMapping: SyncFieldMapping[]) => void;
 }
 
 export const FieldMapper = (props: FieldMapperProps) => {
@@ -33,8 +33,13 @@ export const FieldMapper = (props: FieldMapperProps) => {
         ));
     };
 
+    const syncSeparatorConfig = {
+        "source-to-destination": <ArrowRight className="h-4 w-4" />,
+        "destination-to-source": <ArrowLeft className="h-4 w-4" />,
+        "two-way": <ArrowLeftRight className="h-4 w-4" />
+    }
+
     return (
-        <CollapsibleContent className="flex flex-col gap-2">
             <div className="border p-1 rounded">
                 <div className="flex items-center justify-end">
                     <Button variant="link" className="py-1 text-sm text-purple-500" onClick={addField}>
@@ -51,6 +56,7 @@ export const FieldMapper = (props: FieldMapperProps) => {
                         destinationValue={mapping.destination_field_id}
                         sourceOptions={sourceColumns}
                         destinationOptions={destinationColumns}
+                        syncSeparator={() => syncSeparatorConfig[tableMapping.direction]}
                         isSourceLoading={isSourceColumnsLoading}
                         isDestinationLoading={isDestinationColumnsLoading}
                         onSourceChange={(value: string) => updateField(index, "source_field_id", value)}
@@ -59,6 +65,5 @@ export const FieldMapper = (props: FieldMapperProps) => {
                     />
                 ))}
             </div>
-        </CollapsibleContent>
     )
 }

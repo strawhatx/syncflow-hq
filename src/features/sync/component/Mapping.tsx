@@ -6,7 +6,7 @@ import { useDestinationTable, useSourceTable } from '../hooks/useDataSources';
 import { ConnectorProvider } from '@/types/connectors';
 import { Button } from '@/components/ui/button';
 import { SyncData } from '../utils/sync-data';
-import { SyncDirection, SyncTableMapping } from '@/types/sync';
+import { SyncDirection, SyncFieldMapping, SyncFilter, SyncTableMapping } from '@/types/sync';
 import { autoMap } from '../utils/auto-mapp';
 import { MappingRow } from '@/components/sync/MappingRow';
 import { MappingDialog } from '../helpers/mapping';
@@ -18,6 +18,7 @@ export const MappingStep = ({ next, sync }: { next: () => void, sync: SyncData }
   const { createSyncMutation } = useSync(id);
   const [tableMappings, setTableMappings] = useState<SyncTableMapping[]>([]);
   const [selectedTableMapping, setSelectedTableMapping] = useState<SyncTableMapping | null>(null);
+  const [selectedTableMappingIndex, setSelectedTableMappingIndex] = useState<number | null>(null);
 
   // if no tables or only one table with no source and destination, disable auto mapping
   let isAutoMappingDisabled = tableMappings.length === 0;
@@ -56,7 +57,7 @@ export const MappingStep = ({ next, sync }: { next: () => void, sync: SyncData }
       source_table_id: "",
       destination_table_id: "",
       field_mappings: [],
-      direction: "one-way",
+      direction: "source-to-destination",
       filters: [],
     }]);
   };
@@ -70,7 +71,7 @@ export const MappingStep = ({ next, sync }: { next: () => void, sync: SyncData }
     setTableMappings(prev => prev.filter((_, i) => i !== index));
   };
 
-  const updateTable = (index: number, field: keyof SyncTableMapping, value: string) => {
+  const updateTable = (index: number, field: keyof SyncTableMapping, value: string | SyncFieldMapping[] | SyncFilter[]) => {
     setTableMappings(prev => prev.map((mapping, i) =>
       i === index ? { ...mapping, [field]: value } : mapping
     ));
@@ -157,7 +158,10 @@ export const MappingStep = ({ next, sync }: { next: () => void, sync: SyncData }
                 variant="ghost"
                 size="icon"
                 className="size-8"
-                onClick={() => setSelectedTableMapping(mapping)}
+                onClick={() => {
+                  setSelectedTableMapping(mapping);
+                  setSelectedTableMappingIndex(index);
+                }}
                 disabled={!mapping.source_table_id || !mapping.destination_table_id}
               >
                 <Settings className="w-4 h-4 text-gray-500" />
@@ -197,6 +201,8 @@ export const MappingStep = ({ next, sync }: { next: () => void, sync: SyncData }
       {selectedTableMapping && (
         <MappingDialog
           tableMapping={selectedTableMapping}
+          setFieldMapping={(value: SyncFieldMapping[]) => updateTable(selectedTableMappingIndex, "field_mappings", value)}
+          setFilter={(value: SyncFilter[]) => updateTable(selectedTableMappingIndex, "filters", value)}
           isOpen={!!selectedTableMapping}
           onClose={() => setSelectedTableMapping(null)}
         />
