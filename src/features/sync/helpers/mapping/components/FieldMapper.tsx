@@ -49,9 +49,10 @@ export const FieldMapper = (props: FieldMapperProps) => {
 
                 <hr className=" border-gray-200" />
 
-                {fieldMappings?.map((mapping, index) => (
+                {fieldMappings?.map((mapping, i) => (
                     <MappingRow
-                        index={index}
+                        key={i}
+                        index={i}
                         sourceValue={mapping.source_field_id}
                         destinationValue={mapping.destination_field_id}
                         sourceOptions={sourceColumns}
@@ -59,8 +60,8 @@ export const FieldMapper = (props: FieldMapperProps) => {
                         syncSeparator={() => syncSeparatorConfig[tableMapping.direction]}
                         isSourceLoading={isSourceColumnsLoading}
                         isDestinationLoading={isDestinationColumnsLoading}
-                        onSourceChange={(value: string) => updateField(index, "source_field_id", value)}
-                        onDestinationChange={(value: string) => updateField(index, "destination_field_id", value)}
+                        onSourceChange={(value: string) => updateField(i, "source_field_id", value)}
+                        onDestinationChange={(value: string) => updateField(i, "destination_field_id", value)}
                         onRemove={removeField}
                     />
                 ))}

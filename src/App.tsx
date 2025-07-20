@@ -20,6 +20,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { HeaderContentProvider } from '@/contexts/HeaderContentContext';
 import TeamsPage from "./pages/Teams";
 import { TeamProvider } from "./contexts/TeamContext";
+import { SyncProvider } from "./contexts/SyncContext";
 
 const queryClient = new QueryClient();
 
@@ -29,32 +30,38 @@ const App = () => (
       <AuthProvider>
         <TeamProvider>
           <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<IndexPage />} />
-              <Route path="/auth" element={<AuthPage />} />
-              <Route path="/:provider/callback" element={<OAuthCallback />} />
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/" element={<IndexPage />} />
+                <Route path="/auth" element={<AuthPage />} />
+                <Route path="/:provider/callback" element={<OAuthCallback />} />
 
-              {/* Protected Routes with Main SidebarLayout */}
-              <Route element={<ProtectedRoute><SidebarLayout /></ProtectedRoute>}>
-                <Route path="/dashboard" element={<DashboardPage />} />
-                {/* Pages with data-dependent permissions - handled at page level */}
-                <Route path="/syncs" element={<Syncs />} />
-                <Route path="/syncs/edit/:id" element={<Sync />} />
-                <Route path="/syncs/view/:id" element={<SyncDetails />} />
-                <Route path="/connectors" element={<ConnectorsPage />} />
-                <Route path="/teams" element={<TeamsPage />} />
-                <Route path="/profile" element={<Profile />} />
-              </Route>
+                {/* Protected Routes with Main SidebarLayout */}
+                <Route element={<ProtectedRoute><SidebarLayout /></ProtectedRoute>}>
+                  <Route path="/dashboard" element={<DashboardPage />} />
+                  {/* Pages with data-dependent permissions - handled at page level */}
+                  <Route path="/syncs" element={<Syncs />} />
+                  
+                  {/* Syncs with provider */}
+                  <Route path="/syncs/edit/:id" element={
+                    <SyncProvider><Sync /></SyncProvider>
+                  } />
+                  <Route path="/syncs/view/:id" element={
+                    <SyncProvider><SyncDetails /></SyncProvider>
+                  } />
+                  <Route path="/connectors" element={<ConnectorsPage />} />
+                  <Route path="/teams" element={<TeamsPage />} />
+                  <Route path="/profile" element={<Profile />} />
+                </Route>
 
-              {/* Catch all route */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
+                {/* Catch all route */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
         </TeamProvider>
       </AuthProvider>
     </HeaderContentProvider>

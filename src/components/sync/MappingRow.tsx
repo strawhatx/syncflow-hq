@@ -1,4 +1,4 @@
-import { CustomSelectButton } from "@/components/ui_custom/CustomSelectButton";
+import { CustomSelect } from "@/components/ui_custom/CustomSelect";
 import { Button } from "@/components/ui/button";
 import { XIcon } from "lucide-react";
 
@@ -33,11 +33,10 @@ export const MappingRow = ({
   return (
     <div key={index} className="flex w-full text-black gap-2 items-center py-1">
       <div className="flex w-full justify-between gap-2">
-        <CustomSelectButton
+        <CustomSelect
           value={sourceValue}
           onValueChange={(value: string) => onSourceChange(value)}
           options={sourceOptions}
-          mergeClasses="border-none ring-offset-background-transparent focus:outline-none focus:ring-0 focus:ring-offset-0"
           placeholder="Select source table"
           disabled={isSourceLoading}
           isLoading={isSourceLoading}
@@ -45,11 +44,10 @@ export const MappingRow = ({
 
           {syncSeparator()}
 
-        <CustomSelectButton
+        <CustomSelect
           value={destinationValue}
           onValueChange={(value: string) => onDestinationChange(value)}
           options={destinationOptions}
-          mergeClasses="border-none ring-offset-background-transparent focus:outline-none focus:ring-0 focus:ring-offset-0"
           placeholder="Select destination table"
           disabled={isDestinationLoading}
           isLoading={isDestinationLoading}
