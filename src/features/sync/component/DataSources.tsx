@@ -7,7 +7,7 @@ import { SyncData } from '../utils/sync-data';
 import { DatasourceFieldsStrategyFactory } from '@/patterns/strategies/data-source-field';
 import { useDatabaseSelection } from "../hooks/useDatasourceSelection"; // adjust path as needed
 
-export default function DataSourcesStep({ next, sync }: { next: () => void, sync: SyncData }) {
+export default function DataSourcesStep({ next }: { next: () => void }) {
   const { syncConfig, connectors, setDataSource } = useSync();
 
   // Use the hook for both source and destination

@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import useSync from '../hooks/useSync';
 import { toast } from '@/hooks/use-toast';
 import { useParams } from 'react-router-dom';
 import { useDestinationTable, useSourceTable } from '../hooks/useDataSources';
@@ -13,7 +12,7 @@ import { MappingDialog } from '../helpers/mapping';
 import { ArrowLeft, ArrowLeftRight, ArrowRight, Settings } from 'lucide-react';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
-export const MappingStep = ({ next, sync }: { next: () => void, sync: SyncData }) => {
+export const MappingStep = ({ next }: { next: () => void }) => {
   const { id } = useParams();
   const { createSyncMutation } = useSync(id);
   const [tableMappings, setTableMappings] = useState<SyncTableMapping[]>([]);

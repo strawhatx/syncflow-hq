@@ -10,7 +10,7 @@ import { SyncData } from '../utils/sync-data';
 import { FormSide } from '../helpers/accounts/FormSide';
 import { useAccountSelection } from "../hooks/useAccountSelection"; // adjust path as needed
 
-export default function AccountsStep({ next }: { next: () => void, sync: SyncData }) {
+export default function AccountsStep({ next }: { next: () => void }) {
   //App state
   const [connector, setConnector] = useState<Connector | null>(null);
   const { syncConfig, setAccount, connectors } = useSync();

@@ -5,38 +5,50 @@ import { useTeam } from "./TeamContext";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ConnectorWithConnections, fetchConnectors } from "@/services/connector/service";
+import { fetchSyncById, saveSync } from "@/services/syncs/service";
 
 export type AccountSide = "source_id" | "destination_id";
 export type DataSourceSide = "source_database_id" | "destination_database_id";
 
 interface SyncContextType {
-    syncConfig: Sync | Omit<Sync, "id">;
+    syncConfig: Sync;
     connectors: ConnectorWithConnections[] | undefined;
 
+    setTitle: (title: string) => void;
     setAccount: (value: string, field: AccountSide) => void;
     setDataSource: (value: string, field: DataSourceSide) => void;
     //setDestination: (type: string, credentials: any) => void;
     //addTableMapping: (sourceId: string, destId: string) => void;
     //updateFieldMapping: (tableId: string, mapping: SyncFieldMapping) => void;
     //updateFilter: (tableId: string, filter: SyncFilter) => void;
-   // exportConfig: () => SyncConfig;
+    reset: () => void;
+    save: () => void;
 }
 
 const SyncContext = createContext<SyncContextType | undefined>(undefined);
 
 export const SyncProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const { user } = useAuth();
-    const { team } = useTeam();
     const { id } = useParams();
 
-    const [syncConfig, setSyncConfig] = useState<Sync | Omit<Sync, "id">>()
+    const { user } = useAuth();
+    const { team } = useTeam();
+
+    const [syncConfig, setSyncConfig] = useState<Sync>()
 
     // get the connectors
     const { data: connectors } = useQuery({ queryKey: ['connectors'], queryFn: fetchConnectors });
 
     useEffect(() => {
-        setSyncConfig(defaultCreateSync(user, team));
-    }, [syncConfig]);
+        if (!id) return;
+
+        //get the sync from the database
+        fetchSyncById(id).then(sync => setSyncConfig(sync));
+    }, [id]);
+
+    // set the title
+    const setTitle = (title: string) => {
+        setSyncConfig({ ...syncConfig, name: title });
+    };
 
     // set the account
     const setAccount = (value: string, field: AccountSide) => {
@@ -48,13 +60,35 @@ export const SyncProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setSyncConfig({ ...syncConfig, config: { ...syncConfig?.config, schema: { ...syncConfig?.config?.schema, [field]: value } } });
     };
 
+    // reset the sync config
+    const reset = () => {
+        const newSync = defaultCreateSync(user, team);
+        setSyncConfig(prev => ({
+            ...prev,
+            source_id: newSync.source_id,
+            destination_id: newSync.destination_id,
+            config: newSync.config,
+        }));
+
+        // save the sync config
+        save();
+    };
+
+    // save the sync config
+    const save = () => {
+        saveSync(syncConfig.id, syncConfig);
+    };
+
 
     return (
         <SyncContext.Provider value={{
+            setTitle,
             syncConfig,
             connectors,
             setAccount,
-            setDataSource
+            setDataSource,
+            reset,
+            save
         }}>
             {children}
         </SyncContext.Provider>

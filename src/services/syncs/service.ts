@@ -17,27 +17,17 @@ export const fetchSyncsByTeamId = async (teamId: string): Promise<Sync[]> => {
 };
 
 // fetch sync by id
-export const fetchSyncById = async (sync_id: string): Promise<any> => {
+export const fetchSyncById = async (sync_id: string): Promise<Sync> => {
     if (!sync_id) throw new Error("Sync not found");
 
     const { data, error } = await supabase
         .from("syncs")
-        .select(`
-        *, 
-        source:source_id(
-          *, 
-          connectors_public(*, connections(*))
-        ), 
-        destination:destination_id(
-          *, 
-          connectors_public(*, connections(*))
-        )
-      `)
+        .select("*")
         .eq("id", sync_id);
 
     if (error) throw error;
 
-    return data;
+    return data[0] as Sync;
 };
 
 // create sync
@@ -53,9 +43,7 @@ export const createInitialSync = async (user: User, team: Team) => {
 }
 
 // update sync step data
-export const saveStepData = async (syncId: string, step: string, data: Record<string, any>) => {
-    console.log(`Saving step data for sync ${syncId} step ${step} with data ${JSON.stringify(data)}`);
-
+export const saveSync = async (syncId: string, data: Sync) => {
     const { data: sync, error } = await supabase
         .from('syncs')
         .update(data)
@@ -64,7 +52,6 @@ export const saveStepData = async (syncId: string, step: string, data: Record<st
         .single();
 
     if (error) {
-        console.error(`Error saving step data for sync ${syncId} step ${step}: ${error.message}`);
         throw new Error(error.message);
     }
 

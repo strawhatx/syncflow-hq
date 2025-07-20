@@ -4,16 +4,11 @@ import DataSourcesStep from "./component/DataSources";
 import { MappingStep } from "./component/Mapping";
 import ReviewStep from "./component/Review";
 import ScheduleStep from "./component/Schedule";
-import { Check, X, RefreshCcw, ArrowRight, ArrowLeftRight } from "lucide-react";
+import { Check, X, RefreshCcw } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { defaultUpdateSync } from "@/types/sync";
-import { useParams } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import useSync from "./hooks/useSync";
-import { SyncData } from "./utils/sync-data";
 import { sanitizeField } from "@/lib/sanitize";
-import { PagePermissionGuard } from "@/hocs/withPagePermission";
+import { useSync } from "@/contexts/SyncContext";
 
 // Step state enum for cleaner logic
 enum StepState {
@@ -110,7 +105,6 @@ const getStepLabel = (step: typeof steps[0], state: StepState, onClick?: () => v
 const getStepContent = (
     step: typeof steps[0],
     state: StepState,
-    sync: SyncData,
     onNext?: () => void,
     transitionState: TransitionState = TransitionState.IDLE
 ) => {
@@ -159,7 +153,7 @@ const getStepContent = (
         return (
             <div className={containerClasses}>
                 <div className={contentClasses}>
-                    <StepComponent next={onNext} sync={sync} />
+                    <StepComponent next={onNext} />
                 </div>
             </div>
         );
@@ -173,22 +167,11 @@ const getStepContent = (
 };
 
 export default function Sync() {
-    const { id } = useParams();
-    const { sync, isLoading, createSyncMutation } = useSync(id);
-    const { user } = useAuth();
     const [stepIndex, setStepIndex] = useState(0);
-    const [syncName, setSyncName] = useState("Untitled Sync");
     const [transitionState, setTransitionState] = useState<TransitionState>(TransitionState.IDLE);
     const [previousStep, setPreviousStep] = useState<number | null>(null);
     const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-    const [syncType, setSyncType] = useState<'1-way' | '2-way'>('1-way');
-
-    useEffect(() => {
-        if (sync) {
-            // set the sync name(dont forget)
-            setSyncName(sync.name);
-        }
-    }, [sync, isLoading]);
+    const { syncConfig, setTitle, reset, save } = useSync();
 
     // Custom step change handler with transitions
     const handleStepChange = (newStepIndex: number) => {
@@ -231,18 +214,18 @@ export default function Sync() {
             <div className="flex justify-between items-center">
                 <Input className="text-lg w-1/4 py-1 border-none font-semibold"
                     placeholder="Provide a name"
-                    value={syncName}
+                    value={syncConfig.name}
                     onBlur={() => {
                         // if the sync name is empty or the same as the sync name, don't update it
-                        if (syncName.length === 0 || syncName === sync.name) return;
-                        createSyncMutation.mutate({ step: 'apps', data: { id, name: syncName } as any });
+                        if (syncConfig.name.length === 0 || syncConfig.name === syncConfig.name) return;
+
+                        // save the sync config
+                        save();
                     }}
                     onChange={(e) => {
                         // if the sync name is the same as the sync name, don't update it
                         const newName = sanitizeField(e.target.value, "text", { maxLength: 100 });
-                        if (newName !== syncName) {
-                            setSyncName(newName);
-                        }
+                        setTitle(newName);
                     }}
                     required
                 />
@@ -259,7 +242,8 @@ export default function Sync() {
                             if (transitionTimeoutRef.current) {
                                 clearTimeout(transitionTimeoutRef.current);
                             }
-                            createSyncMutation.mutate({ step: 'apps', data: defaultUpdateSync(id, user) as any });
+                            // reset the sync config and save it
+                            reset();
                         }}
                     >
                         <RefreshCcw className="w-4 h-4" />
@@ -294,7 +278,6 @@ export default function Sync() {
                             {getStepContent(
                                 step,
                                 state,
-                                sync,
                                 () => handleStepChange(i + 1),
                                 transitionState
                             )}
