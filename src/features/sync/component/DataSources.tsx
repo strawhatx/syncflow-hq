@@ -3,12 +3,11 @@ import { ArrowRightLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 import { useSync } from '@/contexts/SyncContext';
-import { SyncData } from '../utils/sync-data';
 import { DatasourceFieldsStrategyFactory } from '@/patterns/strategies/data-source-field';
 import { useDatabaseSelection } from "../hooks/useDatasourceSelection"; // adjust path as needed
 
 export default function DataSourcesStep({ next }: { next: () => void }) {
-  const { syncConfig, connectors, setDataSource } = useSync();
+  const { syncConfig, connectors, setDataSource, save } = useSync();
 
   // Use the hook for both source and destination
   const source = useDatabaseSelection({
@@ -43,8 +42,9 @@ export default function DataSourcesStep({ next }: { next: () => void }) {
 
     try {
       // save to database
-     
-      next(); // move to next step
+      save().then(() => {
+        next(); // move to next step
+      });
     }
     catch (error) {
       toast({

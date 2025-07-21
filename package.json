@@ -61,6 +61,7 @@
     "dompurify": "^3.2.6",
     "embla-carousel-react": "^8.3.0",
     "fuzzball": "^2.2.2",
+    "immer": "^10.1.1",
     "input-otp": "^1.2.4",
     "lucide-react": "^0.462.0",
     "next-themes": "^0.3.0",

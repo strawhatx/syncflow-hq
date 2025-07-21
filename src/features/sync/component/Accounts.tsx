@@ -6,14 +6,13 @@ import { useState } from 'react';
 import { Connector } from '@/types/connectors';
 import { toast } from '@/hooks/use-toast';
 import { useSync } from '@/contexts/SyncContext';
-import { SyncData } from '../utils/sync-data';
 import { FormSide } from '../helpers/accounts/FormSide';
 import { useAccountSelection } from "../hooks/useAccountSelection"; // adjust path as needed
 
 export default function AccountsStep({ next }: { next: () => void }) {
   //App state
   const [connector, setConnector] = useState<Connector | null>(null);
-  const { syncConfig, setAccount, connectors } = useSync();
+  const { syncConfig, setAccount, connectors, save } = useSync();
 
   // Use the hook for both source and destination
   const source = useAccountSelection({
@@ -35,8 +34,9 @@ export default function AccountsStep({ next }: { next: () => void }) {
 
     try {
       // save the current sync changes
-
-      next(); // move to next step
+      save().then(() => {
+        next(); // move to next step
+      });
     }
     catch (error) {
       toast({

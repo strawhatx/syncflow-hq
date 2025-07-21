@@ -214,10 +214,10 @@ export default function Sync() {
             <div className="flex justify-between items-center">
                 <Input className="text-lg w-1/4 py-1 border-none font-semibold"
                     placeholder="Provide a name"
-                    value={syncConfig.name}
+                    value={syncConfig?.name}
                     onBlur={() => {
                         // if the sync name is empty or the same as the sync name, don't update it
-                        if (syncConfig.name.length === 0 || syncConfig.name === syncConfig.name) return;
+                        if (syncConfig?.name.length === 0 || syncConfig?.name === syncConfig?.name) return;
 
                         // save the sync config
                         save();

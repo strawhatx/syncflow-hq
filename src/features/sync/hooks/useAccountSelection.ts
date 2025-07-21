@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { ConnectorWithConnections } from "@/services/connector/service";
-import { SourceSide, useSync } from "@/contexts/SyncContext";
+import { AccountSide, } from "@/contexts/SyncContext";
 
 interface UseAccountSelectionProps {
   connectors: ConnectorWithConnections[] | undefined;
   accountId: string | undefined;
-  setAccount: (id: string, field: SourceSide) => void;
-  field: SourceSide;
+  setAccount: (id: string, field: AccountSide) => void;
+  field: AccountSide;
 }
 
 export const useAccountSelection = (props: UseAccountSelectionProps) => {

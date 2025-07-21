@@ -1,11 +1,12 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import { Sync, SyncConfig, SyncFieldMapping, SyncFilter, defaultCreateSync } from "@/types/sync";
+import { Sync, SyncConfig, SyncFieldMapping, SyncFilter, SyncTableMapping, defaultCreateSync } from "@/types/sync";
 import { useAuth } from "./AuthContext";
 import { useTeam } from "./TeamContext";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ConnectorWithConnections, fetchConnectors } from "@/services/connector/service";
 import { fetchSyncById, saveSync } from "@/services/syncs/service";
+import { produce } from "immer";
 
 export type AccountSide = "source_id" | "destination_id";
 export type DataSourceSide = "source_database_id" | "destination_database_id";
@@ -17,22 +18,17 @@ interface SyncContextType {
     setTitle: (title: string) => void;
     setAccount: (value: string, field: AccountSide) => void;
     setDataSource: (value: string, field: DataSourceSide) => void;
-    //setDestination: (type: string, credentials: any) => void;
-    //addTableMapping: (sourceId: string, destId: string) => void;
-    //updateFieldMapping: (tableId: string, mapping: SyncFieldMapping) => void;
-    //updateFilter: (tableId: string, filter: SyncFilter) => void;
+    setTableMappings: (value: SyncTableMapping[]) => void;
     reset: () => void;
-    save: () => void;
+    save: () => Promise<void>;
 }
 
 const SyncContext = createContext<SyncContextType | undefined>(undefined);
 
 export const SyncProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const { id } = useParams();
-
     const { user } = useAuth();
     const { team } = useTeam();
-
     const [syncConfig, setSyncConfig] = useState<Sync>()
 
     // get the connectors
@@ -57,7 +53,22 @@ export const SyncProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     // set the data source
     const setDataSource = (value: string, field: DataSourceSide) => {
-        setSyncConfig({ ...syncConfig, config: { ...syncConfig?.config, schema: { ...syncConfig?.config?.schema, [field]: value } } });
+        setSyncConfig(current =>
+            produce(current, draft => {
+                if (draft.config?.schema) {
+                    draft.config.schema[field] = value;
+                }
+            })
+        );
+    };
+
+    // set the table mapping
+    const setTableMappings = (value: SyncTableMapping[]) => {
+        setSyncConfig(current =>
+            produce(current, draft => {
+                draft.config.schema.table_mappings = value;
+            })
+        );
     };
 
     // reset the sync config
@@ -75,8 +86,8 @@ export const SyncProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
 
     // save the sync config
-    const save = () => {
-        saveSync(syncConfig.id, syncConfig);
+    const save = async () => {
+        return saveSync(syncConfig.id, syncConfig);
     };
 
 
@@ -87,8 +98,9 @@ export const SyncProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             connectors,
             setAccount,
             setDataSource,
+            setTableMappings,
             reset,
-            save
+            save,
         }}>
             {children}
         </SyncContext.Provider>

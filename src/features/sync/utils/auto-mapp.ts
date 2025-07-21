@@ -1,6 +1,7 @@
 import stringSimilarity from "string-similarity";
 import { SyncTableMapping } from "@/types/sync";
 import { ColumnOption, TableOption } from "@/types/connectors";
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Configuration options for the auto-mapping algorithm
@@ -59,7 +60,7 @@ function findColumnMatch(
     // user/username, etc. should be somewhat good
     // we also need to hand ids id should also match with customerid or userid 
     // or orderid or productid or etc.
-    //TODO: maybe instad of that we create an exeception for primary keys   
+    //TODO: defintley need to im prove but its ok for mvp  
     const match = destCols.filter(col => {
         const normalizedDest = normalize(col);
         return normalizedSource === normalizedDest ||
@@ -123,16 +124,14 @@ export const autoMap = (
     sourceTables: TableOption[],
     destinationTables: TableOption[],
     config: Partial<AutoMapConfig> = {}
-): Omit<SyncTableMapping, "id">[] => {
+): SyncTableMapping[] => {
     // Merge provided config with defaults
     const finalConfig = { ...DEFAULT_CONFIG, ...config };
 
-    const mappings: Omit<SyncTableMapping, "id">[] = [];
+    const mappings: SyncTableMapping[] = [];
 
     // Process each source table
     for (const sourceTable of sourceTables) {
-        console.log(`Processing source table: ${sourceTable.name} (${sourceTable.columns?.length || 0} columns)`);
-
         // Find the best matching destination table
         const bestDest = findBestTableMatch(
             sourceTable,
@@ -145,8 +144,6 @@ export const autoMap = (
             console.debug(`No confident table match found for source table: ${sourceTable.name}`);
             continue;
         }
-
-        console.log(`Found table match: ${sourceTable.name} -> ${bestDest.name}`);
 
         const fieldMappings: SyncTableMapping["field_mappings"] = [];
 
@@ -172,14 +169,14 @@ export const autoMap = (
         if (fieldMappings.length === 0) continue;
 
         mappings.push({
+            id: uuidv4(),
             source_table_id: sourceTable.id,
             destination_table_id: bestDest.id,
             field_mappings: fieldMappings,
+            direction: "source-to-destination",
+            filters: [],
         });
     }
-
-    console.log(`AutoMap completed. Total mappings found: ${mappings.length}`);
-    console.log('Final mappings:', mappings);
 
     return mappings;
 };

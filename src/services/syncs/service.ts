@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { defaultCreateSync, Sync, SyncConfig } from "@/types/sync";
+import { defaultCreateSync, Sync } from "@/types/sync";
 import { Team } from "@/types/team";
 import { User } from "@supabase/supabase-js";
 
