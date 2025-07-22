@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import AccountsStep from "./component/Accounts";
 import DataSourcesStep from "./component/DataSources";
+import FilterStep from "./component/Filter";
 import { MappingStep } from "./component/Mapping";
 import ReviewStep from "./component/Review";
 import ScheduleStep from "./component/Schedule";
@@ -38,10 +39,16 @@ const steps = [
         component: DataSourcesStep,
     },
     {
-        id: "table-mappings",
+        id: "mappings",
         label: "Map your tables",
         description: "Map the tables you want to sync",
         component: MappingStep,
+    },
+    {
+        id: "filters",
+        label: "Add your filters",
+        description: "Add filters to your sync",
+        component: FilterStep,
     },
     {
         id: "schedule",

@@ -1,66 +1,45 @@
-import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FieldMapper } from "./components/FieldMapper";
-import { Filter } from "./components/Filter";
-import { SyncFieldMapping, SyncFilter, SyncTableMapping } from "@/types/sync";
+import { useSync } from "@/contexts/SyncContext";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { SyncFieldMapping } from "@/types/sync";
 
-interface MappingTabsProps {
-    tableMapping: SyncTableMapping;
-    setFieldMapping: (fieldMapping: SyncFieldMapping[]) => void;
-    setFilter: (filter: SyncFilter[]) => void;
-}
 
-const MappingTabs = (props: MappingTabsProps) => {
-    const { tableMapping, setFieldMapping, setFilter } = props;
+export const MappingDialog = () => {
+    const { syncConfig, selectedTableMappingId, setSelectedTableMappingId, setTableMappings } = useSync();
+    const tableMappings = syncConfig.config?.schema?.table_mappings
+    const tableMapping = tableMappings?.find(mapping => mapping.id === selectedTableMappingId);
+    const [fieldMappings, setFieldMappings] = useState<SyncFieldMapping[]>(tableMapping?.field_mappings || []);
+
+    // save to
+    const save = () => {
+        setTableMappings(tableMappings?.map(mapping =>
+            mapping.id === selectedTableMappingId ? { ...mapping, field_mappings: fieldMappings, filters: filters } : mapping
+        ));
+
+        setSelectedTableMappingId(null);
+    };
     return (
-        <Tabs>
-            <TabsList>
-                <TabsTrigger value="field-mapping">Field Mapping</TabsTrigger>
-                <TabsTrigger value="filter">Filter</TabsTrigger>
-            </TabsList>
-            <TabsContent value="field-mapping">
-                <FieldMapper
-                    tableMapping={tableMapping}
-                    fieldMappings={tableMapping.field_mappings}
-                    setFieldMappings={setFieldMapping}
-                />
-            </TabsContent>
-            <TabsContent value="filter">
-                <Filter filters={tableMapping.filters} setFilters={setFilter} />
-            </TabsContent>
-        </Tabs>
-    )
-}
-
-interface MappingDialogProps {
-    tableMapping: SyncTableMapping;
-    setFieldMapping: (fieldMapping: SyncFieldMapping[]) => void;
-    setFilter: (filter: SyncFilter[]) => void;
-    isOpen: boolean;
-    onClose: () => void;
-}
-
-export const MappingDialog = (props: MappingDialogProps) => {
-    const { tableMapping, setFieldMapping, setFilter, isOpen, onClose } = props;
-
-    return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
+        <Dialog
+            open={selectedTableMappingId !== null && selectedTableMappingId !== undefined}>
             <DialogContent className="max-h-[80vh] max-w-full md:max-w-xl lg:max-w-3xl">
                 <DialogHeader>
                     <DialogTitle> Edit Field Mapping </DialogTitle>
                 </DialogHeader>
 
-                <MappingTabs 
-                tableMapping={tableMapping} 
-                setFieldMapping={setFieldMapping} 
-                setFilter={setFilter} />
-
-                <DialogFooter className="flex flex-row gap-2 justify-end">
-                    <Button variant="destructive" className="w-fit h-8" onClick={onClose}>Close</Button>
-                </DialogFooter>
+                <FieldMapper tableMapping={tableMapping} fieldMappings={fieldMappings} setFieldMappings={setFieldMappings} />
             </DialogContent>
-
+            <DialogFooter className="flex flex-row gap-2 justify-end">
+                <Button
+                    variant="destructive"
+                    className="w-fit h-8"
+                    onClick={() => setSelectedTableMappingId(null)}>Close</Button>
+                <Button
+                    variant="default"
+                    className="w-fit h-8"
+                    onClick={save}>Save</Button>
+            </DialogFooter>
         </Dialog >
     )
 }

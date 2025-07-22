@@ -48,9 +48,6 @@ import { autoMap } from '../utils/auto-mapp';
  */
 export function useTableMappingSelection() {
   const { syncConfig, connectors, setTableMappings, save } = useSync();
-  const [selectedTableMapping, setSelectedTableMapping] = useState<SyncTableMapping | null>(null);
-  const [selectedTableMappingIndex, setSelectedTableMappingIndex] = useState<number | null>(null);
-
   // Extract data from sync config
   const tableMappings = syncConfig.config?.schema?.table_mappings || [];
   const sourceDatabaseId = syncConfig.config?.schema?.source_database_id;
@@ -113,42 +110,12 @@ export function useTableMappingSelection() {
   // Validation
   const isValidMapping = (mapping: SyncTableMapping) => {
     return mapping.source_table_id && 
-           mapping.destination_table_id && 
+           mapping.destination_table_id &&
            mapping.field_mappings.length > 0;
   };
 
   const isAllMappingsValid = () => {
     return tableMappings.every(mapping => isValidMapping(mapping));
-  };
-
-  // Dialog management
-  const openMappingDialog = (mapping: SyncTableMapping, index: number) => {
-    setSelectedTableMapping(mapping);
-    setSelectedTableMappingIndex(index);
-  };
-
-  const closeMappingDialog = () => {
-    setSelectedTableMapping(null);
-    setSelectedTableMappingIndex(null);
-  };
-
-  // Selected mapping operations (from useTableMappingSelection)
-  const updateSelectedFieldMappings = (fieldMappings: SyncFieldMapping[]) => {
-    if (selectedTableMappingIndex === null) return;
-    setTableMappings(
-      tableMappings.map((mapping, i) =>
-        i === selectedTableMappingIndex ? { ...mapping, field_mappings: fieldMappings } : mapping
-      )
-    );
-  };
-
-  const updateSelectedFilters = (filters: SyncFilter[]) => {
-    if (selectedTableMappingIndex === null) return;
-    setTableMappings(
-      tableMappings.map((mapping, i) =>
-        i === selectedTableMappingIndex ? { ...mapping, filters } : mapping
-      )
-    );
   };
 
   // Sync direction separator component factory
@@ -162,8 +129,6 @@ export function useTableMappingSelection() {
   return {
     // State
     tableMappings,
-    selectedTableMapping,
-    selectedTableMappingIndex,
     sourceTableOptions,
     destinationTableOptions,
     isSourceTableLoading,
@@ -179,14 +144,6 @@ export function useTableMappingSelection() {
     // Validation
     isValidMapping,
     isAllMappingsValid,
-    
-    // Dialog management
-    openMappingDialog,
-    closeMappingDialog,
-    
-    // Selected mapping operations
-    updateSelectedFieldMappings,
-    updateSelectedFilters,
     
     // Utilities
     createSyncSeparator,

@@ -5,12 +5,12 @@ import { MappingDialog } from '../helpers/mapping';
 import { ArrowLeft, ArrowLeftRight, ArrowRight, Settings } from 'lucide-react';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useTableMappingSelection } from '../hooks/useTableMappingSelection';
+import { useSync } from '@/contexts/SyncContext';
 
 export const MappingStep = ({ next }: { next: () => void }) => {
+  const { setSelectedTableMappingId, selectedTableMappingId } = useSync();
   const {
     tableMappings,
-    selectedTableMapping,
-    selectedTableMappingIndex,
     sourceTableOptions,
     destinationTableOptions,
     isSourceTableLoading,
@@ -21,10 +21,6 @@ export const MappingStep = ({ next }: { next: () => void }) => {
     updateTable,
     autoMapTables,
     isAllMappingsValid,
-    openMappingDialog,
-    closeMappingDialog,
-    updateSelectedFieldMappings,
-    updateSelectedFilters,
     createSyncSeparator,
     save,
   } = useTableMappingSelection();
@@ -46,16 +42,28 @@ export const MappingStep = ({ next }: { next: () => void }) => {
 
   const renderSyncSeparator = (index: number, direction: string) => {
     const { onDirectionChange } = createSyncSeparator(index, direction as any);
-    
+
     return (
-      <ToggleGroup type="single" value={direction} onValueChange={onDirectionChange}>
-        <ToggleGroupItem value="bold" aria-label="Toggle bold">
+      <ToggleGroup type="single" value={direction} onValueChange={onDirectionChange} size="sm">
+        <ToggleGroupItem 
+        value="destination-to-source" 
+        aria-label="Toggle bold"
+        className="data-[state=on]:bg-purple-200"
+        >
           <ArrowLeft className="h-4 w-4" />
         </ToggleGroupItem>
-        <ToggleGroupItem value="italic" aria-label="Toggle italic">
+        <ToggleGroupItem 
+        value="two-way" 
+        aria-label="Toggle 2-way"
+        className="data-[state=on]:bg-purple-200"
+        >
           <ArrowLeftRight className="h-4 w-4" />
         </ToggleGroupItem>
-        <ToggleGroupItem value="strikethrough" aria-label="Toggle strikethrough">
+        <ToggleGroupItem
+          value="source-to-destination"
+          aria-label="Toggle right"
+          className="data-[state=on]:bg-purple-200"
+          >
           <ArrowRight className="h-4 w-4" />
         </ToggleGroupItem>
       </ToggleGroup>
@@ -93,7 +101,7 @@ export const MappingStep = ({ next }: { next: () => void }) => {
                 variant="ghost"
                 size="icon"
                 className="size-8"
-                onClick={() => openMappingDialog(mapping, index)}
+                onClick={() => setSelectedTableMappingId(mapping.id)}
                 disabled={!mapping.source_table_id || !mapping.destination_table_id}
               >
                 <Settings className="w-4 h-4 text-gray-500" />
@@ -130,14 +138,8 @@ export const MappingStep = ({ next }: { next: () => void }) => {
         </Button>
       </div>
 
-      {selectedTableMapping && (
-        <MappingDialog
-          tableMapping={selectedTableMapping}
-          setFieldMapping={updateSelectedFieldMappings}
-          setFilter={updateSelectedFilters}
-          isOpen={!!selectedTableMapping}
-          onClose={closeMappingDialog}
-        />
+      {selectedTableMappingId && (
+        <MappingDialog />
       )}
     </div>
   );

@@ -14,6 +14,8 @@ export type DataSourceSide = "source_database_id" | "destination_database_id";
 interface SyncContextType {
     syncConfig: Sync;
     connectors: ConnectorWithConnections[] | undefined;
+    selectedTableMappingId: string | null;
+    setSelectedTableMappingId: (id: string | null) => void;
 
     setTitle: (title: string) => void;
     setAccount: (value: string, field: AccountSide) => void;
@@ -30,6 +32,7 @@ export const SyncProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const { user } = useAuth();
     const { team } = useTeam();
     const [syncConfig, setSyncConfig] = useState<Sync>()
+    const [selectedTableMappingId, setSelectedTableMappingId] = useState<string | null>(null);
 
     // get the connectors
     const { data: connectors } = useQuery({ queryKey: ['connectors'], queryFn: fetchConnectors });
@@ -96,6 +99,8 @@ export const SyncProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             setTitle,
             syncConfig,
             connectors,
+            selectedTableMappingId,
+            setSelectedTableMappingId,
             setAccount,
             setDataSource,
             setTableMappings,
