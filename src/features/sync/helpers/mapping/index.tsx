@@ -15,22 +15,23 @@ export const MappingDialog = () => {
     // save to
     const save = () => {
         setTableMappings(tableMappings?.map(mapping =>
-            mapping.id === selectedTableMappingId ? { ...mapping, field_mappings: fieldMappings, filters: filters } : mapping
+            mapping.id === selectedTableMappingId ? { ...mapping, field_mappings: fieldMappings } : mapping
         ));
 
         setSelectedTableMappingId(null);
     };
     return (
         <Dialog
-            open={selectedTableMappingId !== null && selectedTableMappingId !== undefined}>
+            open={selectedTableMappingId !== null && selectedTableMappingId !== undefined}
+            onOpenChange={() => setSelectedTableMappingId(null)}
+        >
             <DialogContent className="max-h-[80vh] max-w-full md:max-w-xl lg:max-w-3xl">
                 <DialogHeader>
                     <DialogTitle> Edit Field Mapping </DialogTitle>
                 </DialogHeader>
 
                 <FieldMapper tableMapping={tableMapping} fieldMappings={fieldMappings} setFieldMappings={setFieldMappings} />
-            </DialogContent>
-            <DialogFooter className="flex flex-row gap-2 justify-end">
+           <DialogFooter>
                 <Button
                     variant="destructive"
                     className="w-fit h-8"
@@ -39,7 +40,9 @@ export const MappingDialog = () => {
                     variant="default"
                     className="w-fit h-8"
                     onClick={save}>Save</Button>
-            </DialogFooter>
+            </DialogFooter> 
+            </DialogContent>
+            
         </Dialog >
     )
 }

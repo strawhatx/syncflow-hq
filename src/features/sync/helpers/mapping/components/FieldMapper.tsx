@@ -39,14 +39,12 @@ export const FieldMapper = (props: FieldMapperProps) => {
     }
 
     return (
-        <div className="border p-1 rounded">
+        <div>
             <div className="flex items-center justify-end">
-                <Button variant="link" className="py-1 text-sm text-purple-500" onClick={addField}>
+                <Button variant="ghost" className="py-1 text-sm text-purple-500" onClick={addField}>
                     + Add Field
                 </Button>
             </div>
-
-            <hr className=" border-gray-200" />
 
             {fieldMappings?.map((mapping, i) => (
                 <MappingRow

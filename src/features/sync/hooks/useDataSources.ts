@@ -1,9 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { fetchColumnsByTableId, fetchConnectionDatabases, fetchTablesByDatabaseId } from "@/services/connections/service";
+import { fetchColumnsByTableId, fetchConnectionDatabases, fetchTableById, fetchTablesByDatabaseId } from "@/services/connections/service";
 import { ConnectorProvider } from "@/types/connectors";
 
 // React Query hooks
+
+// Databases
 export function useSourceDatabases(connection_id: string) {
   // use memo to create a unique query key for the source data
   const queryKey = useMemo(() => ["sourceData", connection_id], [connection_id]);
@@ -26,9 +28,10 @@ export function useDestinationDatabases(connection_id: string) {
   });
 }
 
-export function useSourceTable(database_id: string, provider: ConnectorProvider) {
+// Tables
+export function useSourceTables(database_id: string, provider: ConnectorProvider) {
   // use memo to create a unique query key for the source table
-  const queryKey = useMemo(() => ["sourceTable", database_id, provider], [database_id, provider]);
+  const queryKey = useMemo(() => ["sourceTables", database_id, provider], [database_id, provider]);
   
   return useQuery({
     queryKey,
@@ -37,9 +40,9 @@ export function useSourceTable(database_id: string, provider: ConnectorProvider)
   });
 }
 
-export function useDestinationTable(database_id: string, provider: ConnectorProvider) {
+export function useDestinationTables(database_id: string, provider: ConnectorProvider) {
   // use memo to create a unique query key for the destination table
-  const queryKey = useMemo(() => ["destinationTable", database_id, provider], [database_id, provider]);
+  const queryKey = useMemo(() => ["destinationTables", database_id, provider], [database_id, provider]);
   
   return useQuery({
     queryKey,
@@ -48,6 +51,29 @@ export function useDestinationTable(database_id: string, provider: ConnectorProv
   });
 }
 
+export function useSourceTable(table_id: string, provider: ConnectorProvider) {
+  // use memo to create a unique query key for the source table
+  const queryKey = useMemo(() => ["sourceTable", table_id, provider], [table_id, provider]);
+  
+  return useQuery({
+    queryKey,
+    queryFn: () => fetchTableById(table_id, provider),
+    enabled: !!table_id,
+  });
+}
+
+export function useDestinationTable(table_id: string, provider: ConnectorProvider) {
+  // use memo to create a unique query key for the destination table
+  const queryKey = useMemo(() => ["destinationTable", table_id, provider], [table_id, provider]);
+  
+  return useQuery({
+    queryKey,
+    queryFn: () => fetchTableById(table_id, provider),
+    enabled: !!table_id,
+  });
+}
+
+// Columns
 export function useSourceColumns(table_id: string) {
   const queryKey = useMemo(() => ["sourceColumns", table_id], [table_id]);
   

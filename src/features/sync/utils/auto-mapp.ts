@@ -174,7 +174,10 @@ export const autoMap = (
             destination_table_id: bestDest.id,
             field_mappings: fieldMappings,
             direction: "source-to-destination",
-            filters: [],
+            filters: {
+                source: [],
+                destination: [],
+            },
         });
     }
 

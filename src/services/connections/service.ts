@@ -1,14 +1,12 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
 import { fetchWithAuth } from '@/lib/api';
-import { Connector, ConnectorProvider } from "@/types/connectors";
+import { Connector, ConnectorProvider, TableOption } from "@/types/connectors";
 import { DatasourceMapAdapterFactory } from '@/patterns/factories/mapper';
-import getIcon from '@/features/sync/utils/util';
 
 // types for connection related tables
 type Connection = Database['public']['Tables']['connections']['Row'];
 type ConnectionDatabase = Database['public']['Tables']['connection_databases']['Row'];
-type ConnectionTable = Database['public']['Tables']['connection_tables']['Row'];
 type ConnectionColumn = Database['public']['Tables']['connection_columns']['Row'];
 
 // fetch connection by id via supabase
@@ -44,6 +42,17 @@ export const fetchTablesByDatabaseId = async (database_id: string, provider: Con
   if (error) throw error;
 
   return data.map(DatasourceMapAdapterFactory.getAdapter(provider));
+};
+
+// fetch table by id
+export const fetchTableById = async (table_id: string, provider: ConnectorProvider): Promise<TableOption> => {
+  const { data, error } = await supabase
+    .from('connection_tables')
+    .select('*')
+    .eq('id', table_id);
+
+  if (error) throw error;
+  return DatasourceMapAdapterFactory.getAdapter(provider)(data[0]);
 };
 
 // fetch columns for a connection table

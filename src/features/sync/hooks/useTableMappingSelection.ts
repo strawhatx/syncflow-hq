@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { SyncDirection, SyncFieldMapping, SyncFilter, SyncTableMapping } from '@/types/sync';
 import { useSync } from '@/contexts/SyncContext';
 import { ConnectorProvider } from '@/types/connectors';
-import { useDestinationTable, useSourceTable } from './useDataSources';
+import { useDestinationTables, useSourceTables } from './useDataSources';
 import { autoMap } from '../utils/auto-mapp';
 
 /**
@@ -68,12 +68,12 @@ export function useTableMappingSelection() {
   const {
     data: sourceTableOptions = [],
     isLoading: isSourceTableLoading
-  } = useSourceTable(sourceDatabaseId, sourceConnector?.provider as ConnectorProvider);
+  } = useSourceTables(sourceDatabaseId, sourceConnector?.provider as ConnectorProvider);
 
   const {
     data: destinationTableOptions = [],
     isLoading: isDestinationTableLoading
-  } = useDestinationTable(destinationDatabaseId, destinationConnector?.provider as ConnectorProvider);
+  } = useDestinationTables(destinationDatabaseId, destinationConnector?.provider as ConnectorProvider);
 
   // Table operations
   const addTable = () => {
@@ -83,7 +83,10 @@ export function useTableMappingSelection() {
       destination_table_id: "",
       field_mappings: [],
       direction: "source-to-destination",
-      filters: [],
+      filters: {
+        source: [],
+        destination: [],
+      },
     };
     setTableMappings([...tableMappings, newTable]);
   };

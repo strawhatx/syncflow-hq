@@ -16,7 +16,7 @@ export interface SyncFieldMapping {
 }
 
 export interface SyncFilter {
-    source_field: string;
+    field_id: string;
     operator: "eq" | "neq" | "gt" | "gte" | "lt" | "lte" | "in" | "nin" | "like" | "nlike" | "ilike" | "nilike" | "is" | "is_not" | "is_null" | "is_not_null";
     value: string | number | boolean | string[] | number[] | boolean[];
 }
@@ -27,7 +27,10 @@ export interface SyncTableMapping {
     destination_table_id: string;
     field_mappings: SyncFieldMapping[];
     direction: SyncDirection;         // NEW: direction per mapping
-    filters: SyncFilter[];            // NEW: filters per mapping
+    filters: {
+        source: SyncFilter[];
+        destination: SyncFilter[];
+    }
 }
 
 export interface SyncSchema {
@@ -62,7 +65,6 @@ export interface SyncConfig {
     batch_size: SyncBatchSize;
     retry_policy: SyncRetryPolicy;
     notifications: SyncNotifications;
-    // REMOVE: filters: SyncFilter[]; // Now handled per table mapping
 }
 
 export interface Sync {
