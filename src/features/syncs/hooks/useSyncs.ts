@@ -1,19 +1,19 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { SetupStage } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTeam } from "@/contexts/TeamContext";
 import { createInitialSync, fetchSyncsByTeamId } from "@/services/syncs/service";
+import { SyncStage, SyncStatus } from "@/types/sync";
 
 export type Sync = {
   id: string;
   name: string;
-  is_active: boolean;
   lastSync?: string;
   source?: any;
   destination?: any;
   entityCount?: number;
-  setup_stage?: SetupStage;
+  stage?: SyncStage;
+  status?: SyncStatus;
 };
 
 const useSyncs = (search: string) => {

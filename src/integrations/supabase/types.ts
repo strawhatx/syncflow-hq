@@ -191,8 +191,7 @@ export interface Database {
           destination_id: string
           config: Json
           team_id: string
-          setup_stage: string
-          is_active: boolean
+          status: 'draft' | 'active' | 'paused' | 'error'
           created_by: string
           created_at: string
           updated_at: string
@@ -204,8 +203,7 @@ export interface Database {
           destination_id: string
           config: Json
           team_id: string
-          setup_stage?: string
-          is_active?: boolean
+          status?: 'draft' | 'active' | 'paused' | 'error'
           created_by: string
           created_at?: string
           updated_at?: string
@@ -217,8 +215,7 @@ export interface Database {
           destination_id?: string
           config?: Json
           team_id?: string
-          setup_stage?: string
-          is_active?: boolean
+          status?: 'draft' | 'active' | 'paused' | 'error'
           created_by?: string
           created_at?: string
           updated_at?: string
@@ -477,7 +474,3 @@ export const Constants = {
     Enums: {},
   },
 } as const
-
-export type SyncDirection = 'one-way' | 'two-way';
-export type ConflictResolution = 'source' | 'destination' | 'latest';
-export type SetupStage = 'accounts' | 'datasources' |'review' |'table-mapping' |'feild-mapping'| 'schedule' | 'review'|'complete';

@@ -2,12 +2,12 @@ import { Clock, AlertTriangle, CheckCircle2, NotepadText } from "lucide-react";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
-import { SetupStage } from "@/integrations/supabase/types";
 import { getImagePath } from "@/lib/utils";
+import { SyncStage, SyncStatus } from "@/types/sync";
 
 interface SyncStatusCardProps {
   title: string;
-  status: "active" | "paused" | "error" | "synced";
+  status: SyncStatus;
   is_completed: boolean;
   lastSync: string;
   source: {
@@ -20,7 +20,7 @@ interface SyncStatusCardProps {
   };
   entityCount: number;
   syncId: string;
-  setup_stage?: SetupStage;
+  stage?: SyncStage;
 }
 
 const statusConfig = {

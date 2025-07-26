@@ -25,7 +25,10 @@ export const MappingDialog = () => {
             open={selectedTableMappingId !== null && selectedTableMappingId !== undefined}
             onOpenChange={() => setSelectedTableMappingId(null)}
         >
-            <DialogContent className="max-h-[80vh] max-w-full md:max-w-xl lg:max-w-3xl">
+            <DialogContent 
+            className="max-h-[80vh] max-w-full md:max-w-xl lg:max-w-3xl"
+            aria-describedby="mapping-dialog"
+            >
                 <DialogHeader>
                     <DialogTitle> Edit Field Mapping </DialogTitle>
                 </DialogHeader>

@@ -7,7 +7,7 @@ import { DatasourceFieldsStrategyFactory } from '@/patterns/strategies/data-sour
 import { useDatabaseSelection } from "../hooks/useDatasourceSelection"; // adjust path as needed
 
 export default function DataSourcesStep({ next }: { next: () => void }) {
-  const { syncConfig, connectors, setDataSource, save } = useSync();
+  const { syncConfig, connectors, setDataSource, saveAndAdvance } = useSync();
 
   // Use the hook for both source and destination
   const source = useDatabaseSelection({
@@ -42,7 +42,7 @@ export default function DataSourcesStep({ next }: { next: () => void }) {
 
     try {
       // save to database
-      save().then(() => {
+      saveAndAdvance().then(() => {
         next(); // move to next step
       });
     }
@@ -57,12 +57,12 @@ export default function DataSourcesStep({ next }: { next: () => void }) {
 
   return (
     <div>
-      <div className="grid items-center grid-cols-1 md:grid-cols-5 gap-4">
-        <div className="col-span-2">{renderField(source)}</div>
-        <div className="flex items-center justify-center col-span-1">
+      <div className="flex w-full justify-between gap-4">
+        <div className="flex flex-col w-full gap-2">{renderField(source)}</div>
+        <div className="flex items-center justify-center">
           <ArrowRightLeft className="w-4 h-4" />
         </div>
-        <div className="col-span-2">{renderField(destination)}</div>
+        <div className="flex flex-col w-full gap-2">{renderField(destination)}</div>
       </div>
       <div className="mt-4">
         <Button

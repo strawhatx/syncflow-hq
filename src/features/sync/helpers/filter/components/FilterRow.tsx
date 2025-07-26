@@ -30,7 +30,7 @@ export const FilterRow = (props: FilterRowProps) => {
                     <SelectValue placeholder="Select field" />
                 </SelectTrigger>
                 <SelectContent>
-                    {columns.map((column) => (
+                    {columns?.map((column) => (
                         <SelectItem key={column.id} value={column.id}>
                             {column.name}
                         </SelectItem>

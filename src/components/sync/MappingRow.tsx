@@ -32,7 +32,7 @@ export const MappingRow = ({
 }: MappingRowProps) => {
   return (
     <div key={index} className="flex w-full text-black gap-2 items-center py-1">
-      <div className="flex w-full justify-between gap-2">
+      <div className="flex w-full items-center justify-between gap-2">
         <CustomSelect
           value={sourceValue}
           onValueChange={(value: string) => onSourceChange(value)}

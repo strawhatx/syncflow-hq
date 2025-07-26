@@ -1,12 +1,14 @@
-import { SetupStage } from "@/integrations/supabase/types";
 import { User } from "@supabase/supabase-js";
 import { Team } from "./team";
 import Sync from "@/features/sync";
 
 export type SyncDirection = "source-to-destination" | "destination-to-source" | "two-way";
-export type ConflictResolution = "latest" | "previous" | "custom";
 export type Schedule = "every 1 hour" | "every 1 day" | "every 1 week" | "every 1 month" | "every 1 year" | "every 1 minute" | "every 1 second";
 export type Backoff = "exponential" | "linear" | "constant";
+export type SyncStatus = "draft" | "active" | "paused" | "error";
+export type SyncStage = "accounts" | "data-sources" | "mappings" | "filters" | "ready";
+export type ConflictResolution = 'source' | 'destination' | 'latest';
+
 
 export interface SyncFieldMapping {
     source_field_id: string;
@@ -59,6 +61,7 @@ export interface SyncNotifications {
 }
 
 export interface SyncConfig {
+    stage?: SyncStage;
     conflict_resolution: ConflictResolution;
     schema: SyncSchema;
     schedule: Schedule;
@@ -75,8 +78,7 @@ export interface Sync {
     created_by: string
     config: SyncConfig
     team_id: string
-    setup_stage: SetupStage
-    is_active: boolean
+    status: SyncStatus
 }
 
 const defaultData = (user: User): Omit<Sync, "id" | "created_by" | "team_id"> => {
@@ -86,13 +88,14 @@ const defaultData = (user: User): Omit<Sync, "id" | "created_by" | "team_id"> =>
         destination_id: null,
 
         config: {
+            stage: "accounts" as SyncStage,
             conflict_resolution: "latest" as ConflictResolution,
             schema: {
                 source_database_id: null,
                 destination_database_id: null,
                 table_mappings: [],
             },
-            schedule: "every 1 hour" as Schedule,
+            schedule: "every 1 minute" as Schedule,
             batch_size: {
                 size: 100,
                 interval: 1000,
@@ -109,10 +112,9 @@ const defaultData = (user: User): Omit<Sync, "id" | "created_by" | "team_id"> =>
                 on_retry: false,
                 on_timeout: true,
             },
+            
         } as SyncConfig,
-        is_active: true,
-        setup_stage: "source" as SetupStage,
-
+        status: "draft" as SyncStatus,
     }
 }
 

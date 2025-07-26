@@ -38,7 +38,7 @@ type Connections = {
 type Syncs = {
   id: string;
   team_id: string;
-  active: boolean;
+  status: 'draft' | 'active' | 'paused' | 'error';
   created_at: string;
 }
 

@@ -12,7 +12,7 @@ import { useAccountSelection } from "../hooks/useAccountSelection"; // adjust pa
 export default function AccountsStep({ next }: { next: () => void }) {
   //App state
   const [connector, setConnector] = useState<Connector | null>(null);
-  const { syncConfig, setAccount, connectors, save } = useSync();
+  const { syncConfig, setAccount, connectors, saveAndAdvance } = useSync();
 
   // Use the hook for both source and destination
   const source = useAccountSelection({
@@ -21,6 +21,7 @@ export default function AccountsStep({ next }: { next: () => void }) {
     setAccount,
     field: "source_id"
   });
+
   const destination = useAccountSelection({
     connectors,
     accountId: syncConfig?.destination_id,
@@ -34,7 +35,7 @@ export default function AccountsStep({ next }: { next: () => void }) {
 
     try {
       // save the current sync changes
-      save().then(() => {
+      saveAndAdvance().then(() => {
         next(); // move to next step
       });
     }
@@ -49,7 +50,7 @@ export default function AccountsStep({ next }: { next: () => void }) {
 
   return (
     <div>
-      <div className='grid items-center grid-cols-1 md:grid-cols-5 gap-4'>
+      <div className='flex w-full justify-between gap-4'>
         <FormSide
           appId={source.appId}
           setAppId={source.setAppId}
@@ -60,8 +61,8 @@ export default function AccountsStep({ next }: { next: () => void }) {
           onCreateNew={() => setConnector(connectors?.find(conn => conn.id === source.appId))}
         />
 
-        <div className='flex items-center justify-center col-span-1'>
-          <ArrowRightLeft className='w-6 h-6' />
+        <div className='flex items-center justify-center'>
+          <ArrowRightLeft className='w-4 h-4' />
         </div>
 
         <FormSide

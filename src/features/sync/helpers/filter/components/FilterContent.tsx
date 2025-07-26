@@ -5,7 +5,6 @@ import { SyncFilter } from "@/types/sync";
 import { ColumnOption } from "@/types/connectors";
 
 interface FilterContentProps {
-    app_name: string;
     columns: ColumnOption[];
     isColumnsLoading: boolean;
     filters: SyncFilter[];
@@ -13,7 +12,7 @@ interface FilterContentProps {
 }
 
 export const FilterContent = (props: FilterContentProps) => {
-    const { app_name, filters, columns, isColumnsLoading, setFilters } = props;
+    const { filters, columns, isColumnsLoading, setFilters } = props;
     // add field mapping
     const addFilter = () => {
         setFilters(prev => [...prev, {
@@ -35,7 +34,6 @@ export const FilterContent = (props: FilterContentProps) => {
 
     return (
         <div className="space-y-4 border rounded-lg p-4">
-            <p className="text-sm font-medium">{app_name} Filters</p>
             {filters?.map((filter, idx) => (
                 <FilterRow
                     key={idx}

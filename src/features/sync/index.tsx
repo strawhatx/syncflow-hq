@@ -3,8 +3,7 @@ import AccountsStep from "./component/Accounts";
 import DataSourcesStep from "./component/DataSources";
 import FilterStep from "./component/Filter";
 import { MappingStep } from "./component/Mapping";
-import ReviewStep from "./component/Review";
-import ScheduleStep from "./component/Schedule";
+import { ReadyStep } from "./component/Ready";
 import { Check, X, RefreshCcw } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -27,40 +26,39 @@ enum TransitionState {
 
 const steps = [
     {
-        id: "accounts",
+        id: 1,
+        stage: "accounts",
         label: "choose your connected accounts or create a new one",
         description: "Select the accounts you want to sync",
         component: AccountsStep,
     },
     {
-        id: "data-sources",
+        id: 2,
+        stage: "data-sources",
         label: "choose your data sources",
         description: "Select the data sources you want to sync",
         component: DataSourcesStep,
     },
     {
-        id: "mappings",
+        id: 3,
+        stage: "mappings",
         label: "Map your tables",
         description: "Map the tables you want to sync",
         component: MappingStep,
     },
     {
-        id: "filters",
+        id: 4,
+        stage: "filters",
         label: "Add your filters",
         description: "Add filters to your sync",
         component: FilterStep,
     },
     {
-        id: "schedule",
-        label: "Schedule",
-        description: "Schedule the sync",
-        component: ScheduleStep,
-    },
-    {
-        id: "review",
-        label: "Review",
-        description: "Review the sync",
-        component: ReviewStep,
+        id: 5,
+        stage: "ready",
+        label: "Ready to sync",
+        description: "Review and activate your sync",
+        component: ReadyStep,
     },
 ];
 

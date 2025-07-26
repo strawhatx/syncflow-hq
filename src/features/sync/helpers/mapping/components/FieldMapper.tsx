@@ -45,8 +45,9 @@ export const FieldMapper = (props: FieldMapperProps) => {
                     + Add Field
                 </Button>
             </div>
-
-            {fieldMappings?.map((mapping, i) => (
+            <div className="flex flex-col gap-2">
+               {fieldMappings?.map((mapping, i) => (
+                <div className="flex flex-col bg-gray-50 rounded-lg py-2 gap-2">
                 <MappingRow
                     key={i}
                     index={i}
@@ -61,7 +62,10 @@ export const FieldMapper = (props: FieldMapperProps) => {
                     onDestinationChange={(value: string) => updateField(i, "destination_field_id", value)}
                     onRemove={removeField}
                 />
-            ))}
+                </div>
+            ))} 
+            </div>
+            
         </div>
     )
 }

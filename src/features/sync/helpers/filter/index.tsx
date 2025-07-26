@@ -1,25 +1,30 @@
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useSync } from "@/contexts/SyncContext";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SyncFilter } from "@/types/sync";
 import { ConnectorWithConnections } from "@/services/connector/service";
 import { FilterContent } from "./components/FilterContent";
 import { useDestinationColumns, useSourceColumns } from "../../hooks/useDataSources";
 
 interface FilterDialogProps {
+    open: boolean;
+    setOpen: (open: boolean) => void;
     type: "source" | "destination";
+    setType: (type: "source" | "destination" | null) => void;
     connector: ConnectorWithConnections;
+    selectedTableMappingId: string | null;
+    setSelectedTableMappingId: (id: string | null) => void;
 }
 
 export const FilterDialog = (props: FilterDialogProps) => {
-    const { type, connector } = props;
-    const { syncConfig, selectedTableMappingId, setSelectedTableMappingId, setTableMappings } = useSync();
+    const { connector, type, setType, open, setOpen, selectedTableMappingId, setSelectedTableMappingId } = props;
+    const { syncConfig, setTableMappings } = useSync();
     const tableMappings = syncConfig.config?.schema?.table_mappings
     const tableMapping = tableMappings?.find(mapping => mapping.id === selectedTableMappingId);
     const [filters, setFilters] = useState<SyncFilter[]>(tableMapping?.filters?.[type] || []);
-    const { data: sourceColumns } = useSourceColumns(syncConfig.source_id);
-    const { data: destinationColumns } = useDestinationColumns(syncConfig.destination_id);
+    const { data: sourceColumns } = useSourceColumns(tableMapping?.source_table_id);
+    const { data: destinationColumns } = useDestinationColumns(tableMapping?.destination_table_id);
     const columns = type === "source" ? sourceColumns : destinationColumns;
 
     // save to
@@ -28,20 +33,29 @@ export const FilterDialog = (props: FilterDialogProps) => {
             mapping.id === selectedTableMappingId ? { ...mapping, filters: { ...mapping.filters, [type]: filters } } : mapping
         ));
 
-        setSelectedTableMappingId(null);
+        handleOpenChange();
     };
+
+    const handleOpenChange = () => {
+        setSelectedTableMappingId(null);
+        setOpen(false);
+        setType(null);
+    }
+
     return (
         <Dialog
-            open={selectedTableMappingId !== null && selectedTableMappingId !== undefined}
-            onOpenChange={() => setSelectedTableMappingId(null)}
+            open={open}
+            onOpenChange={() => handleOpenChange()}
         >
-            <DialogContent className="max-h-[80vh] max-w-full md:max-w-xl lg:max-w-3xl">
+            <DialogContent
+                className="max-h-[80vh] max-w-full md:max-w-xl lg:max-w-3xl"
+                aria-describedby="filter-dialog"
+            >
                 <DialogHeader>
-                    <DialogTitle> Edit Field Mapping </DialogTitle>
+                    <DialogTitle className="text-sm font-medium"> {connector?.name} </DialogTitle>
                 </DialogHeader>
 
                 <FilterContent
-                    app_name={connector?.name}
                     filters={filters}
                     columns={columns}
                     isColumnsLoading={false}

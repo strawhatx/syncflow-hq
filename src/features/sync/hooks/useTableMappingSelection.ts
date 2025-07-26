@@ -47,7 +47,7 @@ import { autoMap } from '../utils/auto-mapp';
  * ```
  */
 export function useTableMappingSelection() {
-  const { syncConfig, connectors, setTableMappings, save } = useSync();
+  const { syncConfig, connectors, setTableMappings, saveAndAdvance } = useSync();
   // Extract data from sync config
   const tableMappings = syncConfig.config?.schema?.table_mappings || [];
   const sourceDatabaseId = syncConfig.config?.schema?.source_database_id;
@@ -150,6 +150,6 @@ export function useTableMappingSelection() {
     
     // Utilities
     createSyncSeparator,
-    save,
+    saveAndAdvance,
   };
 } 

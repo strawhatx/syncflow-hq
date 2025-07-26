@@ -99,9 +99,9 @@ const SyncDetails = () => {
               <div className="flex justify-between items-center mb-6">
                 <div>
                   <h1 className="text-2xl font-semibold">{sync.name}</h1>
-                  <p className="text-muted-foreground">{sync.description || "No description"}</p>
+                  <p className="text-muted-foreground">{"No description"}</p>
                 </div>
-                {getStatusBadge(sync.is_active ? "active" : "paused")}
+                {getStatusBadge(sync.status)}
               </div>
               
               <div className="flex items-center mb-6">
@@ -124,9 +124,9 @@ const SyncDetails = () => {
                     Sync ID: {sync.id}
                   </p>
                   <p className="text-sm">
-                    <span className="text-muted-foreground">Status:</span> {sync.is_active ? "Active" : "Paused"}
+                    <span className="text-muted-foreground">Status:</span> {sync.status}
                     <span className="mx-2">•</span>
-                    <span className="text-muted-foreground">Created:</span> {new Date(sync.created_at).toLocaleDateString()}
+                    <span className="text-muted-foreground">Created:</span> {new Date().toLocaleDateString()}
                   </p>
                 </div>
               </div>
@@ -163,15 +163,15 @@ const SyncDetails = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Created</p>
-                  <p className="text-sm">{new Date(sync.created_at).toLocaleString()}</p>
+                  <p className="text-sm">{new Date().toLocaleString()}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Last Updated</p>
-                  <p className="text-sm">{new Date(sync.updated_at).toLocaleString()}</p>
+                  <p className="text-sm">{new Date().toLocaleString()}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Status</p>
-                  <p className="text-sm">{sync.is_active ? "Active" : "Paused"}</p>
+                  <p className="text-sm">{sync.status}</p>
                 </div>
               </div>
             </div>
@@ -186,8 +186,8 @@ const SyncDetails = () => {
                   <p className="font-mono text-sm">{sync.team_id}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Setup Stage</p>
-                  <p className="text-sm capitalize">{sync.setup_stage || "Not set"}</p>
+                  <p className="text-sm text-muted-foreground">Status</p>
+                  <p className="text-sm capitalize">{sync.status || "draft"}</p>
                 </div>
               </div>
             </div>

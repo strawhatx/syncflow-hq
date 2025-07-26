@@ -17,7 +17,7 @@ export const FormSide = (props: FormSideProps) => {
     const { appId, setAppId, accountId, setAccountId, connectors, connections, onCreateNew } = props;
 
     return (
-        <div className='col-span-2'>
+        <div className="flex flex-col w-full gap-2">
             <CustomSelect
                 value={appId || ""}
                 onValueChange={(value: any) => setAppId(value)}
@@ -30,8 +30,6 @@ export const FormSide = (props: FormSideProps) => {
                 disabled={false}
                 isLoading={false}
             />
-
-            <div className="h-4"></div>
 
             <CustomSelectButton
                 value={accountId || ""}
