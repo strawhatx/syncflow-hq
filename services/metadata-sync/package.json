@@ -33,6 +33,7 @@
     "@types/pg": "^8.15.4",
     "serverless": "^4.17.1",
     "serverless-offline": "^14.4.0",
+    "serverless-plugin-typescript": "^2.1.5",
     "typescript": "^5.3.3"
   }
 }
