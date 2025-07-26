@@ -21,6 +21,7 @@ import { HeaderContentProvider } from '@/contexts/HeaderContentContext';
 import TeamsPage from "./pages/Teams";
 import { TeamProvider } from "./contexts/TeamContext";
 import { SyncProvider } from "./contexts/SyncContext";
+import ProtectedSyncViewRoute from "./routes/ProtectedSyncViewRoute";
 
 const queryClient = new QueryClient();
 
@@ -44,14 +45,19 @@ const App = () => (
                   <Route path="/dashboard" element={<DashboardPage />} />
                   {/* Pages with data-dependent permissions - handled at page level */}
                   <Route path="/syncs" element={<Syncs />} />
-                  
+
                   {/* Syncs with provider */}
                   <Route path="/syncs/edit/:id" element={
-                    <SyncProvider><Sync /></SyncProvider>
+                    <SyncProvider>
+                      <ProtectedSyncViewRoute>
+                        <Sync />
+                      </ProtectedSyncViewRoute>
+                    </SyncProvider>
                   } />
                   <Route path="/syncs/view/:id" element={
                     <SyncProvider><SyncDetails /></SyncProvider>
-                  } />
+                  }
+                  />
                   <Route path="/connectors" element={<ConnectorsPage />} />
                   <Route path="/teams" element={<TeamsPage />} />
                   <Route path="/profile" element={<Profile />} />

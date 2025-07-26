@@ -68,9 +68,9 @@ export default function FilterStep({ next }: { next: () => void }) {
 
     // sync config
     const { syncConfig, connectors, saveAndAdvance } = useSync();
-    const tableMappings = syncConfig.config?.schema?.table_mappings;
-    const sourceConnector = connectors.find(connector => connector.connections.some(connection => connection.id === syncConfig?.source_id));
-    const destinationConnector = connectors.find(connector => connector.connections.some(connection => connection.id === syncConfig?.destination_id));
+    const tableMappings = syncConfig?.config?.schema?.table_mappings;
+    const sourceConnector = connectors?.find(connector => connector.connections.some(connection => connection.id === syncConfig?.source_id));
+    const destinationConnector = connectors?.find(connector => connector.connections.some(connection => connection.id === syncConfig?.destination_id));
     const connector = type === "source" ? sourceConnector : destinationConnector;
     
     // handle next
@@ -114,13 +114,13 @@ export default function FilterStep({ next }: { next: () => void }) {
                                 <DropdownMenuLabel
                                     onClick={() => handleFilter("source", mapping.id)}
                                     className="cursor-pointer text-sm">
-                                    {sourceConnector.name}
+                                    {sourceConnector?.name}
                                 </DropdownMenuLabel>
 
                                 <DropdownMenuLabel
                                     onClick={() => handleFilter("destination", mapping.id)}
                                     className="cursor-pointer text-sm">
-                                    {destinationConnector.name}
+                                    {destinationConnector?.name}
                                 </DropdownMenuLabel>
                             </DropdownMenuContent>
                         </DropdownMenu>

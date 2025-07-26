@@ -24,6 +24,7 @@ interface SyncContextType {
     setTableMappings: (value: SyncTableMapping[]) => void;
     setStage: (stage: SyncStage) => void;
     saveAndAdvance: () => Promise<{ success: boolean; errors?: string[] }>;
+    save: () => Promise<void>;
     reset: () => void;
     activate: () => Promise<void>;
 }
@@ -115,6 +116,12 @@ export const SyncProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return saveSync(syncConfig.id, updatedSync);
     };
 
+    // save the sync config
+    const save = async () => {
+        if (!syncConfig) return;
+        await saveSync(syncConfig.id, syncConfig);
+    };
+
     // Save and advance, but only if valid
     const saveAndAdvance = async (): Promise<{ success: boolean; errors?: string[] }> => {
         const { isValid, errors } = validateCurrentStage();
@@ -193,6 +200,7 @@ export const SyncProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             setTableMappings,
             setStage,
             saveAndAdvance,
+            save,
             reset,
             activate
         }}>

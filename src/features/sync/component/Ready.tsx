@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, Play, Settings } from 'lucide-react';
+import { ArrowLeft, ArrowLeftRight, ArrowRight, CheckCircle, Play, Settings } from 'lucide-react';
 import { useSync } from '@/contexts/SyncContext';
 import { getImagePath } from '@/lib/utils';
 import { ConnectorWithConnections } from '@/services/connector/service';
@@ -15,34 +15,40 @@ interface ReadyStepProps {
     onActivate?: () => void;
 }
 
+const syncSeparatorConfig = {
+    "source-to-destination": <ArrowRight className="h-4 w-4" />,
+    "destination-to-source": <ArrowLeft className="h-4 w-4" />,
+    "two-way": <ArrowLeftRight className="h-4 w-4" />
+}
+
 export const ReadyStep = ({ onActivate }: ReadyStepProps) => {
     const { syncConfig, connectors, activate } = useSync();
     const [isActivating, setIsActivating] = useState(false);
     const navigate = useNavigate();
 
-    const sourceConnector = connectors?.find(connector => 
+    const sourceConnector = connectors?.find(connector =>
         connector.connections.some(connection => connection.id === syncConfig?.source_id)
     );
-    const destinationConnector = connectors?.find(connector => 
+    const destinationConnector = connectors?.find(connector =>
         connector.connections.some(connection => connection.id === syncConfig?.destination_id)
     );
 
     const tableMappings = syncConfig?.config?.schema?.table_mappings || [];
-
+    
     const handleActivate = async () => {
         if (!syncConfig) return;
 
         setIsActivating(true);
         try {
             await activate();
-            
+
             toast({
                 title: 'Sync Activated',
                 description: 'Your sync has been successfully activated and is now running.',
             });
 
             onActivate?.();
-            
+
             // Navigate to syncs page after a short delay
             setTimeout(() => {
                 navigate('/syncs');
@@ -82,7 +88,7 @@ export const ReadyStep = ({ onActivate }: ReadyStepProps) => {
                             <span className="text-sm font-medium text-gray-700">Sync Name:</span>
                             <span className="text-sm text-gray-900">{syncConfig?.name || 'Untitled Sync'}</span>
                         </div>
-                        
+
                         <div className="flex items-center justify-between">
                             <span className="text-sm font-medium text-gray-700">Schedule:</span>
                             <Badge variant="secondary">{syncConfig?.config?.schedule || 'every 1 minute'}</Badge>
@@ -149,7 +155,7 @@ export const ReadyStep = ({ onActivate }: ReadyStepProps) => {
                     <CardContent>
                         <div className="space-y-2">
                             {tableMappings.map((mapping, index) => (
-                                <TableMappingSummary 
+                                <TableMappingSummary
                                     key={mapping.id || index}
                                     mapping={mapping}
                                     sourceConnector={sourceConnector}
@@ -197,14 +203,13 @@ const TableMappingSummary = ({ mapping, sourceConnector, destinationConnector }:
                 />
                 <span className="text-sm font-medium">{sourceTable?.name}</span>
             </div>
-            
+
             <div className="flex items-center gap-2">
                 <Badge variant="secondary" className="text-xs">
-                    {mapping.direction}
+                    {syncSeparatorConfig[mapping.direction]}
                 </Badge>
-                <span className="text-xs text-gray-500">→</span>
             </div>
-            
+
             <div className="flex items-center gap-3">
                 <span className="text-sm font-medium">{destinationTable?.name}</span>
                 <img

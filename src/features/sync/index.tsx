@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { sanitizeField } from "@/lib/sanitize";
 import { useSync } from "@/contexts/SyncContext";
+import { SyncStage } from "@/types/sync";
 
 // Step state enum for cleaner logic
 enum StepState {
@@ -178,6 +179,16 @@ export default function Sync() {
     const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const { syncConfig, setTitle, reset, save } = useSync();
 
+    // Initialize step index based on saved stage
+    useEffect(() => {
+        if (syncConfig?.config?.stage) {
+            const stageIndex = steps.findIndex(step => step.stage === syncConfig.config.stage);
+            if (stageIndex !== -1) {
+                setStepIndex(stageIndex);
+            }
+        }
+    }, [syncConfig?.config?.stage]);
+
     // Custom step change handler with transitions
     const handleStepChange = (newStepIndex: number) => {
         if (newStepIndex === stepIndex) return;
@@ -239,6 +250,10 @@ export default function Sync() {
                     <Button
                         variant="outline"
                         className="rounded-md py-2 px-4 h-8"
+                        disabled={
+                            syncConfig?.config?.stage === "ready" ||
+                            syncConfig?.status !== "draft"
+                        }
                         onClick={async () => {
                             // reset the wizard data and all sync data
                             setStepIndex(0);
