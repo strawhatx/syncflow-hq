@@ -1,18 +1,12 @@
 import { supabase } from "@/config/supabase";
-import { DataSyncJob } from "@/types/job";
+import { DataSyncJob, DataSyncJobStatus } from "@/types/job";
 
-export async function createDataSyncJob(syncId: string, teamId: string, payload: any): Promise<DataSyncJob> {
+
+
+export async function createJob(jobData: Omit<DataSyncJob, 'id'>[]): Promise<DataSyncJob> {
   const { data, error } = await supabase
     .from('data_sync_jobs')
-    .insert([
-      {
-        sync_id: syncId,
-        team_id: teamId,
-        payload: payload,
-        status: 'pending',
-        progress: 0,
-      }
-    ])
+    .insert(jobData)
     .select()
     .single();
 
@@ -24,18 +18,18 @@ export async function createDataSyncJob(syncId: string, teamId: string, payload:
   return data;
 }
 
-export async function updateJobStatus(jobId: string, status: DataSyncJob['status'], progress?: number, error?: string): Promise<DataSyncJob> {
+export async function updateJobStatus(jobId: string, status: DataSyncJobStatus, progress?: number, error?: string): Promise<DataSyncJob> {
   const updateData: any = { status };
   
-  if (progress !== undefined) {
+  if (progress) {
     updateData.progress = progress;
   }
   
-  if (error !== undefined) {
-    updateData.error = error;
+  if (error) {
+    updateData.message = error;
   }
   
-  if (status === 'running') {
+  if (status === 'processing') {
     updateData.last_synced_at = new Date().toISOString();
   }
 

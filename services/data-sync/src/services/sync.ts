@@ -1,4 +1,5 @@
 import { supabase } from "@/config/supabase";
+import { Sync } from "@/types/sync";
 
 const fetchActiveSyncs = async () => {
   const { data, error } = await supabase
@@ -56,4 +57,17 @@ export const getSync = async (syncId: string) => {
   }
 
   return data;
+}
+
+export const getRelatedSyncsByTableId = async (tableId: string) => {
+  // TODO: gotta use the config to get the table id as its inside the sync
+  const { data, error } = await supabase
+    .rpc('get_syncs_by_table_id', { table_id: tableId });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  // map the syncx
+  return data as Sync[];
 }

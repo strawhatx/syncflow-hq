@@ -8,6 +8,18 @@ export type Provider =
     "mongodb" |
     "sqlserver";
 
+export type WebhookProvider =
+    "airtable" |
+    "google_sheets" |
+    "notion";
+
+export type SqlProvider =
+    "supabase" |
+    "postgresql" |
+    "mysql" |
+    "mongodb" |
+    "sqlserver";
+
 export const providerMap: Record<Provider, string> = {
     airtable: "airtable",
     supabase: "supabase",

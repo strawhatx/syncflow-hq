@@ -56,24 +56,43 @@ package:
     - '!*.log'
 
 functions:
+  # Job Sync handler - runs on schedule to run pending jobs
   processJobs:
     handler: src/handler.processJobs
     timeout: 900 # 15 minutes
     events:
-      - schedule: rate(1 minute)
-    memorySize: 256
+      - schedule: rate(5 minutes) # Poll every 5 minutes
+    memorySize: 512
 
-
-  createJob:
-    handler: src/handler.createJob
+  # Webhook handler - receives webhook events from supported sources
+  webhookHandler:
+    handler: src/handler.webhookHandler
+    timeout: 30
     events:
       - httpApi:
-          path: /jobs
+          path: /webhooks/{provider}
           method: post
-    environment:
-      SUPABASE_URL: ${env:SUPABASE_URL}
-      SUPABASE_ANON_KEY: ${env:SUPABASE_ANON_KEY}
-      SUPABASE_SERVICE_ROLE_KEY: ${env:SUPABASE_SERVICE_ROLE_KEY}
+    memorySize: 256
+
+  # Setup database listeners API
+  setupListener:
+    handler: src/handler.setupListener
+    timeout: 60
+    events:
+      - httpApi:
+          path: /listeners/setup
+          method: post
+    memorySize: 256
+
+  # Health check
+  healthCheck:
+    handler: src/handler.healthCheck
+    timeout: 10
+    events:
+      - httpApi:
+          path: /hello
+          method: get
+    memorySize: 128
 
 custom:
   serverless-offline:

@@ -1,40 +1,36 @@
 
-import { Provider, providerMap } from "@/types/provider";
-import { SqlChangeDetectorStrategy } from "./sql";
-import { AirtableChangeDetectorStrategy } from "./airtable";
-import { GoogleSheetsChangeDetectorStrategy } from "./google-sheets";
-import { SupabaseChangeDetectorStrategy } from "./supabase";
-import { NotionChangeDetectorStrategy } from "./notion";
+import { SqlServerChangeDetectionStrategy } from "./sql-server";
+import { MySqlChangeDetectionStrategy } from "./mysql";
 
 export interface ChangeDetectionStrategy {
-  /**
-   * Returns an array of changed records since the last sync.
-   * @param syncConfig - The sync configuration (contains provider, table info, last_synced_at, etc.)
-   */
-  getChanges(syncConfig: any): Promise<any[]>;
+    /**
+     * Returns an array of changed records since the last sync.
+     */
+    getChanges(syncConfig: any): Promise<any[]>;
 
-  /**
-   * Optionally ensures the best change tracking field exists (e.g., adds updated_at for SQL DBs).
-   * For SaaS, this may prompt the user or do nothing.
-   */
-  ensureChangeTrackingField?(syncConfig: any): Promise<void>;
+    /**
+     * Ensures that the required change tracking field exists (if applicable).
+     */
+    ensureChangeTrackingField?(syncConfig: any): Promise<void>;
+
+    /**
+     * Sets up a database listener (if supported by the provider).
+     */
+    setupListener?(connectionConfig: any, tableName: string): Promise<void>;
 }
 
+/**
+ * Factory function to get the appropriate change detection strategy for a provider.
+ */
+export function getChangeDetectionStrategy(provider: string): ChangeDetectionStrategy {
+    switch (provider.toLowerCase()) {
+        case 'sqlserver':
+            return new SqlServerChangeDetectionStrategy();
 
-export class ChangeDetectorStrategyFactory {
-    static getStrategy(provider: Provider, value: any): ChangeDetectionStrategy {
-        switch (provider) {
-            case providerMap.airtable:
-                return new AirtableChangeDetectorStrategy(value);
-            case providerMap.google_sheets:
-                    return new GoogleSheetsChangeDetectorStrategy(value);
-            case providerMap.supabase:
-                return new SupabaseChangeDetectorStrategy(value);
-            case providerMap.notion:
-                return new NotionChangeDetectorStrategy(value);
-            default:
-                return new SqlChangeDetectorStrategy(value);
-        }
+        case 'mysql':
+            return new MySqlChangeDetectionStrategy();
+        default:
+            throw new Error(`Unsupported provider: ${provider}`);
     }
 }
 
