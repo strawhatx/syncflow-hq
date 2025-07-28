@@ -1,6 +1,3 @@
-
-import { SqlServerChangeDetectionStrategy } from "./sql-server";
-import { MySqlChangeDetectionStrategy } from "./mysql";
 import { providerMap, SqlProvider } from "@/types/provider";
 
 export interface ListenerStrategy {
@@ -50,25 +47,25 @@ export class MongoListenerStrategy implements ListenerStrategy {
 /**
  * Factory function to get the appropriate change detection strategy for a provider.
  */
-export function getListenerStrategy(provider: SqlProvider): ListenerStrategy {
+export class ListenerFactory {
+    static listener(provider: SqlProvider): ListenerStrategy {
     switch (provider) {
         case providerMap.sqlserver:
-            return new SqlServerChangeDetectionStrategy();
+            return new SqlServerListenerStrategy();
 
         case providerMap.mysql:
-            return new MySqlChangeDetectionStrategy();
+            return new MySqlListenerStrategy();
 
         case providerMap.mongodb:
-            return new MongoChangeDetectionStrategy();
-
-        case providerMap.postgresql:
-            return new PostgresChangeDetectionStrategy();
+            return new MongoListenerStrategy();
 
         case providerMap.supabase:
-            return new SupabaseChangeDetectionStrategy();
+        case providerMap.postgresql:
+            return new PostgresListenerStrategy();
 
         default:
             throw new Error(`Unsupported provider: ${provider}`);
     }
+}
 }
 

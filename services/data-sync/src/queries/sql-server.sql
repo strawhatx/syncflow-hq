@@ -1,4 +1,5 @@
--- Create a log table
+-- Create log table if not exists
+IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='SyncflowChangeLog' AND xtype='U')
 CREATE TABLE SyncflowChangeLog (
   id INT IDENTITY PRIMARY KEY,
   table_name NVARCHAR(255),
@@ -7,21 +8,18 @@ CREATE TABLE SyncflowChangeLog (
   changed_at DATETIME DEFAULT GETDATE()
 );
 
--- Create a trigger on your table (replace 'your_table' with the actual table name)
-CREATE TRIGGER trg_SyncflowChangeLog
-ON your_table
-AFTER INSERT, UPDATE, DELETE
-AS
-BEGIN
-  SET NOCOUNT ON;
-
-  -- For INSERTED rows
-  INSERT INTO SyncflowChangeLog (table_name, operation, record)
-  SELECT 'your_table', 'INSERT', (SELECT * FROM inserted FOR JSON PATH)
-  FROM inserted;
-
-  -- For DELETED rows
-  INSERT INTO SyncflowChangeLog (table_name, operation, record)
-  SELECT 'your_table', 'DELETE', (SELECT * FROM deleted FOR JSON PATH)
-  FROM deleted;
-END;
+-- For each table, create trigger if not exists
+IF NOT EXISTS (SELECT * FROM sys.triggers WHERE name = 'trg_SyncflowChangeLog_{table}')
+EXEC('
+  CREATE TRIGGER trg_SyncflowChangeLog_{table}
+  ON {table}
+  AFTER INSERT, UPDATE, DELETE
+  AS
+  BEGIN
+    SET NOCOUNT ON;
+    INSERT INTO SyncflowChangeLog (table_name, operation, record)
+    SELECT ''{table}'', ''INSERT'', (SELECT * FROM inserted FOR JSON PATH) FROM inserted;
+    INSERT INTO SyncflowChangeLog (table_name, operation, record)
+    SELECT ''{table}'', ''DELETE'', (SELECT * FROM deleted FOR JSON PATH) FROM deleted;
+  END
+');

@@ -2,7 +2,6 @@ import { ScheduledHandler, APIGatewayProxyHandler } from "aws-lambda";
 import { createJob, updateJobStatus } from "./services/job";
 import { webhookParse } from "./tasks/webhook-parser";
 import { DataSyncJob } from "./types/job";
-
 // Polling handler - runs on schedule to check any jobs that need to run
 // Edgcase what if there are multiple pending requests with didferent  daata for the same job?
 export const processJobs: ScheduledHandler = async () => {
@@ -76,7 +75,7 @@ export const setupListener: APIGatewayProxyHandler = async (event) => {
       };
     }
 
-    await setupDatabaseListener(provider, connectionConfig, tableName);
+    await setupListener(provider, connectionConfig, tableName);
 
     return {
       statusCode: 200,
