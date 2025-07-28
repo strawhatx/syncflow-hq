@@ -1,13 +1,13 @@
 
 import { ScheduledHandler } from 'aws-lambda';
-import { DataSourceStrategyFactory } from './patterns/strategies/datasource/index.ts';
-import { oauthProviders } from './util/providers.ts';
-import { getValidAccessToken } from './util/access.ts';
-import { failJob, getPendingJob, updateJobStatus } from './services/job.ts';
-import { getConnectionConfig, rollbackDatabaseSync } from './services/connection.ts';
-import { CreateConfigFactory } from './patterns/factories/config.ts';
-import { ConnectorProvider } from './types/connector.ts';
-import { limiter } from './util/rate-limiter.ts';
+import { DataSourceStrategyFactory } from './patterns/strategies/datasource/index';
+import { oauthProviders } from './util/providers';
+import { getValidAccessToken } from './util/access';
+import { failJob, getPendingJob, updateJobStatus } from './services/job';
+import { getConnectionConfig, rollbackDatabaseSync } from './services/connection';
+import { CreateConfigFactory } from './patterns/factories/config';
+import { ConnectorProvider } from './types/connector';
+import { limiter } from './util/rate-limiter';
 
 const processSources = async (provider: string, config: Record<string, any>) => {
   // get the strategy for the provider
@@ -39,7 +39,7 @@ const processTablesAndFields = async (provider: string, config: Record<string, a
   }
 }
 
-export const processJobs: ScheduledHandler = async (event) => {
+export const processJobs: ScheduledHandler = async () => {
   let currentJobId: string | undefined;
   let connection_id: string | undefined;
 

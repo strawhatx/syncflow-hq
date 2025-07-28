@@ -1,5 +1,5 @@
-import { saveColumns, saveDatabases, saveTable } from "../../../services/connection.ts";
-import { DataSourceStrategy } from "./index.ts";
+import { saveColumns, saveDatabases, saveTable } from "../../../services/connection";
+import { DataSourceStrategy } from "./index";
 
 export class SupabaseStrategy implements DataSourceStrategy {
     private config = {

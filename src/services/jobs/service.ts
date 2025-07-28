@@ -10,13 +10,19 @@ export const addMetadataSyncJob = async (connectionId: string, teamId: string) =
         throw new Error('Invalid teamId');
     }
 
-    // add job to job queue
+    // we only want to add a job if this is a new connection 
+    // if it already exists, skip it
     const { error } = await supabase
         .from('metadata_sync_jobs')
         .insert({
             connection_id: connectionId,
             team_id: teamId
         });
+
+    // if the job already exists, skip it
+    if (error?.code === '23505') {
+        return false;
+    }
 
     if (error) {
         throw error;

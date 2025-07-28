@@ -2,8 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
-import { useTeam } from "@/contexts/TeamContext";
 import { createConnection, updateConnection } from "@/services/connections/service";
 import { addMetadataSyncJob } from "@/services/jobs/service";
 import { initiateOAuth } from "@/services/oauth/service";

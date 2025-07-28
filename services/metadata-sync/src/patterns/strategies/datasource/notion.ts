@@ -1,5 +1,5 @@
-import { saveColumns, saveDatabases, saveTable } from "../../../services/connection.ts";
-import { DataSourceStrategy } from "./index.ts";
+import { saveColumns, saveDatabases, saveTable } from "../../../services/connection";
+import { DataSourceStrategy } from "./index";
 
 export class NotionStrategy implements DataSourceStrategy {
     private config = {
@@ -46,7 +46,7 @@ export class NotionStrategy implements DataSourceStrategy {
 
             const result = await response.json();
             return { valid: true, result };
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
             throw new Error(error.message || "Failed to connect to Notion");
         }

@@ -34,7 +34,8 @@ VALUES
                 "data.records:read",
                 "data.records:write",
                 "schema.bases:read",
-                "schema.bases:write"
+                "schema.bases:write",
+                "webhook:manage"
             ],
             "required_parameters": [],
             "redirect_url": "http://localhost:3000/airtable/callback",

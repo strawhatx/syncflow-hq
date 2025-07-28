@@ -19,7 +19,7 @@ CREATE TABLE public.data_sync_jobs (
     status TEXT NOT NULL DEFAULT 'pending',
     progress INT DEFAULT 0,
     last_synced_at TIMESTAMPTZ,
-    error TEXT,
+    message TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );

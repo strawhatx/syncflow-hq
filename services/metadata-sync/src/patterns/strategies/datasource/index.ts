@@ -1,12 +1,12 @@
-import { AirtableStrategy } from "./airtable.ts";
-import { SupabaseStrategy } from "./supabase.ts";
-import { MongoStrategy } from "./mongo.ts";
-import { MySQLStrategy } from "./my-sql.ts";
-import { PostgresStrategy } from "./postgres.ts";
-import { SQLServerStrategy } from "./sql-server.ts";
-import { GoogleSheetsStrategy } from "./google-sheets.ts";
-import { NotionStrategy } from "./notion.ts";
-import { providerMap } from "../../../util/providers.ts";
+import { AirtableStrategy } from "./airtable";
+import { SupabaseStrategy } from "./supabase";
+import { MongoStrategy } from "./mongo";
+import { MySQLStrategy } from "./my-sql";
+import { PostgresStrategy } from "./postgres";
+import { SQLServerStrategy } from "./sql-server";
+import { GoogleSheetsStrategy } from "./google-sheets";
+import { NotionStrategy } from "./notion";
+import { providerMap } from "../../../util/providers";
 
 export interface DataSourceStrategy {
     getSources(config: Record<string, any>): Promise<Record<string, any>[]>;

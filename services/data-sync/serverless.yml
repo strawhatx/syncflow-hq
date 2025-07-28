@@ -56,12 +56,13 @@ package:
     - '!*.log'
 
 functions:
-  hello:
-    handler: src/handler.hello
+  processJobs:
+    handler: src/handler.processJobs
+    timeout: 900 # 15 minutes
     events:
-      - httpApi:
-          path: /hello
-          method: get
+      - schedule: rate(1 minute)
+    memorySize: 256
+
 
   createJob:
     handler: src/handler.createJob

@@ -1,6 +1,6 @@
-import { DataSourceStrategy } from "./index.ts";
+import { DataSourceStrategy } from "./index";
 import { MongoClient } from "mongodb";
-import { saveDatabases, saveTable, saveColumns } from "../../../services/connection.ts";
+import { saveDatabases, saveTable, saveColumns } from "../../../services/connection";
 
 export class MongoStrategy implements DataSourceStrategy {
   async connect(config: Record<string, any>): Promise<{ valid: boolean; client: MongoClient }> {

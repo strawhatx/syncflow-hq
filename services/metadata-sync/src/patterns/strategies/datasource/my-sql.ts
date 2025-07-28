@@ -1,5 +1,5 @@
-import { saveColumns, saveDatabases, saveTable } from "../../../services/connection.ts";
-import { DataSourceStrategy } from "./index.ts";
+import { saveColumns, saveDatabases, saveTable } from "../../../services/connection";
+import { DataSourceStrategy } from "./index";
 import { createPool } from "mysql2/promise";
 
 // ✅ mysql2 config 
@@ -36,7 +36,7 @@ export class MySQLStrategy implements DataSourceStrategy {
             const connection = await pool.getConnection();
 
             return { valid: true, pool, connection };
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
             throw new Error(error.message || "Failed to connect to MySQL");
         }

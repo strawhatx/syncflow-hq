@@ -1,5 +1,5 @@
-import { saveColumns, saveDatabases, saveTable } from "../../../services/connection.ts";
-import { DataSourceStrategy } from "./index.ts";
+import { saveColumns, saveDatabases, saveTable } from "../../../services/connection";
+import { DataSourceStrategy } from "./index";
 import { Client } from "pg";
 
 export class PostgresStrategy implements DataSourceStrategy {
@@ -8,7 +8,7 @@ export class PostgresStrategy implements DataSourceStrategy {
             const client = new Client(config);
             await client.connect();
             return { valid: true, client };
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
             throw new Error(error.message || "Failed to connect to PostgreSQL");
         }

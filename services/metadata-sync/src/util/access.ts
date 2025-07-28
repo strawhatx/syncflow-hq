@@ -66,7 +66,7 @@ export async function getValidAccessToken(connectionId: string): Promise<string>
         throw new Error(`Failed to refresh token: ${response.statusText}`);
     }
 
-    const tokenData = await response.json();
+    const tokenData = await response.json() as { access_token: string, expires_in: number, refresh_token: string };
     const newAccessToken = tokenData.access_token;
     const newExpiresAt = Date.now() + tokenData.expires_in * 1000;
 

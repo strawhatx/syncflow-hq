@@ -1,50 +1,25 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import { createDataSyncJob } from './services/job';
+import { ScheduledHandler } from "aws-lambda";
+import { processSyncs } from "./services/sync";
 
-export const hello = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  return {
-    statusCode: 200,
-    body: JSON.stringify(
-      {
-        message: 'Data Sync Service is running!',
-        input: event,
-      },
-      null,
-      2
-    ),
-  };
-};
 
-export const createJob = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+export const processJobs: ScheduledHandler = async () => {
   try {
-    const body = JSON.parse(event.body || '{}');
-    const { syncId, teamId } = body;
+    const jobs = await processSyncs(); // Implement this to fetch from your DB
 
-    if (!syncId || !teamId) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({
-          error: 'Missing required fields: syncId and teamId'
-        })
-      };
+    for (const job of jobs) {
+      try {
+        const sourceData = await fetchFromSource(job); // Implement per connector
+        const transformed = transformWithMappings(sourceData, job.mappings);
+        const filtered = applyFilters(transformed, job.filters);
+        await upsertToDestination(filtered, job);
+        await logRunSuccess(job.id, filtered.length);
+      } catch (e) {
+        await logRunFailure(job.id, e);
+      }
     }
 
-    const job = await createDataSyncJob(syncId, teamId);
-
-    return {
-      statusCode: 201,
-      body: JSON.stringify({
-        message: 'Data sync job created successfully',
-        job
-      })
-    };
   } catch (error) {
     console.error('Error creating data sync job:', error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
-        error: 'Internal server error'
-      })
-    };
+    throw error;
   }
 };
