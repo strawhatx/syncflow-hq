@@ -1,5 +1,5 @@
--- Create a log table
-CREATE TABLE SyncflowChangeLog (
+-- Create log table if not exists
+CREATE TABLE IF NOT EXISTS SyncflowChangeLog (
   id INT AUTO_INCREMENT PRIMARY KEY,
   table_name VARCHAR(255),
   operation VARCHAR(10),
@@ -9,33 +9,33 @@ CREATE TABLE SyncflowChangeLog (
 
 -- Create a trigger for INSERT
 DELIMITER $$
-CREATE TRIGGER trg_SyncflowChangeLog_INSERT
-AFTER INSERT ON your_table
+CREATE TRIGGER IF NOT EXISTS trg_SyncflowChangeLog_INSERT_{table}
+AFTER INSERT ON {table}
 FOR EACH ROW
 BEGIN
   INSERT INTO SyncflowChangeLog (table_name, operation, record)
-  VALUES ('your_table', 'INSERT', JSON_OBJECT('record', NEW.*));
+  VALUES ('{table}', 'INSERT', JSON_OBJECT('record', NEW.*));
 END$$
 DELIMITER ;
 
 -- Create a trigger for UPDATE
 DELIMITER $$
-CREATE TRIGGER trg_SyncflowChangeLog_UPDATE
-AFTER UPDATE ON your_table
+CREATE TRIGGER IF NOT EXISTS trg_SyncflowChangeLog_UPDATE_{table}
+AFTER UPDATE ON {table}
 FOR EACH ROW
 BEGIN
   INSERT INTO SyncflowChangeLog (table_name, operation, record)
-  VALUES ('your_table', 'UPDATE', JSON_OBJECT('record', NEW.*));
+  VALUES ('{table}', 'UPDATE', JSON_OBJECT('record', NEW.*));
 END$$
 DELIMITER ;
 
 -- Create a trigger for DELETE
 DELIMITER $$
-CREATE TRIGGER trg_SyncflowChangeLog_DELETE
-AFTER DELETE ON your_table
+CREATE TRIGGER IF NOT EXISTS trg_SyncflowChangeLog_DELETE_{table}
+AFTER DELETE ON {table}
 FOR EACH ROW
 BEGIN
   INSERT INTO SyncflowChangeLog (table_name, operation, record)
-  VALUES ('your_table', 'DELETE', JSON_OBJECT('record', OLD.*));
+  VALUES ('{table}', 'DELETE', JSON_OBJECT('record', OLD.*));
 END$$
 DELIMITER ;
