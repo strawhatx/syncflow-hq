@@ -13,7 +13,15 @@ import { DataSyncJob, DataSyncJobStatus } from "../../../services/data-sync/src/
 // Mock the processJobs function to match the ScheduledHandler signature
 const mockProcessJobs = processJobs as any;
 
-// Test data factories
+// ============================================================================
+// TEST DATA FACTORIES
+// ============================================================================
+
+/**
+ * Creates a mock DataSyncJob with default values that can be overridden
+ * @param overrides - Partial job data to override defaults
+ * @returns A complete DataSyncJob object
+ */
 const createMockJob = (overrides: Partial<DataSyncJob> = {}): DataSyncJob => ({
   id: "job-123",
   sync_id: "sync-123",
@@ -26,6 +34,12 @@ const createMockJob = (overrides: Partial<DataSyncJob> = {}): DataSyncJob => ({
   ...overrides
 });
 
+/**
+ * Creates a mock Supabase client with configurable responses
+ * @param mockData - Data to return from Supabase operations
+ * @param mockError - Error to return from Supabase operations (optional)
+ * @returns Mock Supabase client with chained methods
+ */
 const createMockSupabase = (mockData: any, mockError: any = null) => ({
   from: vi.fn(() => ({
     insert: vi.fn(() => ({
@@ -48,6 +62,11 @@ const createMockSupabase = (mockData: any, mockError: any = null) => ({
   }))
 });
 
+/**
+ * Creates a mock AWS Lambda event with configurable properties
+ * @param overrides - Properties to override in the event
+ * @returns Mock Lambda event object
+ */
 const createMockEvent = (overrides: any = {}) => ({
   body: JSON.stringify({ test: "data" }),
   pathParameters: { provider: "postgresql" },
@@ -55,7 +74,11 @@ const createMockEvent = (overrides: any = {}) => ({
   ...overrides
 });
 
-// Mock all external dependencies
+// ============================================================================
+// MOCK SETUP
+// ============================================================================
+
+// Mock all external dependencies to isolate the units under test
 vi.mock("../../../services/data-sync/src/config/supabase", () => ({
   supabase: createMockSupabase(null)
 }));
@@ -88,8 +111,16 @@ vi.mock("../../../services/data-sync/src/strategies/listener", () => ({
   }
 }));
 
-// Test scenarios
+// ============================================================================
+// TEST SCENARIOS CONFIGURATION
+// ============================================================================
+
+/**
+ * Centralized test scenarios to reduce code duplication and improve maintainability
+ * Each scenario contains setup logic and expectations for specific test cases
+ */
 const testScenarios = {
+  // Webhook handler scenarios
   successfulWebhook: {
     description: "should handle webhook successfully",
     setup: () => {
@@ -111,7 +142,7 @@ const testScenarios = {
   missingProvider: {
     description: "should return 400 when provider is missing",
     setup: () => {
-      // No setup needed
+      // No setup needed for this error case
     },
     expectations: (response: any) => {
       expect(response.statusCode).toBe(400);
@@ -130,6 +161,7 @@ const testScenarios = {
     }
   },
   
+  // Listener setup scenarios
   successfulListenerSetup: {
     description: "should setup database listener successfully",
     setup: () => {
@@ -146,7 +178,7 @@ const testScenarios = {
   missingListenerParams: {
     description: "should return 400 when listener parameters are missing",
     setup: () => {
-      // No setup needed
+      // No setup needed for this validation error case
     },
     expectations: (response: any) => {
       expect(response.statusCode).toBe(400);
@@ -168,7 +200,12 @@ const testScenarios = {
   }
 };
 
+// ============================================================================
+// MAIN TEST SUITES
+// ============================================================================
+
 describe("data-sync handler", () => {
+  // Setup and teardown for all handler tests
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -177,22 +214,33 @@ describe("data-sync handler", () => {
     vi.restoreAllMocks();
   });
 
+  // ============================================================================
+  // PROCESS JOBS TESTS
+  // ============================================================================
+  
   describe("processJobs", () => {
     it("should process jobs successfully", async () => {
       // TODO: Implement when processJobs logic is added
+      // This test will verify that the scheduled job processor works correctly
       await mockProcessJobs();
       // Add expectations when implementation is complete
     });
 
     it("should handle errors during job processing", async () => {
       // TODO: Implement when processJobs logic is added
+      // This test will verify error handling in the job processor
       await mockProcessJobs();
       // Add expectations when implementation is complete
     });
   });
 
+  // ============================================================================
+  // WEBHOOK HANDLER TESTS
+  // ============================================================================
+  
   describe("webhookHandler", () => {
     it(testScenarios.successfulWebhook.description, async () => {
+      // Test successful webhook processing with provider in path parameters
       testScenarios.successfulWebhook.setup();
       
       const event = createMockEvent();
@@ -206,6 +254,7 @@ describe("data-sync handler", () => {
     });
 
     it(testScenarios.missingProvider.description, async () => {
+      // Test error handling when provider is not provided
       testScenarios.missingProvider.setup();
       
       const event = createMockEvent({ 
@@ -218,6 +267,7 @@ describe("data-sync handler", () => {
     });
 
     it(testScenarios.webhookError.description, async () => {
+      // Test error handling when webhook parsing fails
       testScenarios.webhookError.setup();
       
       const event = createMockEvent();
@@ -227,6 +277,7 @@ describe("data-sync handler", () => {
     });
 
     it("should handle webhook with provider in body", async () => {
+      // Test webhook processing when provider is specified in request body instead of path
       vi.spyOn(jobService, "createJob").mockResolvedValue(createMockJob());
       
       const event = createMockEvent({ 
@@ -242,8 +293,13 @@ describe("data-sync handler", () => {
     });
   });
 
+  // ============================================================================
+  // LISTENER SETUP TESTS
+  // ============================================================================
+  
   describe("setupListener", () => {
     it(testScenarios.successfulListenerSetup.description, async () => {
+      // Test successful database listener setup
       testScenarios.successfulListenerSetup.setup();
       
       const event = createMockEvent({
@@ -259,6 +315,7 @@ describe("data-sync handler", () => {
     });
 
     it(testScenarios.missingListenerParams.description, async () => {
+      // Test validation when required listener parameters are missing
       testScenarios.missingListenerParams.setup();
       
       const event = createMockEvent({
@@ -270,6 +327,7 @@ describe("data-sync handler", () => {
     });
 
     it(testScenarios.listenerSetupError.description, async () => {
+      // Test error handling when listener setup fails
       testScenarios.listenerSetupError.setup();
       
       const event = createMockEvent({
@@ -285,8 +343,13 @@ describe("data-sync handler", () => {
     });
   });
 
+  // ============================================================================
+  // HEALTH CHECK TESTS
+  // ============================================================================
+  
   describe("healthCheck", () => {
     it("should return health status", async () => {
+      // Test the health check endpoint returns proper status and timestamp
       const response = await healthCheck({} as any, {} as any, {} as any);
       
       if (!response) return;
@@ -299,6 +362,10 @@ describe("data-sync handler", () => {
   });
 });
 
+// ============================================================================
+// JOB SERVICE TESTS
+// ============================================================================
+
 describe("data-sync job service", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -306,6 +373,7 @@ describe("data-sync job service", () => {
 
   describe("createJob", () => {
     it("should create job successfully", async () => {
+      // Test successful job creation with Supabase
       const mockJob = createMockJob();
       const mockSupabase = createMockSupabase(mockJob);
       
@@ -325,6 +393,7 @@ describe("data-sync job service", () => {
     });
 
     it("should throw error when job creation fails", async () => {
+      // Test error handling when Supabase job creation fails
       const mockSupabase = createMockSupabase(null, { message: "Creation failed" });
       
       vi.doMock("../../../services/data-sync/src/config/supabase", () => ({
@@ -344,6 +413,7 @@ describe("data-sync job service", () => {
 
   describe("updateJobStatus", () => {
     it("should update job status successfully", async () => {
+      // Test successful job status update with progress
       const mockJob = createMockJob({ status: "processing" });
       const mockSupabase = createMockSupabase(mockJob);
       
@@ -358,6 +428,7 @@ describe("data-sync job service", () => {
     });
 
     it("should update job with error message", async () => {
+      // Test job status update with error message for failed jobs
       const mockJob = createMockJob({ status: "failed", message: "Test error" });
       const mockSupabase = createMockSupabase(mockJob);
       
@@ -372,6 +443,7 @@ describe("data-sync job service", () => {
     });
 
     it("should throw error when update fails", async () => {
+      // Test error handling when Supabase update operation fails
       const mockSupabase = createMockSupabase(null, { message: "Update failed" });
       
       vi.doMock("../../../services/data-sync/src/config/supabase", () => ({
@@ -385,6 +457,10 @@ describe("data-sync job service", () => {
   });
 });
 
+// ============================================================================
+// WEBHOOK PARSER TESTS
+// ============================================================================
+
 describe("data-sync webhook parser", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -392,6 +468,7 @@ describe("data-sync webhook parser", () => {
 
   describe("webhookParse", () => {
     it("should parse airtable webhook", async () => {
+      // Test Airtable webhook parsing with tableId parameter
       const mockSupabase = createMockSupabase({ id: "table-123" });
       
       vi.doMock("../../../services/data-sync/src/config/supabase", () => ({
@@ -407,6 +484,7 @@ describe("data-sync webhook parser", () => {
     });
 
     it("should parse google_sheets webhook", async () => {
+      // Test Google Sheets webhook parsing with sheetId parameter
       const mockSupabase = createMockSupabase({ id: "table-123" });
       
       vi.doMock("../../../services/data-sync/src/config/supabase", () => ({
@@ -422,6 +500,7 @@ describe("data-sync webhook parser", () => {
     });
 
     it("should parse supabase webhook", async () => {
+      // Test Supabase webhook parsing with databaseId parameter
       const mockSupabase = createMockSupabase({ id: "table-123" });
       
       vi.doMock("../../../services/data-sync/src/config/supabase", () => ({
@@ -437,6 +516,7 @@ describe("data-sync webhook parser", () => {
     });
 
     it("should parse notion webhook", async () => {
+      // Test Notion webhook parsing with databaseId parameter
       const mockSupabase = createMockSupabase({ id: "table-123" });
       
       vi.doMock("../../../services/data-sync/src/config/supabase", () => ({
@@ -452,6 +532,7 @@ describe("data-sync webhook parser", () => {
     });
 
     it("should use default config for unknown provider", async () => {
+      // Test fallback behavior for unsupported providers
       const mockSupabase = createMockSupabase({ id: "table-123" });
       
       vi.doMock("../../../services/data-sync/src/config/supabase", () => ({
@@ -468,6 +549,10 @@ describe("data-sync webhook parser", () => {
   });
 });
 
+// ============================================================================
+// LISTENER TASK TESTS
+// ============================================================================
+
 describe("data-sync listener task", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -475,6 +560,7 @@ describe("data-sync listener task", () => {
 
   describe("setupListener", () => {
     it("should setup listener successfully", async () => {
+      // Test successful listener setup with basic configuration
       const mockStrategy = {
         listen: vi.fn(() => Promise.resolve())
       };
@@ -496,6 +582,7 @@ describe("data-sync listener task", () => {
     });
 
     it("should setup listener with webhook URL", async () => {
+      // Test listener setup with webhook URL for notifications
       const mockStrategy = {
         listen: vi.fn(() => Promise.resolve())
       };
@@ -517,6 +604,7 @@ describe("data-sync listener task", () => {
     });
 
     it("should throw error when strategy fails", async () => {
+      // Test error handling when the listener strategy fails
       vi.doMock("../../../services/data-sync/src/strategies/listener", () => ({
         ListenerFactory: {
           listener: vi.fn(() => ({
