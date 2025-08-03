@@ -1,5 +1,5 @@
 import { providerMap, SqlProvider } from "@/types/provider";
-import { fillTemplate, loadSqlTemplate } from "../utils/template";
+import { fillTemplate, loadSqlTemplate } from "../../utils/template";
 
 export interface ListenerStrategy {
     /**

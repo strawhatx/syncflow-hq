@@ -1,18 +1,9 @@
 import { DataSourceStrategy } from "./index";
-import { MongoClient } from "mongodb";
+
 import { saveDatabases, saveTable, saveColumns } from "../../../services/connection";
 
 export class MongoStrategy implements DataSourceStrategy {
-  async connect(config: Record<string, any>): Promise<{ valid: boolean; client: MongoClient }> {
-    try {
-      const client = new MongoClient(config.url);
-      await client.connect();
-      return { valid: true, client };
-    } catch (error: any) {
-      console.error(error);
-      throw new Error(error.message || "Failed to connect to MongoDB");
-    }
-  }
+
 
   async getSources(config: Record<string, any>): Promise<Record<string, any>[]> {
     const { connection_id, team_id } = config;

@@ -1,18 +1,8 @@
 import { saveColumns, saveDatabases, saveTable } from "../../../services/connection";
 import { DataSourceStrategy } from "./index";
-import { Client } from "pg";
 
 export class PostgresStrategy implements DataSourceStrategy {
-    private async connect(config: Record<string, any>): Promise<{ valid: boolean, client: Client }> {
-        try {
-            const client = new Client(config);
-            await client.connect();
-            return { valid: true, client };
-        } catch (error: any) {
-            console.error(error);
-            throw new Error(error.message || "Failed to connect to PostgreSQL");
-        }
-    }
+
 
     async getSources(config: Record<string, any>): Promise<Record<string, any>[]> {
         const { connection_id, team_id } = config;
